@@ -1,9 +1,13 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider ,createBrowserRouter} from 'react-router-dom';
+import reportWebVitals from './reportWebVitals';
+import DiagonalBox from './Components/Header/header';
 import './index.css';
 import App from './App';
+import Navbar from './Components/Navbar/navbar';
 
+import NewProduct from './Components/Product/createNewProduct';
 
 //Remove unnecessary paths after updating the pages so that only the relevant pages remain
 
@@ -12,6 +16,16 @@ const router = createBrowserRouter([
     path:"/",
     element:<App/>
   },
+  {
+    path:"/nav",
+    element:<Navbar/>
+  },{
+    path:"/header",
+    element:<DiagonalBox/>
+  },{
+    path:"/new",
+    element:<NewProduct/>
+  }
   
 ])
 

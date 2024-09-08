@@ -1,0 +1,15 @@
+.navbar{
+    background-color: pink;
+    display:flex;
+    padding: 12;
+}
+.navbar .logo{
+    font-family:'cursive';
+    
+}
+.navbar .logo .highlight {
+    color: rgba(255, 80, 5, 0.696);
+}
+.navbar .logo .bold {
+    font-weight: bold;
+}

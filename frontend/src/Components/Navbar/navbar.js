@@ -34,8 +34,8 @@ function Navbar(){
           </Typography>
           </Stack> 
          <Stack direction="row" alignItems="center" spacing={{sm:1,md:3,lg:5}} borderLeft={{sm:"inset"}} borderRight={{sm:"inset"}} p={2.4} px={{xs:2.4,md:10,lg:20,xl:25}}  >
-            <Link href="#" sx={{color:"black", textDecoration: 'none','&:hover': { fontWeight: 'bold'}, }} >Home</Link>
-            <Link href="#" sx={{color:"black", textDecoration: 'none','&:hover': { fontWeight: 'bold'}, }} >Category</Link>
+            <Link href="#" sx={{color:"grey",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"black",fontWeight: 'bold'}, }} >Home</Link>
+            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"orange",fontWeight: 'bold'}, }} >Category</Link>
             <Link href="#" sx={{color:"black", textDecoration: 'none','&:hover': { fontWeight: 'bold'}, }} >About US</Link>
             <Link href="#" sx={{color:"black", textDecoration: 'none','&:hover': { fontWeight: 'bold'}, }} >Contact Us</Link>
          </Stack>

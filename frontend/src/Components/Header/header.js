@@ -50,11 +50,11 @@ function DiagonalBox() {
       
       sx={{
         width: '100%',
-        minHeight: '50%', // Ensure the Box can grow with content
+        minHeight: {lg:'81%',xl:'100%'}, // Ensure the Box can grow with content
         
         background: 'linear-gradient(45deg, #ff5733, #ffd633)',
         border: '2px solid #fffefa',
-        transform: 'rotate(15deg)',
+        transform: 'rotate(5deg)',
         display: 'flex',
         alignItems: 'center', // Center items vertically if needed
         justifyContent: 'center', // Center items horizontally if needed
@@ -67,7 +67,7 @@ function DiagonalBox() {
           height="auto" // Allow height to be auto-adjusted
           image={require("./images/pink.jpg")}
           alt="Description"
-          sx={{position:"absolute",transform: 'rotate(345deg)',top:5,left:-5}}
+          sx={{position:"absolute",transform: 'rotate(355deg)',top:5,left:-5}}
         />
       </Card>
     </Box>
@@ -87,27 +87,28 @@ function DiagonalBox() {
               marginTop={4}
               p={2}
               sx={{
-                width: '100%',
-                height: '50',
+                width: 'auto',
+                
                 background: 'linear-gradient(135deg, #ff5733 50%, #ffd633 50%)',
                 border: '2px solid #fffefa',
               }}
             >
-                 <Card>
+                
         <CardMedia
           component="img"
+          sx={{ height: '425px', width: 'auto' }}
           // Allow height to be auto-adjusted
           image={require("./images/orange.jpg")}
           alt="Description"
         
         />
-      </Card>
+      
             </Box>
           </Grid>
         </Grid>
 
         {/* "What Makes Us Pro?" Section Moves Below on Small Screens */}
-        <Grid item xs={6} md={12} sx={{ position: {xs:"none",md:'absolute'},zIndex: 10,bottom:140 }}>
+        <Grid item xs={6} md={12} sx={{ position: {xs:"none",md:'absolute'},zIndex: 10,bottom:30 }}>
           <Stack py={2}>
             <Typography
               variant="h5"

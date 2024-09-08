@@ -177,7 +177,7 @@ function NewProduct({ setAddProduct }){
                                    <Typography variant="subtitle1" gutterBottom>Categories </Typography>
                                    <Grid  container spacing={2} p={2}>
                                    {tagOptions[selectedOption].categories.map(tag => (
-                                           <Grid item xs={4}  lg={3} key={tag}>
+                                           <Grid item xs={6} md={4} lg={3} key={tag}>
                                                 <FormControlLabel control={<Checkbox />}label={tag} sx={{ width: '100%' }}/>
                                            </Grid>
                                     ))}
@@ -189,7 +189,7 @@ function NewProduct({ setAddProduct }){
                                           <Typography variant="subtitle1" gutterBottom mt={4}>Cloth Materials</Typography>
                                           <Grid container spacing={2} p={2}>
                                           {tagOptions[selectedOption].materials.map(material => (
-                                              <Grid item xs={4}  lg={3} key={material}>
+                                              <Grid item xs={6} md={4} lg={3} key={material}>
                                                  <FormControlLabel control={<Checkbox />} label={material} sx={{ width: '100%' }}   />
                                               </Grid>
                                           ))}

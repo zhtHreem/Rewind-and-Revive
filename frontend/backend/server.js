@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import FormData from 'form-data';
+import ProductRoutes from './src/database/models/Product/route.js';
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -24,6 +25,8 @@ app.use('/upload',express.static((path.join(__dirname,'src','database', 'models'
 
 
 
+
+app.use('/api', ProductRoutes);
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });

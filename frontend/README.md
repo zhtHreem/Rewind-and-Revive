@@ -1,5 +1,5 @@
 
-Clone the repository 
+
 To run the **Frontend**
 ```bash
 cd Frontend

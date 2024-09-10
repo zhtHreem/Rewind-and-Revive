@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider ,createBrowserRouter} from 'react-router-dom';
 import reportWebVitals from './reportWebVitals';
-import DiagonalBox from './Components/Header/header';
+import Header from './Components/Header/header';
 import './index.css';
 import App from './App';
 import Navbar from './Components/Navbar/navbar';
@@ -21,7 +21,7 @@ const router = createBrowserRouter([
     element:<Navbar/>
   },{
     path:"/header",
-    element:<DiagonalBox/>
+    element:<Header/>
   },{
     path:"/new",
     element:<NewProduct/>

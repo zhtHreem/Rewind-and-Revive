@@ -1,5 +1,5 @@
 import React, { useState, useEffect  } from "react";
-import { Paper,Box,TextField,IconButton,CardMedia, Typography,Stack,Checkbox,FormControl, FormLabel, FormControlLabel, Button,Grid,Radio, RadioGroup } from "@mui/material";
+import { Paper,Box,TextField,IconButton,CardMedia,Typography,Stack,Checkbox,FormControl, FormLabel, FormControlLabel, Button,Grid,Radio, RadioGroup } from "@mui/material";
 
 import CloseIcon from '@mui/icons-material/Close';
 import AddIcon from '@mui/icons-material/Add';
@@ -36,7 +36,7 @@ const tagCategories = {
   };
    
 
-function NewProduct({ setAddProduct }){
+function NewProduct({ /*setAddProduct*/ }){
       const [detail,setDetail]=useState("");
       const[tags,setTags]=useState(false);
       const [description,setDescription]=useState("");
@@ -46,6 +46,7 @@ function NewProduct({ setAddProduct }){
       const [name, setName] = useState("");
       const [price, setPrice] = useState("");
       const [selectedOption, setSelectedOption] = useState("top");
+      const [isExpanded, setIsExpanded] = useState(false); {/*Find other solution for spacing (change it)*/}
      
 
 
@@ -115,7 +116,7 @@ function NewProduct({ setAddProduct }){
                 confirmButtonText: 'OK'
             });
     
-            setAddRecipe(false); // Close the form on success
+            /*setAddProduct(false); // Close the form on success*/
         } catch (error) {
             console.error('Error creating recipe:', error);
         }
@@ -141,7 +142,7 @@ function NewProduct({ setAddProduct }){
          <Box  sx={{position: 'absolute', zIndex: 4,backgroundColor: 'rgba(0, 0, 0, 0.5)',width:"80%",top:"10%",left:"10%"}}>
             <Paper sx={{p:{xs:3,sm:6}}} elevation={24}>
 
-                    <IconButton onClick={() => setAddProduct(false)}> {/*To close the product page*/}
+                    <IconButton /*onClick={() => setAddProduct(false)}*/> {/*To close the product page*/}
                         <CloseIcon/>
                     </IconButton>
                 
@@ -264,8 +265,8 @@ function NewProduct({ setAddProduct }){
 
                         </Grid>
 
-
-                       <Grid container direction={{xs:"column",md:"row"}} py={4}  md={6} spacing={2}>
+                       {/* Left side */}
+                       <Grid container direction={{xs:"column",md:"row" }} py={4}  md={6} spacing={2} sx={{maxHeight: isExpanded ? 'none' : 650,}}> {/*will not apply height when user clicks button */}
 
                                <Grid item md={12}>
                                        <Typography variant="h5">Add Image</Typography>
@@ -282,9 +283,9 @@ function NewProduct({ setAddProduct }){
                                       </Paper>
                                </Grid>
 
-                              <Grid item md={12}>
+                              <Grid item md={12} >
                                        <Box >
-                                          <Button  onClick={() => setTags(prev => !prev)} sx={{color:"black",width:"100%", borderBottom: "1px outset black",borderLeft: "1px outset black", }}  endIcon={<KeyboardArrowDown />}>Add Descriptive Tags</Button>
+                                          <Button  onClick={() => {setIsExpanded(prev => !prev); setTags(prev => !prev);}} sx={{color:"black",width:"100%", borderBottom: "1px outset black",borderLeft: "1px outset black", }}  endIcon={<KeyboardArrowDown />}>Add Descriptive Tags</Button>
                                              {tags &&( 
                                                 <Box mt={2}>
                                                     {Object.keys(tagCategories).map(category => (

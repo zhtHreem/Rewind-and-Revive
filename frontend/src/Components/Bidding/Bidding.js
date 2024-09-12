@@ -62,7 +62,7 @@ const Bidding = () => {
     dots: true,
     infinite: true,
     speed: 500,
-    slidesToShow: 3,
+    slidesToShow: 4,
     slidesToScroll: 1,
     nextArrow: <NextArrow />,
     prevArrow: <PrevArrow />,
@@ -97,10 +97,10 @@ const Bidding = () => {
       <Slider {...settings}>
         {items.map((item) => (
           <div className="slide-item" key={item.id}>
-            <Card sx={{ maxWidth: 250, height: 350, margin: '0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            <Card sx={{ maxWidth: 270, height: 300, margin: '0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <CardMedia
                 component="img"
-                height="150"
+                height="100"
                 image={item.image}
                 alt={item.title}
               />
@@ -135,6 +135,7 @@ const Bidding = () => {
           </div>
         ))}
       </Slider>
+   
     </div>
   );
 };

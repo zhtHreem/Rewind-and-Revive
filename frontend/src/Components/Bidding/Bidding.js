@@ -8,11 +8,13 @@ import { NextArrow, PrevArrow } from './customArrow';
 import chanel from '../../assets/Bidding/chanel.jpg';
 import chanel2 from '../../assets/Bidding/channel page.jpg';
 import LV from '../../assets/Bidding/LV.jpg';
-import prada from '../../assets/Bidding/prada.jpg'
-import gucci from '../../assets/Bidding/gucci.jpg'
+import prada from '../../assets/Bidding/prada.jpg';
+import gucci from '../../assets/Bidding/gucci.jpg';
 import { Card, CardContent, CardMedia, Typography, Button, Box, Chip, IconButton } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
+import bidProduct from '../BidProduct/BidProduct';
 
 const items = [
   {
@@ -58,6 +60,8 @@ const items = [
 ];
 
 const Bidding = () => {
+  const navigate = useNavigate(); // Initialize useNavigate
+
   const settings = {
     dots: true,
     infinite: true,
@@ -92,34 +96,52 @@ const Bidding = () => {
   };
 
   return (
-    <div className="slider-container">
+    <div className="slider-container" style={{ position: 'relative' }}>
       <h1>Explore Our Bidding Collection</h1>
       <Slider {...settings}>
         {items.map((item) => (
           <div className="slide-item" key={item.id}>
-            <Card sx={{ maxWidth: 270, height: 300, margin: '0', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <CardMedia
-                component="img"
-                height="100"
-                image={item.image}
-                alt={item.title}
-              />
+            <Card
+              sx={{
+                maxWidth: 270,
+                height: 300,
+                margin: '0',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+              }}
+            >
+              <CardMedia component="img" height="100" image={item.image} alt={item.title} />
               <CardContent sx={{ padding: '8px' }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                   <Chip label="On Stock" color="success" size="small" />
                   <Chip label={`${item.bids} Bids`} color="primary" size="small" />
                 </Box>
-                <Typography gutterBottom variant="h6" component="div" noWrap sx={{ fontSize: '14px', textAlign: 'center' }}>
+                <Typography
+                  gutterBottom
+                  variant="h6"
+                  component="div"
+                  noWrap
+                  sx={{ fontSize: '14px', textAlign: 'center' }}
+                >
                   {item.title}
                 </Typography>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                   <Box>
-                    <Typography variant="body2" color="text.secondary">Current Bid</Typography>
-                    <Typography variant="body1" color="text.primary">${item.currentBid.toFixed(2)}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Current Bid
+                    </Typography>
+                    <Typography variant="body1" color="text.primary">
+                      ${item.currentBid.toFixed(2)}
+                    </Typography>
                   </Box>
                   <Box>
-                    <Typography variant="body2" color="text.secondary">Buy Now</Typography>
-                    <Typography variant="body1" color="text.primary">${item.buyNowPrice.toFixed(2)}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Buy Now
+                    </Typography>
+                    <Typography variant="body1" color="text.primary">
+                      ${item.buyNowPrice.toFixed(2)}
+                    </Typography>
                   </Box>
                 </Box>
                 <Button variant="contained" startIcon={<ShoppingCartIcon />} fullWidth>
@@ -135,7 +157,23 @@ const Bidding = () => {
           </div>
         ))}
       </Slider>
-   
+      {/* See More Link */}
+      <Box
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          right: 0,
+          padding: '10px',
+          zIndex: 1,
+        }}
+      >
+        <Button
+          onClick={() => navigate('/bidProduct')} // Use navigate to redirect to BidProduct page
+          style={{ textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', color: 'blue' }}
+        >
+          See More
+        </Button>
+      </Box>
     </div>
   );
 };

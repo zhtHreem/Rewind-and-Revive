@@ -129,7 +129,7 @@ const ProductCard = ({ product }) => {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: 'skyblue',
+              backgroundColor: '#C3B1E1',
               mt: 2,
               '&:hover': {
                 backgroundColor: 'darkblue',

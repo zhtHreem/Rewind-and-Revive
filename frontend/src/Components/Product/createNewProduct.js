@@ -11,7 +11,7 @@ import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 
 
 
-const tagCategories = {
+const tags = {
     "Style": ["Casual", "Formal", "Business", "Streetwear", "Vintage"],
     "Color": ["Black", "White", "Blue", "Red", "Green"],
     "fitOptions" : ["Slim Fit", "Regular Fit", "Loose Fit", "Relaxed Fit", "Skinny Fit", "Oversized"],
@@ -21,7 +21,7 @@ const tagCategories = {
   };
 
 
-  const tagOptions = {
+  const category = {
     "top": {
       categories: ["Shirt", "Blouse", "Sweater", "Jacket", "Cardigan", "Tank Top"],
       materials: ["Cotton", "Wool", "Silk", "Polyester", "Linen", "Rayon"]
@@ -38,7 +38,7 @@ const tagCategories = {
 
 function NewProduct({ /*setAddProduct*/ }){
       const [detail,setDetail]=useState("");
-      const[tags,setTags]=useState(false);
+      const[tagSelection,setTags]=useState(false);
       const [description,setDescription]=useState("");
       const [image, setImage] = useState(null);
       const [imageFile, setImageFile] = useState(null);
@@ -68,30 +68,12 @@ function NewProduct({ /*setAddProduct*/ }){
 
             const formData = new FormData();
             
-            if (!imageFile ) {
-                
-                alert('Choose an Image.');
-                return;
-            }
-            else if(!name){
-                alert('Please enter the Recipe name.');
-                return;
-            }else if(!description){
-                alert('Description is required.');
-                return; 
-            }else if(!detail){
-                alert('Enter detail');
-                return;
-            }
+           
 
             formData.append('user', userId);
                 formData.append('name', name);
                 formData.append('description', description);
-                
                 formData.append(`detail`, detail);
-               
-                
-        
                 formData.append('image', imageFile);
     
 
@@ -102,7 +84,7 @@ function NewProduct({ /*setAddProduct*/ }){
                     console.log(pair[0] + ': ' + pair[1]);
                 }
             }
-            const response = await axios.post('https://localhost:3500/api/recipes', formData, {
+            const response = await axios.post('https://localhost:3500/api/products', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -150,13 +132,13 @@ function NewProduct({ /*setAddProduct*/ }){
                     <Grid container direction={{xs:"column",md:"row"}} md={12}  justifyContent="space-between">
 
                          <Grid item md={6}>  
-                           <Typography marginTop={2} variant="h4" >Name</Typography> 
-                           <TextField label='Enter recipe name' value={name} onChange={(e) => setName(e.target.value)} />
+                           <Typography marginTop={2} variant="h5" >Name</Typography> 
+                           <TextField label='Enter Product Name' value={name} onChange={(e) => setName(e.target.value)} />
 
-                          <Typography   marginTop={2}  variant="h4" >Price</Typography> 
+                          <Typography   marginTop={2}  variant="h5" >Price</Typography> 
                           <TextField label='Rs' value={price} onChange={(e) => setPrice(e.target.value)} />
 
-                          <Typography  marginTop={2}  variant="h4" sx={{marginTop:4}}>Type</Typography> 
+                          <Typography  marginTop={2}  variant="h5" sx={{marginTop:4}}>Type</Typography> 
                           <Grid container p={4} spacing={2} >
                                 <FormControl component="fieldset">
                                 <FormLabel component="legend">Select Category</FormLabel>
@@ -170,14 +152,14 @@ function NewProduct({ /*setAddProduct*/ }){
 
 
                             {/* Display tags based on selected category */}
-                            {selectedOption && tagOptions[selectedOption] && (
+                            {selectedOption && category[selectedOption] && (
                             <Box p={2}>
                                    <Typography variant="h6" gutterBottom> Select Tags for {selectedOption.charAt(0).toUpperCase() + selectedOption.slice(1)}</Typography>
 
                                     {/* Display Category Tags */}
                                    <Typography variant="subtitle1" gutterBottom>Categories </Typography>
                                    <Grid  container spacing={2} p={2}>
-                                   {tagOptions[selectedOption].categories.map(tag => (
+                                   {category[selectedOption].categories.map(tag => (
                                            <Grid item xs={6} md={4} lg={3} key={tag}>
                                                 <FormControlLabel control={<Checkbox />}label={tag} sx={{ width: '100%' }}/>
                                            </Grid>
@@ -189,7 +171,7 @@ function NewProduct({ /*setAddProduct*/ }){
                                        <>
                                           <Typography variant="subtitle1" gutterBottom mt={4}>Cloth Materials</Typography>
                                           <Grid container spacing={2} p={2}>
-                                          {tagOptions[selectedOption].materials.map(material => (
+                                          {category[selectedOption].materials.map(material => (
                                               <Grid item xs={6} md={4} lg={3} key={material}>
                                                  <FormControlLabel control={<Checkbox />} label={material} sx={{ width: '100%' }}   />
                                               </Grid>
@@ -203,8 +185,8 @@ function NewProduct({ /*setAddProduct*/ }){
                             { selectedOption === 'top' && (
                             <>
                                    <Stack direction="row" alignItems="center" marginTop={2}>
-                                       <Typography variant="h4" >Size</Typography>
-                                       <FormLabel component="legend">Inches</FormLabel>
+                                       <Typography variant="h5" >Size</Typography>
+                                       <FormLabel component="legend"> (Inches)</FormLabel>
                                    </Stack>
                                    <Grid container spacing={2} md={10} p={2}>
                                           <Grid item xs={6} sm={4}>
@@ -232,7 +214,7 @@ function NewProduct({ /*setAddProduct*/ }){
                             { selectedOption === 'bottom'&& (
                              <>
                                     <Stack direction="row" alignItems="center" marginTop={2}>
-                                       <Typography variant="h4" >Size</Typography>
+                                       <Typography variant="h5" >Size</Typography>
                                        <FormLabel component="legend">Inches</FormLabel>
                                     </Stack>
                                     <Grid container spacing={2} md={10} p={2}>
@@ -258,10 +240,7 @@ function NewProduct({ /*setAddProduct*/ }){
                             )} 
 
 
-                            <Grid item md={12}>
-                                   <Typography  marginTop={2}  variant="h4"  >Detail</Typography> 
-                                   <TextField  label='Enter product detail' value={detail} onChange={(e) => setDetail(e.target.value)} />
-                           </Grid>
+                            
 
                         </Grid>
 
@@ -272,7 +251,7 @@ function NewProduct({ /*setAddProduct*/ }){
                                        <Typography variant="h5">Add Image</Typography>
                                        <Paper component="label" sx={{  position: 'relative', padding: 3,backgroundColor: "lightgrey", cursor: "pointer",width: {xs:'200px',sm:'300px'}, display: 'flex',flexDirection: 'column', alignItems: 'center', }} >
                                                  <input type="file" name="image" accept="image/*" hidden onChange={handleImageChange} />
-                                                 <CardMedia  component="img" image={typeof image === 'string' ? image : "https://via.placeholder.com/150"} alt="Selected"  sx={{ height: 150,width: '100%',  objectFit: 'cover', maxWidth: '100%',   }} />
+                                                 <CardMedia  component="img" image={typeof image === 'string' ? image : "https://via.placeholder.com/150"} alt="Selected"  sx={{ height: 150,width: '100%',  objectFit: 'contain', maxWidth: '100%',   }} />
                                                  {!image && (
                                                          <Box sx={{   position: 'absolute', top: 0,left: 0, height: '100%',width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.5)', }}>
                                                               <IconButton size="large">
@@ -286,13 +265,13 @@ function NewProduct({ /*setAddProduct*/ }){
                               <Grid item md={12} >
                                        <Box >
                                           <Button  onClick={() => {setIsExpanded(prev => !prev); setTags(prev => !prev);}} sx={{color:"black",width:"100%", borderBottom: "1px outset black",borderLeft: "1px outset black", }}  endIcon={<KeyboardArrowDown />}>Add Descriptive Tags</Button>
-                                             {tags &&( 
+                                             {tagSelection &&( 
                                                 <Box mt={2}>
-                                                    {Object.keys(tagCategories).map(category => (
+                                                    {Object.keys(tags).map(category => (
                                                     <Box mb={4} px={3} key={category}>
                                                          <Typography variant="h6" gutterBottom>  {category} </Typography>
                                                           <Grid  container spacing={2} p={2}>
-                                                              {tagCategories[category].map(tag => (
+                                                              {tags[category].map(tag => (
                                                                    <Grid item xs={6} sm={4}  lg={3} key={tag}>
                                                                           <FormControlLabel control={<Checkbox />}label={tag}sx={{ width: '100%' }}/>
                                                                   </Grid>

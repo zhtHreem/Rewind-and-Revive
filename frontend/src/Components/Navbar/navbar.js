@@ -24,20 +24,23 @@ function Navbar(){
      };
    return(
      
-    <Box    sx={{display:"flex",paddingX:{xs:1,md:4,lg:8,xl:10},justifyContent:"space-between",borderBottom:"inset",boxShadow: 3,}}>
+    <Box    sx={{position:"sticky",zIndex: 1200, display:"flex",paddingX:{xs:1,md:4,lg:8,xl:10},justifyContent:"space-between",borderBottom:"inset",boxShadow: 3}}>
          
          <Stack direction="row" alignItems="center" px={{xs:1,md:3,xl:4}}>
           <Typography variant="h4" className="logo" > 
             <span style={{fontWeight:"bold"}}> R</span>
-            <span style={{color: "orangered"}}>&</span>
+            <span style={{color: "#EAC7C7"}}>&</span>
             <span style={{fontWeight:"bold"}} className="bold">R</span> 
           </Typography>
           </Stack> 
          <Stack direction="row" alignItems="center" spacing={{sm:1,md:3,lg:5}} borderLeft={{sm:"inset"}} borderRight={{sm:"inset"}} p={2.4} px={{xs:2.4,md:10,lg:20,xl:25}}  >
-            <Link href="#" sx={{color:"grey",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"black",fontWeight: 'bold'}, }} >Home</Link>
-            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"orange",fontWeight: 'bold'}, }} >Category</Link>
-            <Link href="#" sx={{color:"black", textDecoration: 'none','&:hover': { fontWeight: 'bold'}, }} >About US</Link>
-            <Link href="#" sx={{color:"black", textDecoration: 'none','&:hover': { fontWeight: 'bold'}, }} >Contact Us</Link>
+            
+
+            <Link href="/" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Home</Link>
+            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Category</Link>
+            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >About Us</Link>
+            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Contact Us</Link>
+
          </Stack>
          <Stack direction="row" alignItems="center" spacing={{xs:1,md:2}} px={{xs:1,md:3,lg:4}}>
             
@@ -64,9 +67,15 @@ function Navbar(){
             </IconButton>
 
             {login ? (
-                <Typography component={Button} onClick={handleLogin} sx={{color:"orange",textDecoration: 'none','&:hover': { fontWeight: 'bold'},}}>Login</Typography>
+                <Typography component={Button} onClick={handleLogin} sx={{backgroundColor:"#A86464",color:"white",textDecoration: 'none',backgroundColor: '#85586F',
+                  '&:hover': {
+                    backgroundColor: 'black',
+                  }}}>Login</Typography>
             ):(
-                <Typography component={Button} onClick={handleLogin} sx={{color:"orange",textDecoration: 'none','&:hover': { fontWeight: 'bold'},}}>Logout</Typography>
+                <Typography component={Button} onClick={handleLogin} sx={{backgroundColor:"#A86464",color:"white",textDecoration: 'none',backgroundColor: '#85586F',
+                  '&:hover': {
+                    backgroundColor: 'black',
+                  },}}>Logout</Typography>
             )}
          </Stack>
     </Box>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Typography, TextField, Button, Link } from '@mui/material';
+import { Box, Grid, Typography, TextField, Button,Stack, Link } from '@mui/material';
 import { Facebook, Twitter, Instagram, YouTube } from '@mui/icons-material';
 
 const Footer = () => {
@@ -7,7 +7,7 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-        backgroundColor: '#333',
+        backgroundColor: '#8B7E74',
         color: 'white',
         py: 6,
         px: { xs: 4, md: 8 },
@@ -16,9 +16,13 @@ const Footer = () => {
       <Grid container spacing={4}>
         {/* Store Info */}
         <Grid item xs={12} md={4}>
-          <Typography variant="h5" sx={{ marginBottom: 2 }}>
-            Thrift Store
+        <Stack direction="row"  px={{xs:1,md:3,xl:4}}>
+          <Typography variant="h4" className="logo" > 
+            <span style={{fontWeight:"bold"}}> Rewind</span>
+            <span style={{color: "#EAC7C7"}}>&</span>
+            <span style={{fontWeight:"bold"}} className="bold">Revive</span> 
           </Typography>
+          </Stack>
           <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
             Discover the best second-hand clothing at affordable prices. We are
             dedicated to providing sustainable and stylish fashion choices.
@@ -75,7 +79,7 @@ const Footer = () => {
             variant="contained"
             sx={{
               width: '100%',
-              backgroundColor: '#6b0407',
+              backgroundColor: '#85586F',
               '&:hover': {
                 backgroundColor: 'black',
               },

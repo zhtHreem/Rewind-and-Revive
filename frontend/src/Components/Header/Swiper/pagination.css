@@ -20,6 +20,7 @@
     width: 100%;
     height: 100%;
     padding-bottom: 50px; /* Reserve space at the bottom for pagination dots */
+    margin-top: 20px;
    
   }
   .swiper:active {

@@ -8,8 +8,7 @@ import App from './App';
 import Navbar from './Components/Navbar/navbar';
 
 import NewProduct from './Components/Product/createNewProduct';
-
-//Remove unnecessary paths after updating the pages so that only the relevant pages remain
+import ProductPage from './Components/Product/productPage';//Remove unnecessary paths after updating the pages so that only the relevant pages remain
 
 const router = createBrowserRouter([
   {
@@ -25,6 +24,9 @@ const router = createBrowserRouter([
   },{
     path:"/new",
     element:<NewProduct/>
+  },{
+    path:"/product",
+    element:<ProductPage/>
   }
   
 ])

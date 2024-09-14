@@ -169,7 +169,7 @@ const Bidding = () => {
       >
         <Button
           onClick={() => navigate('/bidProduct')} // Use navigate to redirect to BidProduct page
-          style={{ textDecoration: 'none', fontSize: '16px', fontWeight: 'bold', color: 'blue' }}
+          style={{ textDecoration: 'none', fontSize: '16px',fontWeight: 'bold', color: 'darkblue' }}
         >
           See More
         </Button>

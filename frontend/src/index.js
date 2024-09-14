@@ -9,7 +9,7 @@ import Navbar from './Components/Navbar/navbar';
 import BidProduct from './Components/BidProduct/BidProduct'
 import NewProduct from './Components/Product/createNewProduct';
 import ProductPage from './Components/Product/productPage';//Remove unnecessary paths after updating the pages so that only the relevant pages remain
-
+import CataloguePage from './Components/Product/catalogue';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -30,6 +30,9 @@ const router = createBrowserRouter([
   },{
     path:"/bidProduct",
     element:<BidProduct/>
+  },{
+    path:"/c",
+    element:<CataloguePage/>
   }
   
 ])

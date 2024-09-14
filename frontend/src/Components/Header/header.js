@@ -70,7 +70,7 @@ function Header() {
   return (
     <>
     
-    <Box p={{ xs: 1, md: 5 }} >
+    <Box marginLeft={4}  p={{ xs: 1, md: 5 }} >
       <Grid container spacing={{ xs: 3, md: 8 }}>
         <Grid item xs={12} md={5}>
           <Typography variant='h2' fontFamily={"'Times New Roman', serif"}fontSize={{xs: '2rem', sm: '2.5rem',   md: '3rem',lg: '3.5rem',  }}>
@@ -80,7 +80,7 @@ function Header() {
             Discover sustainable fashion at Rewind & Revive, the ultimate online thrift store for unique, second-hand treasures
           </Typography>
           <Stack direction="row" py={2}>
-            <Button fontSize={{ xs: "0.75rem" }} sx={{ color: "white", backgroundColor: "#B3A398" }}>
+            <Button fontSize={{ xs: "0.75rem" }} sx={{ color: "white", backgroundColor: "#B3A398",'&:hover': { backgroundColor: "#576F72" }  }}>
               Explore More
             </Button>
           </Stack>
@@ -104,7 +104,7 @@ function Header() {
                 <AddSharpIcon  sx={{ color: "orangered",fontSize:{ xs: "0.75rem" } }} />
               </IconButton>
               <Typography  component={Link} variant="h5" fontSize={{ xs: "0.75rem",md: '1rem',
-              lg: '1.125rem', }} fontFamily={"'Times New Roman', serif"}>
+              lg: '1.125rem', }} fontFamily={"'Times New Roman', serif"} sx={{color:"black"}}>
                 Explore our curated collection of pre-loved treasures
               </Typography>
             </Stack>
@@ -117,7 +117,7 @@ function Header() {
         </Grid>
 
         {/* "What Makes Us Pro?" Section Moves Below on Small Screens */}
-        <Grid item xs={12}  sx={{ position: {xs:"none",md:'absolute'},zIndex: 10,bottom:80 }}>
+        <Grid item xs={12}  sx={{ position: {xs:"none",md:'absolute'},zIndex: 10,bottom:60 }}>
           <Stack py={2}>
             <Typography variant="h5" fontFamily={"'Times New Roman', serif"} fontSize={{  xs: '1.5rem', sm: '1.75rem',md: '2rem',  lg: '2.25rem',}} >
                  What Makes Us Pro?
@@ -128,7 +128,7 @@ function Header() {
                 <ListItemText primaryTypographyProps={{ variant: "body2" }}>Quality second-hand fashion</ListItemText>
               </ListItem>
               <ListItem>
-                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "B3A398" }} /></ListItemIcon>
+                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#C1A3A3" }} /></ListItemIcon>
                 <ListItemText primaryTypographyProps={{ variant: "body2" }}>Affordable sustainable styles</ListItemText>
               </ListItem>
               <ListItem>

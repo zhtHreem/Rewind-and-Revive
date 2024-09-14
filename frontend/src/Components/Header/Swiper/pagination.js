@@ -37,6 +37,7 @@ export default function Swipe() {
       <Swiper
         slidesPerView={slidesPerView}
         spaceBetween={0}
+        
         slidesOffsetAfter={50}
         pagination={{
           clickable: true,
@@ -47,9 +48,10 @@ export default function Swipe() {
         <SwiperSlide onClick={() => handleSlideClick('/')}>Men</SwiperSlide>
         <SwiperSlide onClick={() => handleSlideClick('/')}>Women</SwiperSlide>
         <SwiperSlide onClick={() => handleSlideClick('/')}>Kids</SwiperSlide>
-        <SwiperSlide onClick={() => handleSlideClick('/')}>Bidding</SwiperSlide>
+        <SwiperSlide onClick={() => handleSlideClick('/')}>Accessories</SwiperSlide>
+        <SwiperSlide onClick={() => handleSlideClick('/bidProduct')}>Bidding</SwiperSlide>
         <SwiperSlide onClick={() => handleSlideClick('/')}>Collaborators</SwiperSlide>
-        <SwiperSlide onClick={() => handleSlideClick('/')}>Slide 6</SwiperSlide>
+ 
       </Swiper>
     </>
   );

@@ -14,7 +14,7 @@ import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 const tags = {
     "Style": ["Casual", "Formal", "Business", "Streetwear", "Vintage"],
     "Color": ["Black", "White", "Blue", "Red", "Green"],
-    "fitOptions" : ["Slim Fit", "Regular Fit", "Loose Fit", "Relaxed Fit", "Skinny Fit", "Oversized"],
+    "Fit Options" : ["Slim Fit", "Regular Fit", "Loose Fit", "Relaxed Fit", "Skinny Fit", "Oversized"],
     "seasonOptions" :["Summer", "Winter", "Spring", "Fall", "All-season"],
     "occasionOptions" : ["Casual", "Workwear", "Party", "Wedding", "Outdoor", "Gym", "Travel", "Evening", "Lounge"],
 
@@ -288,7 +288,7 @@ function NewProduct({ /*setAddProduct*/ }){
 
                                 <Grid item md={12}>
                                         <TextField  label="Description" value={description} onChange={(e) => setDescription(e.target.value)}multiline  rows={6} sx={{ width: "100%", border: "1px ridge white" }}/>
-                                        <Button marginTop={2} sx={{ color: "black", backgroundColor: "yellow" }} onClick={handleEnter}> Enter</Button>
+                                        <Button marginTop={2} sx={{ color: "black", backgroundColor:"#A86464" }} onClick={handleEnter}> Enter</Button>
                                  </Grid>
                        </Grid>
                  

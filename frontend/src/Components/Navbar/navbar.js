@@ -37,7 +37,7 @@ function Navbar(){
             
 
             <Link href="/" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Home</Link>
-            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Category</Link>
+            <Link href="/c" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Products</Link>
             <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >About Us</Link>
             <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Contact Us</Link>
 

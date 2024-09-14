@@ -114,8 +114,8 @@ const Bidding = () => {
               <CardMedia component="img" height="100" image={item.image} alt={item.title} />
               <CardContent sx={{ padding: '8px' }}>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Chip label="On Stock" color="success" size="small" />
-                  <Chip label={`${item.bids} Bids`} color="primary" size="small" />
+                  <Chip label="On Stock" sx={{backgroundColor:"#829460"}} size="small" />
+                  <Chip label={`${item.bids} Bids`} sx={{backgroundColor:"#7D9D9C",color:"white"}}size="small" />
                 </Box>
                 <Typography
                   gutterBottom
@@ -144,7 +144,7 @@ const Bidding = () => {
                     </Typography>
                   </Box>
                 </Box>
-                <Button variant="contained" startIcon={<ShoppingCartIcon />} fullWidth>
+                <Button variant="contained" sx={{backgroundColor:"#576F72",color:"white"}} startIcon={<ShoppingCartIcon />} fullWidth>
                   PLACE BID
                 </Button>
                 <Box display="flex" justifyContent="center" mt={1}>

@@ -8,7 +8,7 @@ import silverSapphire from './images/silverSapphire.jpg'
 import MahnoorBaloch from './images/MahnoorBaloch.jpg'
 import red from './images/red.jpg'
 import ring from './images/rings.jpg'
-
+import Layout from '../Layout/layout';
 const products = [
   {
     id: 1,
@@ -129,10 +129,10 @@ const ProductCard = ({ product }) => {
           <Button
             variant="contained"
             sx={{
-              backgroundColor: '#C3B1E1',
+              backgroundColor: '#576F72',
               mt: 2,
               '&:hover': {
-                backgroundColor: 'darkblue',
+                backgroundColor: '#354259',
               },
             }}
           >
@@ -146,26 +146,31 @@ const ProductCard = ({ product }) => {
 
 const BidProduct = () => {
   return (
-    <Box sx={{ flexGrow: 1,
-        backgroundColor: '#C3B1E1'
+    <>
+    <Layout>
+    <Box p={10} sx={{ flexGrow: 1,
+        backgroundColor: '#F0EBE3',
      }} >
+      <Typography textAlign="center" variant="h3" sx={{backgroundColor:"#D1D1D1"}}>Explore our Bidding Products</Typography>
       <Grid
         container
-        spacing={0}
+        spacing={5}
         sx={{
           display: 'flex',
-          flexWrap: 'wrap',
+        
           gap: 0,
           margin: 0,
         }}
       >
         {products.map((product) => (
-          <Grid item key={product.id} sx={{ paddingBottom: 1, paddingTop: 1, paddingLeft:3, paddingRight:3 }}>
+          <Grid item key={product.id} md={4}>
             <ProductCard product={product} />
           </Grid>
         ))}
       </Grid>
     </Box>
+    </Layout>
+    </>
   );
 };
 

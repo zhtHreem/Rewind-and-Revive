@@ -1,84 +1,101 @@
 import React, { useState } from "react";
-//import './navbar.css';
-import { Stack,Link,Box, IconButton, Typography,Button,TextField } from "@mui/material";
+import { Stack, Link, Box, IconButton, Typography, Button, Drawer } from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
-import DensitySmallSharpIcon from '@mui/icons-material/DensitySmallSharp'; /*create drawer for mobile screen */
-function Navbar(){
-   const [shoppinCart,setShoppingCart]=useState(false);
-   const [login,setLogin]=useState(false);
-   const [search,setSearch]=useState(false);
-   const [searchTerm, setSearchTerm] = useState("");
-   const handleCart=()=>{
-      setShoppingCart(prevState => !prevState);
-    }
-    const handleLogin=()=>{
-      setLogin(prevState => !prevState);
-    } 
+import MenuIcon from '@mui/icons-material/Menu'; // Menu button icon
 
-    const performSearch = () => {
-      setSearch(true)
-      
-     };
-   return(
-     
-    <Box    sx={{position:"sticky",zIndex: 1200, display:"flex",paddingX:{xs:1,md:4,lg:8,xl:10},justifyContent:"space-between",borderBottom:"inset",boxShadow: 3}}>
-         
-         <Stack direction="row" alignItems="center" px={{xs:1,md:3,xl:4}}>
-          <Typography variant="h4" className="logo" > 
-            <span style={{fontWeight:"bold"}}> R</span>
-            <span style={{color: "#EAC7C7"}}>&</span>
-            <span style={{fontWeight:"bold"}} className="bold">R</span> 
-          </Typography>
-          </Stack> 
-         <Stack direction="row" alignItems="center" spacing={{sm:1,md:3,lg:5}} borderLeft={{sm:"inset"}} borderRight={{sm:"inset"}} p={2.4} px={{xs:2.4,md:10,lg:20,xl:25}}  >
-            
+function Navbar() {
+  const [shoppingCart, setShoppingCart] = useState(false);
+  const [login, setLogin] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
-            <Link href="/" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Home</Link>
-            <Link href="/c" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Products</Link>
-            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >About Us</Link>
-            <Link href="#" sx={{color:"black",fontWeight: 'bold', textDecoration: 'none','&:hover': { color:"#F4B183",fontWeight: 'bold'}, }} >Contact Us</Link>
+  const handleCart = () => {
+    setShoppingCart(prevState => !prevState);
+  };
 
-         </Stack>
-         <Stack direction="row" alignItems="center" spacing={{xs:1,md:2}} px={{xs:1,md:3,lg:4}}>
-            
-            <IconButton onClick={handleCart}>
-               {shoppinCart? (
-                  <LocalMallIcon/>
-                
-               ): (
-                  <LocalMallOutlinedIcon/>
-               )
-            }
-            </IconButton>
+  const handleLogin = () => {
+    setLogin(prevState => !prevState);
+  };
 
-            {!login && ( //change to login
-              <IconButton>
-                 <PersonIcon/>
-              </IconButton>
-            )}
-              
-                
+  const handleDrawerToggle = () => {
+    setDrawerOpen(prevState => !prevState);
+  };
 
-            <IconButton onClick={performSearch}>   {/* Create a Drawer for search like cart */}
-                  <SearchIcon fontSize="medium" />
-            </IconButton>
+  const performSearch = () => {
+    // Your search functionality here
+  };
 
-            {login ? (
-                <Typography component={Button} onClick={handleLogin} sx={{backgroundColor:"#A86464",color:"white",textDecoration: 'none',backgroundColor: '#85586F',
-                  '&:hover': {
-                    backgroundColor: 'black',
-                  }}}>Login</Typography>
-            ):(
-                <Typography component={Button} onClick={handleLogin} sx={{backgroundColor:"#A86464",color:"white",textDecoration: 'none',backgroundColor: '#85586F',
-                  '&:hover': {
-                    backgroundColor: 'black',
-                  },}}>Logout</Typography>
-            )}
-         </Stack>
+  return (
+    <Box component="navbar" sx={{  position: "sticky",  zIndex: 1200, display: "flex",  paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
+      <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
+        <Typography variant="h4" className="logo">
+          <span style={{ fontWeight: "bold" }}> R</span>
+          <span>
+            <Box component="img" src={require("./recycle3.svg").default}  alt="wardrobe" sx={{ width: 35, height: 30, color: "#EAC7C7" }} />
+          </span>
+          <span style={{ fontWeight: "bold" }} className="bold">R</span>
+        </Typography>
+      </Stack>
+
+      <Stack  direction="row" alignItems="center" spacing={{ sm: 1, md: 3, lg: 5 }} borderLeft={{ sm: "inset" }} borderRight={{ sm: "inset" }} p={2.4} px={{ xs: 2.4, md: 10, lg: 20, xl: 25 }}  sx={{ display: { xs: 'none', md: 'flex' } }}   >
+        <Link    href="/" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}  > 
+            Home
+        </Link>
+        <Link href="/c" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} >
+          Products
+        </Link>
+        <Link
+          href="#" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
+          About Us
+        </Link>
+        <Link href="#" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} >
+          Contact Us
+        </Link>
+      </Stack>
+
+      <Stack direction="row" alignItems="center" spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 4 }}>
+        <IconButton onClick={handleCart}>
+          {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
+        </IconButton>
+
+        {!login && (
+          <IconButton>
+            <PersonIcon />
+          </IconButton>
+        )}
+
+        <IconButton onClick={performSearch}>
+          <SearchIcon fontSize="medium" />
+        </IconButton>
+
+        <Button  onClick={handleLogin} variant="contained"  color="primary"  sx={{   backgroundColor: '#85586F','&:hover': { backgroundColor: 'black', }, }} size="small" >
+          {login ? "Logout" : "Login"}
+        </Button>
+        <IconButton  sx={{ display: { xs: 'flex', md: 'none' } }}  onClick={handleDrawerToggle}  >
+          <MenuIcon />
+        </IconButton>
+      </Stack>
+
+      <Drawer   PaperProps={{sx: {    width: 240   } }}  anchor="left"  open={drawerOpen}  onClose={handleDrawerToggle} >
+        <Stack direction="column" spacing={2}  p={2}  >
+          <Link   href="/"  sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}  onClick={handleDrawerToggle} >
+            Home
+          </Link>
+          <Link  href="/c"    sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} onClick={handleDrawerToggle}>
+            Products
+          </Link>
+          <Link href="#"  sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} onClick={handleDrawerToggle} >
+            About Us
+          </Link>
+          <Link href="#"  sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}onClick={handleDrawerToggle} >
+            Contact Us
+          </Link>
+        </Stack>
+      </Drawer>
     </Box>
-   );
+  );
 }
+
 export default Navbar;

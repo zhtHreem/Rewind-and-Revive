@@ -10,6 +10,8 @@ import BidProduct from './Components/BidProduct/BidProduct'
 import NewProduct from './Components/Product/createNewProduct';
 import ProductPage from './Components/Product/productPage';//Remove unnecessary paths after updating the pages so that only the relevant pages remain
 import CataloguePage from './Components/Product/catalogue';
+import UserProfilePage from './Components/User/profile';
+import Badges from './Components/User/badges';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -33,6 +35,12 @@ const router = createBrowserRouter([
   },{
     path:"/c",
     element:<CataloguePage/>
+  },{
+    path:"/user",
+    element:<UserProfilePage/>
+  },{
+    path:"/badge",
+    element:<Badges/>
   }
   
 ])

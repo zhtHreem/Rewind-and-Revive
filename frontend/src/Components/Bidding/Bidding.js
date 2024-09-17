@@ -14,7 +14,7 @@ import { Card, CardContent, CardMedia, Typography, Button, Box, Chip, IconButton
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
-import bidProduct from '../BidProduct/BidProduct';
+import bidProduct from '../BidProduct/BidProductHome';
 
 const items = [
   {

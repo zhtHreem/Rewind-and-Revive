@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Grid, Card, CardContent, CardMedia, Typography, Chip, Button } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import chanel from './images/chanel.jpg';
 import LV from './images/LV.jpg';
 import prada from './images/prada.jpg';
@@ -9,6 +10,7 @@ import MahnoorBaloch from './images/MahnoorBaloch.jpg'
 import red from './images/red.jpg'
 import ring from './images/rings.jpg'
 import Layout from '../Layout/layout';
+import biddingProduct from './BiddingProduct';
 const products = [
   {
     id: 1,
@@ -85,6 +87,7 @@ const products = [
 ];
 
 const ProductCard = ({ product }) => {
+  const navigate = useNavigate();
   return (
     <Card sx={{ width: 350, position: 'relative' }}>
       <CardMedia
@@ -125,26 +128,26 @@ const ProductCard = ({ product }) => {
             sx={{ position: 'absolute', top: 8, right: 8 }}
           />
         )}
-    
-          <Button
-            variant="contained"
-            sx={{
-              backgroundColor: '#576F72',
-              mt: 2,
-              '&:hover': {
-                backgroundColor: '#354259',
-              },
-            }}
-          >
-            Place Your Bid
-          </Button>
-      
+
+        <Button
+          onClick={() => navigate('/biddingProduct')}
+          variant="contained"
+          sx={{
+            backgroundColor: '#576F72',
+            mt: 2,
+            '&:hover': {
+              backgroundColor: '#354259',
+            },
+          }}
+        >
+          Place Your Bid
+        </Button>
       </CardContent>
     </Card>
   );
 };
 
-const BidProduct = () => {
+const BidProductHome = () => {
   return (
     <>
     <Layout>
@@ -174,4 +177,4 @@ const BidProduct = () => {
   );
 };
 
-export default BidProduct;
+export default BidProductHome;

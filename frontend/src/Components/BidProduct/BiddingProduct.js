@@ -1,0 +1,132 @@
+import React, { useState } from 'react';
+import { Grid, Box, Typography, Button, Modal, TextField, Paper } from '@mui/material';
+import Layout from '../Layout/layout';
+
+const item = {
+  name: "Ruby Red Jewelry set",
+  description: "This is the product description.",
+  biddingStartTime: "02:00P.M",
+  bidingEndTime: "04:00 P.M",
+  startingPrice: "900",
+  bids: [
+    { name: "User1", bidAmount: "250" },
+    { name: "User2", bidAmount: "220" },
+    { name: "User3", bidAmount: "200" }
+  ]
+};
+
+const BiddingProduct = () => {
+  const [bidAmount, setBidAmount] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [bidders, setBidders] = useState(item.bids);
+
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+  
+  const handlePlaceBid = () => {
+    if (bidAmount) {
+      const newBid = { name: "You", bidAmount };
+      setBidders(prevBids => [newBid, ...prevBids]);
+      setBidAmount('');
+    }
+  };
+
+  return (
+    <Layout>
+      <Box sx={{ flexGrow: 1, padding: 6 }}>
+        <Grid container spacing={10}>
+          {/* Left: Image */}
+          <Grid item xs={12} md={6}>
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              sx={{
+                width: '100%',
+                height: { xs: 300, md: 600, lg: 500 },
+                border: '1px solid #ccc',
+                padding: 1,
+                backgroundColor: '#f9f9f9'
+              }}
+            >
+              <Box
+                component="img"
+                src={require('./images/red.jpg')}
+                alt="Product Image"
+                sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            </Box>
+          </Grid>
+
+          {/* Right: Title and Description */}
+          <Grid item xs={12} md={6}>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <Typography variant="h2">{item.name}</Typography>
+              <Typography variant="body1">{item.description}</Typography>
+
+              {/* Top Bidders Button */}
+              <Button
+                variant="contained"
+                size="medium"
+                sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: "black" } }}
+                onClick={handleOpenModal}
+              >
+                View Top Bidders
+              </Button>
+
+              {/* Modal: List of Bidders */}
+              <Modal open={isModalOpen} onClose={handleCloseModal}>
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    width: 400,
+                    bgcolor: 'background.paper',
+                    borderRadius: 1,
+                    boxShadow: 24,
+                    p: 4,
+                  }}
+                >
+                  <Typography variant="h6" component="h2">Top Bidders</Typography>
+                  <Box sx={{ mt: 2 }}>
+                    {bidders.map((bid, index) => (
+                      <Paper key={index} sx={{ padding: 1, marginBottom: 1 }}>
+                        <Typography>{bid.name}: ${bid.bidAmount}</Typography>
+                      </Paper>
+                    ))}
+                  </Box>
+                </Box>
+              </Modal>
+
+              {/* Input for placing a bid */}
+              <TextField
+                label="Place your bid"
+                variant="outlined"
+                fullWidth
+                value={bidAmount}
+                onChange={(e) => setBidAmount(e.target.value)}
+              />
+              <Button
+                variant="contained"
+                size="medium"
+                sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: "black" } }}
+                onClick={handlePlaceBid}
+              >
+                Place Your Bid
+              </Button>
+            </Box>
+            <Box sx={{ padding: 2, border: '1px solid #ccc', marginTop: 2, textAlign: 'center' }}>
+              <Typography variant="h6">Starting Price: ${item.startingPrice}</Typography>
+              <Typography variant="h6">Bidding Starts at: {item.biddingStartTime}</Typography>
+              <Typography variant="h6">Bidding Ends at: {item.bidingEndTime}</Typography>
+            </Box>
+          </Grid>
+        </Grid>
+      </Box>
+    </Layout>
+  );
+};
+
+export default BiddingProduct;

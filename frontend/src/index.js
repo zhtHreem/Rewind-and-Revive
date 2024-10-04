@@ -6,7 +6,8 @@ import Header from './Components/Header/header';
 import './index.css';
 import App from './App';
 import Navbar from './Components/Navbar/navbar';
-import BidProduct from './Components/BidProduct/BidProduct'
+import BidProductHome from './Components/BidProduct/BidProductHome'
+import BiddingProduct from './Components/BidProduct/BiddingProduct';
 import NewProduct from './Components/Product/createNewProduct';
 import ProductPage from './Components/Product/productPage';//Remove unnecessary paths after updating the pages so that only the relevant pages remain
 import CataloguePage from './Components/Product/catalogue';
@@ -33,7 +34,10 @@ const router = createBrowserRouter([
     element:<ProductPage/>
   },{
     path:"/bidProduct",
-    element:<BidProduct/>
+    element:<BidProductHome/>
+  },{
+    path:"/BiddingProduct",
+    element:<BiddingProduct/>
   },{
     path:"/c",
     element:<CataloguePage/>

@@ -29,7 +29,7 @@ const UserProfilePage = () => {
             </Typography>
 
           </Paper>  
-          <Paper elevation={3} sx={{ marginTop:2,padding: 2, textAlign: 'center' }}>
+          <Paper elevation={3} sx={{ my:2,padding: 2, textAlign: 'center' }}>
             <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
               {/* Example badges */}
              <Badges/>
@@ -38,7 +38,7 @@ const UserProfilePage = () => {
         </Grid>
 
         {/* Right Block */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={8} my={{sm:2,md:0}}>
           <Paper elevation={3} sx={{ padding: 2 }}>
             <Typography variant="h4">User Name</Typography>
             <Typography variant="subtitle1" color="textSecondary">

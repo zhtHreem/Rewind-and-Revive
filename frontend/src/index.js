@@ -12,6 +12,8 @@ import ProductPage from './Components/Product/productPage';//Remove unnecessary 
 import CataloguePage from './Components/Product/catalogue';
 import UserProfilePage from './Components/User/profile';
 import Badges from './Components/User/badges';
+import { LoginProvider } from './Components/Login/logincontext';
+import Login from './Components/Login/login';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -36,11 +38,14 @@ const router = createBrowserRouter([
     path:"/c",
     element:<CataloguePage/>
   },{
-    path:"/user",
+    path:"/profile",
     element:<UserProfilePage/>
   },{
     path:"/badge",
     element:<Badges/>
+  },{
+    path:"/login",
+    element:<Login/>
   }
   
 ])
@@ -52,9 +57,9 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
- 
+   <LoginProvider>
     <RouterProvider router={router}/>
-  
+   </LoginProvider>
   </React.StrictMode>
 );
 

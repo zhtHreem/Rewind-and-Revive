@@ -1,22 +1,26 @@
 import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+
 import { Stack, Link, Box, IconButton, Typography, Button, Drawer } from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu'; // Menu button icon
-
+import { useLogin } from "../Login/logincontext";
 function Navbar() {
+  const navigate = useNavigate();
   const [shoppingCart, setShoppingCart] = useState(false);
   const [login, setLogin] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-
+   const { setLoginOpen } = useLogin();
   const handleCart = () => {
     setShoppingCart(prevState => !prevState);
   };
 
   const handleLogin = () => {
     setLogin(prevState => !prevState);
+    setLoginOpen(false);
   };
 
   const handleDrawerToggle = () => {
@@ -61,8 +65,8 @@ function Navbar() {
         </IconButton>
 
         {!login && (
-          <IconButton>
-            <PersonIcon />
+          <IconButton onClick={()=> navigate("/profile")}>
+            <PersonIcon  />
           </IconButton>
         )}
 
@@ -70,7 +74,7 @@ function Navbar() {
           <SearchIcon fontSize="medium" />
         </IconButton>
 
-        <Button  onClick={handleLogin} variant="contained"  color="primary"  sx={{   backgroundColor: '#85586F','&:hover': { backgroundColor: 'black', }, }} size="small" >
+        <Button  onClick={() => setLoginOpen(true)} variant="contained"  color="primary"  sx={{   backgroundColor: '#85586F','&:hover': { backgroundColor: 'black', }, }} size="small" >
           {login ? "Logout" : "Login"}
         </Button>
         <IconButton  sx={{ display: { xs: 'flex', md: 'none' } }}  onClick={handleDrawerToggle}  >

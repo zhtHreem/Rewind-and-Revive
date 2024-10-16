@@ -96,7 +96,7 @@ const Bidding = () => {
   };
 
   return (
-    <div className="slider-container" style={{ position: 'relative' }}>
+    <div className="slider-container" style={{ position: 'relative'}}>
       <h1>Explore Our Bidding Collection</h1>
       <Slider {...settings}>
         {items.map((item) => (

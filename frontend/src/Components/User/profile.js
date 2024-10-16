@@ -21,7 +21,7 @@ const UserProfilePage = () => {
           <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
             <Avatar
               alt="Profile Image"
-              src={require("./images/woman.png")}
+              src={require("./images/user.png")}
               sx={{ width: 150, height: 150, margin: 'auto' }}
             />
             <Typography variant="h6" sx={{ mt: 2 }}>

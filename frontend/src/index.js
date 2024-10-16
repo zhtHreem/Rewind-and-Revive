@@ -15,6 +15,7 @@ import UserProfilePage from './Components/User/profile';
 import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
+import CollaboratorsSection from './Components/Collaborators/collaborators';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -50,6 +51,9 @@ const router = createBrowserRouter([
   },{
     path:"/login",
     element:<Login/>
+  },{
+    path:"/collaborator",
+    element:<CollaboratorsSection/>
   }
   
 ])

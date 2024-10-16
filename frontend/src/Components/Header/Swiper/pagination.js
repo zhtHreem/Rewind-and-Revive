@@ -50,7 +50,7 @@ export default function Swipe() {
         <SwiperSlide onClick={() => handleSlideClick('/')}>Kids</SwiperSlide>
         <SwiperSlide onClick={() => handleSlideClick('/')}>Accessories</SwiperSlide>
         <SwiperSlide onClick={() => handleSlideClick('/bidProduct')}>Bidding</SwiperSlide>
-        <SwiperSlide onClick={() => handleSlideClick('/')}>Collaborators</SwiperSlide>
+        <SwiperSlide onClick={() => handleSlideClick('/collaborator')}>Collaborators</SwiperSlide>
  
       </Swiper>
     </>

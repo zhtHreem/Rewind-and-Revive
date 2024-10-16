@@ -70,7 +70,7 @@ const Badges = () => {
                   alt={badge.name}
                 />
                 </Card>
-                <CardHeader
+                <CardHeader color='black'
                   subheader={badge.name}
                
                 />
@@ -81,7 +81,7 @@ const Badges = () => {
           ))}
         </Grid>
         <Box sx={{ textAlign: 'center', mt: 2 }}>
-          <Button variant="outlined" onClick={toggleShowMore}>
+          <Button variant="outlined" onClick={toggleShowMore} sx={{backgroundColor:'#85586F',color:"white"}}>
             {showMore ? 'Show Less' : 'Show More'}
           </Button>
         </Box>

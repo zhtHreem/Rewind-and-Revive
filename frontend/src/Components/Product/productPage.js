@@ -11,6 +11,7 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 
 const item = {
+  username: "Seller name",
   name: "Product name",
   price: "200",
   description: "This is the product description.",
@@ -93,8 +94,12 @@ const ProductPage = () => {
           {/* Product Details */}
           <Grid item xs={12} md={6}>
             <Box sx={{ px: 6, display: 'flex', flexDirection: "column", gap: 5 }}>
-              <Typography variant="h2" sx={{ marginBottom: 1 }}>{item.name}</Typography>
-              <Typography variant="h4" sx={{ marginBottom: 2 }}>${item.price}</Typography>
+              <Typography variant="h2" >{item.name}</Typography>
+             
+              <Typography variant="h4"  sx={{ marginBottom: 2 }}>${item.price}</Typography>
+               <Typography variant="overline"sx={{marginLeft:"80%"}}>{item.username}</Typography>
+              
+
               
               <Box sx={{ display: 'flex', gap: 2 }}>
                 <Button variant="contained" size="large" sx={{ width: '100%', backgroundColor: "black", '&:hover': { backgroundColor: "#85586F" } }}>Add to Cart</Button>

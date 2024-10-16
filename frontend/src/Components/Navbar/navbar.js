@@ -32,7 +32,7 @@ function Navbar() {
   };
 
   return (
-    <Box component="navbar" sx={{  position: "sticky",  zIndex: 1200, display: "flex",  paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
+    <Box component="navbar" sx={{  position: "sticky",  zIndex: 2, display: "flex",  paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
       <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
         <Typography variant="h4" className="logo">
           <span style={{ fontWeight: "bold" }}> R</span>

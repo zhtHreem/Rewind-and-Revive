@@ -25,13 +25,13 @@ function Login({ setLogin }) {
     };
 
     return (
-        <Box sx={{ position: 'relative', zIndex: 2,border:"solid grey", backgroundColor: '/*rgba(0, 0, 0, 0.5)*/', width: { xs: "100%", sm: "90%", md: "80%" }, top: { sm: "5%" }, left: { sm: "5%", md: "10%" }, overflow: 'hidden' }}>
-            <Paper sx={{ p: { xs: 3, md: 6 }, height: "80vh",backgroundColor: '#F3F7EC' }} elevation={24}>
+        <Box sx={{ position: 'relative', zIndex: 200,border:"solid grey", backgroundColor: 'rgba(0, 0, 0, 0.5)',boxShadow:20, width: { xs: "100%", sm: "90%", md: "80%" }, top: { sm: "5%" }, left: { sm: "5%", md: "10%" }, overflow: 'hidden' }}>
+            <Paper sx={{ p: { xs: 3, md: 6 }, height: "80vh",backgroundColor: 'white' }} elevation={24}>
                 <IconButton onClick={() => setLogin(false)}>
                     <CloseIcon />
                 </IconButton>
                 <Stack direction="row" sx={{ height: "100%" }}>
-                    <Box sx={{ backgroundColor: "#F3F7EC",borderRight:"dotted" , width: { xs: "55%", sm: "60%" },  display: 'flex',justifyContent:"center",alignItems:"center", position: 'relative', }}>
+                    <Box sx={{ backgroundColor: "white",borderRight:"dotted" , width: { xs: "55%", sm: "60%" },  display: 'flex',justifyContent:"center",alignItems:"center", position: 'relative', }}>
                     
                       <Paper elevation={24} sx={{ backgroundColor: "black", borderRadius: { xs: "0% 100% 9% 91% / 0% 64% 36% 100%", md: '50%' },height:"70%",width:"60%"}}>
                     
@@ -69,7 +69,7 @@ function Login({ setLogin }) {
                             <TextField id="outlined-basic" label="Password" variant="outlined" value={password} onChange={(e) => setPassword(e.target.value)}
                                 InputProps={{ startAdornment: (<LockIcon sx={{ mr: 1 }} />) }} sx={{ paddingBottom: 3 }} />
                             <Typography component={Link} variant="caption" paddingLeft={{ xs: 5, md: 15, lg: 20 }}>Forget Password</Typography>
-                            <Button sx={{backgroundColor: '#3B3486','&:hover': { backgroundColor: 'white',color:"#3B3486" }, color: "white", p: 2, width: "60%" }} onClick={handleLogin}>Log In</Button>
+                            <Button sx={{backgroundColor: '#85586F','&:hover': { backgroundColor: 'white',color:'#85586F' }, color: "white", p: 2, width: "60%" }} onClick={handleLogin}>Log In</Button>
                             <Typography component={Link} variant="caption" onClick={() => setSignup(true)}>Create New Account</Typography>
                         </Stack>
                     )}
@@ -85,7 +85,7 @@ function Login({ setLogin }) {
                                 InputProps={{ startAdornment: (<LockIcon sx={{ mr: 1 }} />) }} sx={{ paddingBottom: 1 }} />
                             <TextField id="outlined-basic" label="Confirm Password" variant="outlined" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)}
                                 InputProps={{ startAdornment: (<LockIcon sx={{ mr: 1 }} />) }} sx={{ paddingBottom: 2 }} />
-                            <Button sx={{backgroundColor: '#3B3486','&:hover': { backgroundColor: 'black', }, color: "white", p: 2, width: "60%" }} onClick={handleSignup}>Sign Up</Button>
+                            <Button sx={{backgroundColor: '#85586F','&:hover': { backgroundColor: '#85586F', }, color: "white", p: 2, width: "60%" }} onClick={handleSignup}>Sign Up</Button>
 
                             <Typography component={Link} variant="caption" onClick={() => setSignup(false)}>Login</Typography>
                         </Stack>

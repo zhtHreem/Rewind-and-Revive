@@ -1,14 +1,17 @@
+// AddCart.js
 import React, { useState } from "react";
 import { Box, IconButton, Grid, Typography, Button, Divider } from "@mui/material";
 import { useNavigate } from 'react-router-dom';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import './style.css';
+import './style.css'; // Import the CSS
 
 const sampleProducts = [
   { id: 1, name: "Casual T-shirt", quantity: 1, price: 10, image: require("./assets/tshirt.jpg") },
   { id: 2, name: "Stylish Jeans", quantity: 2, price: 15, image: require("./assets/jeans.jpg") },
+  { id: 3, name: "Sneakers", quantity: 1, price: 20, image: require("./assets/sneakers.jpg") },
+  { id: 4, name: "Jacket", quantity: 1, price: 30, image: require("./assets/jacket.jpg") },
 ];
 
 function AddCart({ open, onClose }) {
@@ -42,8 +45,8 @@ function AddCart({ open, onClose }) {
         </Grid>
       </Grid>
 
-      {/* Product List */}
-      <Box sx={{ flexGrow: 1, overflowY: 'auto', paddingX: 2 }}>
+      {/* Scrollable Product List */}
+      <Box className="cart-content">
         {products.map(product => (
           <Grid 
             container 

@@ -116,7 +116,7 @@ function AddCart({ open, onClose }) {
           onClick={onClose}
           sx={{ color: "#85586F", borderColor: "#85586F" }}
         >
-          Cancel
+          Cancel Order
         </Button>
         <Button
           variant="contained"

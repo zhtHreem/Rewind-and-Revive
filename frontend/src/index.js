@@ -16,14 +16,20 @@ import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
+<<<<<<< HEAD
 import ContactUs from './Components/ContactUs/ContactUs';
 
+=======
+import ShoppingCart from './Components/ShoppingCart/AddCart'
+import Payment from './Components/Payment/payment';
+>>>>>>> 63c444549bdd90ac20de46925394a5f9285cfead
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
   },
   {
+<<<<<<< HEAD
     path: "/nav",
     element: <Navbar />,
   },
@@ -70,6 +76,46 @@ const router = createBrowserRouter([
   {
     path: "/contact", // <-- Add this route for ContactUs
     element: <ContactUs />,
+=======
+    path:"/nav",
+    element:<Navbar/>
+  },{
+    path:"/header",
+    element:<Header/>
+  },{
+    path:"/new",
+    element:<NewProduct/>
+  },{
+    path:"/product",
+    element:<ProductPage/>
+  },{
+    path:"/bidProduct",
+    element:<BidProductHome/>
+  },{
+    path:"/BiddingProduct",
+    element:<BiddingProduct/>
+  },{
+    path:"/c",
+    element:<CataloguePage/>
+  },{
+    path:"/profile",
+    element:<UserProfilePage/>
+  },{
+    path:"/badge",
+    element:<Badges/>
+  },{
+    path:"/login",
+    element:<Login/>
+  },{
+    path:"/collaborator",
+    element:<CollaboratorsSection/>
+  },{
+    path:"/cart",
+    element:<ShoppingCart/>
+  },{
+    path:"/payment",
+    element:<Payment/>
+>>>>>>> 63c444549bdd90ac20de46925394a5f9285cfead
   }
 ]);
 

@@ -16,6 +16,8 @@ import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
+import ShoppingCart from './Components/ShoppingCart/AddCart'
+import Payment from './Components/Payment/payment';
 const router = createBrowserRouter([
   {
     path:"/",
@@ -54,6 +56,12 @@ const router = createBrowserRouter([
   },{
     path:"/collaborator",
     element:<CollaboratorsSection/>
+  },{
+    path:"/cart",
+    element:<ShoppingCart/>
+  },{
+    path:"/payment",
+    element:<Payment/>
   }
   
 ])

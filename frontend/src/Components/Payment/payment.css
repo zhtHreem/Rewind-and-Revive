@@ -1,0 +1,72 @@
+.payment-container {
+  padding: 1.5rem;
+  margin: 0 auto;
+  max-width: 500px;
+  background-color: #ffffff;
+  border-radius: 8px;
+
+  /* Slide the container to the left */
+  transform: translateX(-25px);
+  transition: transform 0.3s ease;
+}
+
+.payment-title {
+  font-weight: bold;
+  color: #85586F;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.payment-table {
+  width: 100%;
+  border-collapse: collapse; /* Remove gaps between borders */
+}
+
+.payment-row {
+  border-bottom: 1px solid #ddd; /* Row border */
+}
+
+.product-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.product-name {
+  font-size: 1rem;
+  padding-left: 0.5rem;
+}
+
+.product-price {
+  font-size: 1rem;
+  text-align: right;
+  padding-right: 0.5rem;
+}
+
+.total-label, .total-price {
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-align: right;
+}
+
+.back-to-cart-btn, .pay-now-btn {
+  color: #85586F;
+  border-color: #85586F;
+}
+
+.pay-now-btn {
+  background-color: #85586F;
+}
+
+.pay-now-btn:hover {
+  background-color: #6A4C58;
+}
+
+/* Add spacing and alignment */
+.payment-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}

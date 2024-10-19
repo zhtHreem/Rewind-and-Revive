@@ -1,149 +1,187 @@
-// Dashboard.js
-import React from 'react';
-import { Box, Grid, Paper, Typography } from '@mui/material';
+import React, { useMemo } from 'react';
+import { Box, Grid, Paper, Typography, LinearProgress, Divider } from '@mui/material';
+import CountUp from 'react-countup'; // For animated number display
+import { Line, Doughnut } from 'react-chartjs-2'; // Import Line and Doughnut Chart components from react-chartjs-2
+import { Chart, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; // Ensure proper registration of chart elements
 import './Dashboard.css';
 
-const Dashboard = ({ stats }) => {
+// Register necessary chart components to prevent re-rendering issues
+Chart.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+// Rating bar component with linear progress
+const RatingBar = ({ label, value, total }) => {
+  const percentage = (value / total) * 100;
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'center', my: 1 }}>
+      <Typography variant="body2" sx={{ width: '30px', fontWeight: 500 }}>{label}★</Typography>
+      <LinearProgress
+        variant="determinate"
+        value={percentage}
+        sx={{
+          flex: 1,
+          mx: 1,
+          backgroundColor: '#f0f0f0',
+          '& .MuiLinearProgress-bar': {
+            backgroundColor: '#ffc107',
+          },
+        }}
+      />
+      <Typography variant="body2" sx={{ width: '40px', fontWeight: 500 }}>{value}</Typography>
+    </Box>
+  );
+};
+
+// Use memoization to avoid unnecessary re-renders of charts
+const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {}, topSellerRank = 0 }) => {
   const {
-    productsSold,
-    itemsBought,
-    totalSpent,
-    totalEarned,
-    totalListed,
-    likesReceived,
-    starRatings,
+    productsSold = 0,
+    totalListed = 0,
+    itemsBought = 0,
+    totalSpent = 0,
+    totalEarned = 0,
+    likesReceived = 0,
   } = stats;
 
-  // Seller badge logic and next milestone
-  let sellerBadge = '';
-  let nextSellerMilestone = 10 - productsSold % 10;
-  if (productsSold >= 100) {
-    sellerBadge = 'Market Leader / Popularity Pro';
-    nextSellerMilestone = 0; // Maxed out
-  } else if (productsSold >= 50) {
-    sellerBadge = 'Rising Star';
-    nextSellerMilestone = 100 - productsSold;
-  } else if (productsSold >= 10) {
-    sellerBadge = 'Starter Seller';
-    nextSellerMilestone = 50 - productsSold;
-  }
+  const totalReviews = Object.values(reviewsData).reduce((acc, val) => acc + val, 0); // Sum of all star reviews
+  const averageRating = (
+    (5 * reviewsData.fiveStar + 
+    4 * reviewsData.fourStar + 
+    3 * reviewsData.threeStar + 
+    2 * reviewsData.twoStar + 
+    1 * reviewsData.oneStar) / totalReviews
+  ).toFixed(1); // Calculate weighted average rating
 
-  // Likes badge logic and next milestone
-  let popularityBadge = '';
-  let nextLikesMilestone = 500 - likesReceived;
-  if (likesReceived >= 500) popularityBadge = 'Top Seller';
+  // Memoize salesData to prevent unnecessary recalculations
+  const salesData = useMemo(() => ({
+    labels: monthlySales.map((sale) => sale.month), // Assuming 'monthlySales' contains month and sales value
+    datasets: [
+      {
+        label: 'Monthly Sales',
+        data: monthlySales.map((sale) => sale.value),
+        borderColor: '#42a5f5',
+        fill: false,
+        tension: 0.4,
+      },
+    ],
+  }), [monthlySales]);
 
-  // Ratings badge logic and next milestone
-  let ratingBadge = starRatings >= 5 ? 'Customer Choice' : '';
-  let nextRatingMilestone = 5 - starRatings;
-
-  // User badge logic and next milestone
-  let userBadge = '';
-  let nextBuyerMilestone = 1 - itemsBought;
-  if (itemsBought >= 25) {
-    userBadge = 'Loyal Shopper';
-    nextBuyerMilestone = 0; // Maxed out
-  } else if (itemsBought >= 10) {
-    userBadge = 'Frequent Buyer';
-    nextBuyerMilestone = 25 - itemsBought;
-  } else if (itemsBought >= 1) {
-    userBadge = 'First Purchase';
-    nextBuyerMilestone = 10 - itemsBought;
-  }
+  // Memoize donut chart data for products sold vs remaining inventory
+  const donutData = useMemo(() => ({
+    labels: ['Sold', 'Remaining'],
+    datasets: [
+      {
+        data: [productsSold, totalListed - productsSold],
+        backgroundColor: ['#66bb6a', '#ef5350'],
+        hoverBackgroundColor: ['#81c784', '#e57373'],
+      },
+    ],
+  }), [productsSold, totalListed]);
 
   return (
     <Box className="dashboard-container">
       <Grid container spacing={3}>
-        {/* Seller Stats */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper effect-section same-size">
-            <Typography variant="h6">Products Sold</Typography>
-            <Typography variant="h4" className="dashboard-value">{productsSold}</Typography>
-            <Typography variant="subtitle2">Out of {totalListed} Listed</Typography>
-            {sellerBadge && (
-              <Typography variant="subtitle2" className="badge-earned">
-                {sellerBadge} Badge Earned!
-              </Typography>
-            )}
-            <Typography variant="caption" className="milestone-text">
-              {nextSellerMilestone > 0
-                ? `Need ${nextSellerMilestone} more sales for the next badge`
-                : 'Max milestone achieved!'}
+
+        {/* Likes Count */}
+        <Grid item xs={12} sm={4} md={4}>
+          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ mb: 2 }}>Likes Received</Typography>
+            <Typography variant="h4" className="dashboard-value">
+              <CountUp end={likesReceived} duration={2.5} /> {/* CountUp for likes */}
             </Typography>
           </Paper>
         </Grid>
 
-        {/* Likes and Ratings Stats */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper effect-section same-size">
-            <Typography variant="h6">Likes Received</Typography>
-            <Typography variant="h4" className="dashboard-value">{likesReceived}</Typography>
-            {popularityBadge && (
-              <Typography variant="subtitle2" className="badge-earned">
-                {popularityBadge} Badge Earned!
-              </Typography>
-            )}
-            <Typography variant="caption" className="milestone-text">
-              {nextLikesMilestone > 0
-                ? `Need ${nextLikesMilestone} more likes for the next badge`
-                : 'Max milestone achieved!'}
+        {/* Star Reviews Summary */}
+        <Grid item xs={12} sm={4} md={4}>
+          <Paper className="dashboard-paper equal-height" sx={{ padding: 3 }}>
+            <Typography variant="h6">Audience Rating Summary</Typography>
+            {/* Display the average rating and total reviews count */}
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+              <Box>
+                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{averageRating}</Typography>
+                <Typography variant="body2" color="textSecondary">★ {totalReviews} ratings</Typography>
+              </Box>
+            </Box>
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Rating Bars */}
+            <Box>
+              <RatingBar label="5" value={reviewsData.fiveStar} total={totalReviews} />
+              <RatingBar label="4" value={reviewsData.fourStar} total={totalReviews} />
+              <RatingBar label="3" value={reviewsData.threeStar} total={totalReviews} />
+              <RatingBar label="2" value={reviewsData.twoStar} total={totalReviews} />
+              <RatingBar label="1" value={reviewsData.oneStar} total={totalReviews} />
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* User's Top Seller Rank */}
+        <Grid item xs={12} sm={4} md={4}>
+          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center' }}>
+            <Typography variant="h6">Top Seller Position</Typography>
+            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
+              {`Top ${topSellerRank}%`}
             </Typography>
           </Paper>
         </Grid>
 
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper effect-section same-size">
-            <Typography variant="h6">5-Star Ratings</Typography>
-            <Typography variant="h4" className="dashboard-value">{starRatings}</Typography>
-            {ratingBadge && (
-              <Typography variant="subtitle2" className="badge-earned">
-                {ratingBadge} Badge Earned!
-              </Typography>
-            )}
-            <Typography variant="caption" className="milestone-text">
-              {nextRatingMilestone > 0
-                ? `Need ${nextRatingMilestone} more 5-star ratings for next milestone`
-                : 'Max milestone achieved!'}
-            </Typography>
+        {/* Monthly Sales Line Graph */}
+        <Grid item xs={12} sm={12} md={12}>
+          <Paper className="dashboard-paper" sx={{ padding: 3 }}>
+            <Typography variant="h6">Monthly Sales Trend</Typography>
+            <Line data={salesData} /> {/* Line graph for monthly sales */}
           </Paper>
         </Grid>
 
-        {/* User Stats */}
+        {/* Products Sold Donut Chart */}
         <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper effect-section same-size">
+          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
+            <Typography variant="h6" sx={{ marginBottom: '10px' }}>Sold vs Inventory</Typography>
+            <Doughnut data={donutData} /> {/* Donut chart for sold vs remaining inventory */}
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="body2" sx={{ display: 'inline-block', width: '100%', whiteSpace: 'nowrap' }}>
+              </Typography>
+              <Typography variant="body2" sx={{ marginTop: '2px', display: 'inline-block', width: '100%' }}>
+                {productsSold} sold out of {totalListed} listed
+              </Typography>
+            </Box>
+          </Paper>
+        </Grid>
+
+        {/* Items Bought */}
+        <Grid item xs={12} sm={6} md={3}>
+          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Items Bought</Typography>
-            <Typography variant="h4" className="dashboard-value">{itemsBought}</Typography>
-            {userBadge && (
-              <Typography variant="subtitle2" className="badge-earned">
-                {userBadge} Badge Earned!
-              </Typography>
-            )}
-            <Typography variant="caption" className="milestone-text">
-              {nextBuyerMilestone > 0
-                ? `Need ${nextBuyerMilestone} more purchases for the next badge`
-                : 'Max milestone achieved!'}
+            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
+              {itemsBought}
             </Typography>
           </Paper>
         </Grid>
 
         {/* Total Earned */}
         <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper text-effect-section same-size">
+          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Earned</Typography>
-            <Typography variant="h4" className="text-effect">${totalEarned}</Typography>
+            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
+              ${totalEarned}
+            </Typography>
           </Paper>
         </Grid>
 
         {/* Total Spent */}
         <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper text-effect-section same-size">
+          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Spent</Typography>
-            <Typography variant="h4" className="text-effect">${totalSpent}</Typography>
+            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
+              ${totalSpent}
+            </Typography>
           </Paper>
         </Grid>
+
       </Grid>
     </Box>
   );
-};
+});
 
 export default Dashboard;

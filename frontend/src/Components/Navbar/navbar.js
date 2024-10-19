@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-
 import { Stack, Link, Box, IconButton, Typography, Button, Drawer } from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
@@ -8,14 +7,20 @@ import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu'; // Menu button icon
 import { useLogin } from "../Login/logincontext";
+import AddCart from "../ShoppingCart/AddCart";
+
 function Navbar() {
   const navigate = useNavigate();
   const [shoppingCart, setShoppingCart] = useState(false);
   const [login, setLogin] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
    const { setLoginOpen } = useLogin();
-  const handleCart = () => {
-    setShoppingCart(prevState => !prevState);
+   const handleCartOpen = () => {
+    setShoppingCart(true);
+  };
+
+  const handleCartClose = () => {
+    setShoppingCart(false);
   };
 
   const handleLogin = () => {
@@ -32,6 +37,7 @@ function Navbar() {
   };
 
   return (
+    <>
     <Box component="navbar" sx={{  position: "sticky",  zIndex: 2, display: "flex",  paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
       <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
         <Typography variant="h4" className="logo">
@@ -60,7 +66,7 @@ function Navbar() {
       </Stack>
 
       <Stack direction="row" alignItems="center" spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 4 }}>
-        <IconButton onClick={handleCart}>
+        <IconButton onClick={handleCartOpen}>
           {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
         </IconButton>
 
@@ -99,6 +105,8 @@ function Navbar() {
         </Stack>
       </Drawer>
     </Box>
+    {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />}
+    </>
   );
 }
 

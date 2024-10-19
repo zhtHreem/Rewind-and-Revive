@@ -16,47 +16,62 @@ import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
+import ContactUs from './Components/ContactUs/ContactUs';
+
 const router = createBrowserRouter([
   {
-    path:"/",
-    element:<App/>
+    path: "/",
+    element: <App />,
   },
   {
-    path:"/nav",
-    element:<Navbar/>
-  },{
-    path:"/header",
-    element:<Header/>
-  },{
-    path:"/new",
-    element:<NewProduct/>
-  },{
-    path:"/product",
-    element:<ProductPage/>
-  },{
-    path:"/bidProduct",
-    element:<BidProductHome/>
-  },{
-    path:"/BiddingProduct",
-    element:<BiddingProduct/>
-  },{
-    path:"/c",
-    element:<CataloguePage/>
-  },{
-    path:"/profile",
-    element:<UserProfilePage/>
-  },{
-    path:"/badge",
-    element:<Badges/>
-  },{
-    path:"/login",
-    element:<Login/>
-  },{
-    path:"/collaborator",
-    element:<CollaboratorsSection/>
+    path: "/nav",
+    element: <Navbar />,
+  },
+  {
+    path: "/header",
+    element: <Header />,
+  },
+  {
+    path: "/new",
+    element: <NewProduct />,
+  },
+  {
+    path: "/product",
+    element: <ProductPage />,
+  },
+  {
+    path: "/bidProduct",
+    element: <BidProductHome />,
+  },
+  {
+    path: "/BiddingProduct",
+    element: <BiddingProduct />,
+  },
+  {
+    path: "/c",
+    element: <CataloguePage />,
+  },
+  {
+    path: "/profile",
+    element: <UserProfilePage />,
+  },
+  {
+    path: "/badge",
+    element: <Badges />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/collaborator",
+    element: <CollaboratorsSection />,
+  },
+  {
+    path: "/contact", // <-- Add this route for ContactUs
+    element: <ContactUs />,
   }
-  
-])
+]);
 
 
 

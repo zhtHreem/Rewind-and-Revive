@@ -16,72 +16,19 @@ import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
-<<<<<<< HEAD
 import ShoppingCart from './Components/ShoppingCart/AddCart'
 import Payment from './Components/Payment/payment';
 import Confirmation from './Components/Payment/Confirmation'
-=======
 import ContactUs from './Components/ContactUs/ContactUs'; // Correct import for ContactUs
 import ShoppingCart from './Components/ShoppingCart/AddCart'; // Correct import for ShoppingCart
 import Payment from './Components/Payment/payment'; // Correct import for Payment
 
->>>>>>> cc18b60f9d72d0aa31dbd0d2ff72090682dbdfa9
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
   },
   {
-<<<<<<< HEAD
-    path:"/nav",
-    element:<Navbar/>
-  },{
-    path:"/header",
-    element:<Header/>
-  },{
-    path:"/new",
-    element:<NewProduct/>
-  },{
-    path:"/product",
-    element:<ProductPage/>
-  },{
-    path:"/bidProduct",
-    element:<BidProductHome/>
-  },{
-    path:"/BiddingProduct",
-    element:<BiddingProduct/>
-  },{
-    path:"/c",
-    element:<CataloguePage/>
-  },{
-    path:"/profile",
-    element:<UserProfilePage/>
-  },{
-    path:"/badge",
-    element:<Badges/>
-  },{
-    path:"/login",
-    element:<Login/>
-  },{
-    path:"/collaborator",
-    element:<CollaboratorsSection/>
-  },{
-    path:"/cart",
-    element:<ShoppingCart/>
-  },{
-    path:"/payment",
-    element:<Payment/>
-  },{
-    path:"/Confirmation",
-    element:<Confirmation/>
-  }
-  
-])
-
-
-
-
-=======
     path: "/nav",
     element: <Navbar />,
   },
@@ -138,7 +85,6 @@ const router = createBrowserRouter([
     element: <Payment />, // Payment route
   },
 ]);
->>>>>>> cc18b60f9d72d0aa31dbd0d2ff72090682dbdfa9
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

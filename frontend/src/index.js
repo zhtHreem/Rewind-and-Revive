@@ -84,6 +84,11 @@ const router = createBrowserRouter([
     path: "/payment",
     element: <Payment />, // Payment route
   },
+  {
+    path: "/confirmation",
+    element: <Confirmation />,
+  }
+
 ]);
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

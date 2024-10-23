@@ -18,6 +18,7 @@ import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
 import ShoppingCart from './Components/ShoppingCart/AddCart'
 import Payment from './Components/Payment/payment';
+import Confirmation from './Components/Payment/Confirmation'
 const router = createBrowserRouter([
   {
     path:"/",
@@ -62,6 +63,9 @@ const router = createBrowserRouter([
   },{
     path:"/payment",
     element:<Payment/>
+  },{
+    path:"/Confirmation",
+    element:<Confirmation/>
   }
   
 ])

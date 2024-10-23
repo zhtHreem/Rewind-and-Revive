@@ -16,12 +16,10 @@ import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
-import ShoppingCart from './Components/ShoppingCart/AddCart'
-import Payment from './Components/Payment/payment';
 import Confirmation from './Components/Payment/Confirmation'
 import ContactUs from './Components/ContactUs/ContactUs'; // Correct import for ContactUs
-import ShoppingCart from './Components/ShoppingCart/AddCart'; // Correct import for ShoppingCart
-import Payment from './Components/Payment/payment'; // Correct import for Payment
+import Cart from './Components/ShoppingCart/AddCart';
+import Payment from './Components/Payment/payment'; 
 
 const router = createBrowserRouter([
   {
@@ -78,7 +76,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/cart",
-    element: <ShoppingCart />, // ShoppingCart route
+    element: <Cart />, // ShoppingCart route
   },
   {
     path: "/payment",

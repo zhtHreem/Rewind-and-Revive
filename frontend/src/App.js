@@ -1,19 +1,41 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
 import './App.css';
 import Header from './Components/Header/header';
 import Bidding from './Components/Bidding/Bidding';
 import Layout from './Components/Layout/layout';
 import LimitedTimeDeals from './Components/LimitedTimeDeals/limitedtimedeals';
 import PopularFabricsSection from './Components/MostPopularItem/mostPopular';
+import Chatbot from './Components/Chatbot/Chatbot';  // Import Chatbot component
+import robotIcon from './assets/robot-svgrepo-com.svg'; // Import robot SVG
+
 function App() {
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+
+  const toggleChatWindow = () => {
+    setIsChatbotOpen(!isChatbotOpen); // Toggle chatbot visibility
+  };
+
   return (
     <div className="App">
-        <Layout>
-        <Header/>
-        <LimitedTimeDeals/>
-        <PopularFabricsSection/>
-        <Bidding/>
-        </Layout>
+      <Layout>
+        <Header />
+        <LimitedTimeDeals />
+        <PopularFabricsSection />
+        <Bidding />
+
+        {/* Robot Icon with Dialog Box */}
+        <div className="robot-icon-container" onClick={toggleChatWindow}>
+          <img src={robotIcon} alt="Robot Icon" className="robot-icon" />
+          
+          {/* New dialog box */}
+          <div className="dialog_box bottom">
+            <p>I'm your fashion assistant</p>
+          </div>
+        </div>
+
+        {/* Chatbot Component */}
+        {isChatbotOpen && <Chatbot toggleChatWindow={toggleChatWindow} />}
+      </Layout>
     </div>
   );
 }

@@ -8,13 +8,19 @@ import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu'; // Menu button icon
 import { useLogin } from "../Login/logincontext";
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AddCart from "../ShoppingCart/AddCart";
+import AddIcon from '@mui/icons-material/Add';
+import NewProduct from "../Product/createNewProduct";
 
 function Navbar() {
   const navigate = useNavigate();
   const [shoppingCart, setShoppingCart] = useState(false);
+  const [notifications, setNotifications] = useState(false);
   const [login, setLogin] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const[addProduct,setAddProduct]=useState(false);
   const { setLoginOpen } = useLogin();
 
   const handleCartOpen = () => {
@@ -32,6 +38,9 @@ function Navbar() {
 
   const handleDrawerToggle = () => {
     setDrawerOpen(prevState => !prevState);
+  };
+  const handleAddProductClick = () => {
+    setAddProduct(true); // Set addProduct to true when the button is clicked
   };
 
   const performSearch = () => {
@@ -71,16 +80,30 @@ function Navbar() {
           </Link>
         </Stack>
 
-        <Stack direction="row" alignItems="center" spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 4 }}>
+        <Stack direction="row" alignItems="center" sx={{position:"relative"}}spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 4 }}>
           <IconButton onClick={handleCartOpen}>
             {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
           </IconButton>
-
+          <IconButton onClick={handleAddProductClick}>
+             <AddIcon/>
+         {/*  {addProduct &&(
+              <NewProduct setAddProduct={setAddProduct}/>
+            )             
+            }
+            */} 
+          </IconButton>
           {!login && (
+            <>
             <IconButton onClick={() => navigate("/profile")}>
               <PersonIcon />
             </IconButton>
+
+            <IconButton>
+                 {notifications ? <NotificationsIcon />: <NotificationsNoneIcon />  }
+            </IconButton>
+            </>
           )}
+              
 
           <IconButton onClick={performSearch}>
             <SearchIcon fontSize="medium" />

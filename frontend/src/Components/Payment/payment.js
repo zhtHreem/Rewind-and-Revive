@@ -53,7 +53,7 @@ function Payment() {
       <Box className="payment-buttons">
         <Button
           variant="outlined"
-          onClick={() => navigate("/cart")}
+          onClick={() => navigate("/c")}
           className="back-to-cart-btn"
           sx={{ color: "#85586F", borderColor: "#85586F" }}
         >

@@ -36,7 +36,7 @@ const tags = {
   };
    
 
-function NewProduct({ /*setAddProduct*/ }){
+function NewProduct({ setAddProduct =true }){
       const [detail,setDetail]=useState("");
       const[tagSelection,setTags]=useState(false);
       const [description,setDescription]=useState("");
@@ -121,10 +121,10 @@ function NewProduct({ /*setAddProduct*/ }){
     
     
     return(
-         <Box  sx={{position: 'absolute', zIndex: 4,backgroundColor: 'rgba(0, 0, 0, 0.5)',width:"80%",top:"10%",left:"10%"}}>
+         <Box  sx={{position: 'absolute', zIndex: 4,backgroundColor: 'rgba(0, 0, 0, 0.5)',width:"80%",top:"10%",left:"10%",overflowY: "auto",}}>
             <Paper sx={{p:{xs:3,sm:6}}} elevation={24}>
 
-                    <IconButton /*onClick={() => setAddProduct(false)}*/> {/*To close the product page*/}
+                    <IconButton onClick={() => setAddProduct(false)}> {/*To close the product page*/}
                         <CloseIcon/>
                     </IconButton>
                 

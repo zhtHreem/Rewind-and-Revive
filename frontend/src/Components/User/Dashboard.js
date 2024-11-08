@@ -83,7 +83,7 @@ const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {},
 
         {/* Likes Count */}
         <Grid item xs={12} sm={4} md={4}>
-          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center' }}>
+          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center'}}>
             <Typography variant="h6" sx={{ mb: 2 }}>Likes Received</Typography>
             <Typography variant="h4" className="dashboard-value">
               <CountUp end={likesReceived} duration={2.5} /> {/* CountUp for likes */}
@@ -96,14 +96,14 @@ const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {},
           <Paper className="dashboard-paper equal-height" sx={{ padding: 3 }}>
             <Typography variant="h6">Audience Rating Summary</Typography>
             {/* Display the average rating and total reviews count */}
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mt: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{averageRating}</Typography>
-                <Typography variant="body2" color="textSecondary">★ {totalReviews} ratings</Typography>
+                <Typography variant="body2" color="textSecondary" >★ {totalReviews} ratings</Typography>
               </Box>
             </Box>
 
-            <Divider sx={{ my: 2 }} />
+            <Divider sx={{ my: 1}} />
 
             {/* Rating Bars */}
             <Box>

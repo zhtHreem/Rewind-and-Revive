@@ -1,5 +1,5 @@
 import React from 'react';
-import { Container, Grid, Paper, Typography, Avatar, Tabs, Tab, Box } from '@mui/material';
+import { Container, Grid, Paper, Typography, Avatar, Tabs, Tab, Box, Stack, IconButton } from '@mui/material';
 import Badges from './badges';
 import Layout from '../Layout/layout';
 import Dashboard from './Dashboard'; // Import Dashboard component
@@ -64,6 +64,7 @@ const UserProfilePage = () => {
                 <Typography variant="h6" sx={{ mt: 2 }}>
                   User
                 </Typography>
+             
               </Paper>
               <Paper elevation={3} sx={{ my: 2, padding: 2, textAlign: 'center' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>

@@ -20,6 +20,8 @@ import Confirmation from './Components/Payment/Confirmation'
 import ContactUs from './Components/ContactUs/ContactUs'; // Correct import for ContactUs
 import Cart from './Components/ShoppingCart/AddCart';
 import Payment from './Components/Payment/payment'; 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
 
 const router = createBrowserRouter([
   {
@@ -35,8 +37,8 @@ const router = createBrowserRouter([
     element: <Header />,
   },
   {
-    path: "/new",
-    element: <NewProduct />,
+    path: "/createproduct",
+    element: <NewProduct/>,
   },
   {
     path: "/product",
@@ -92,9 +94,12 @@ const router = createBrowserRouter([
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
+      <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
+
     <LoginProvider>
       <RouterProvider router={router} />
     </LoginProvider>
+       </GoogleOAuthProvider>
   </React.StrictMode>
 );
 

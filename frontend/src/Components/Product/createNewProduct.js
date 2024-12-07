@@ -1,25 +1,11 @@
 import React, { useState, useEffect  } from "react";
-import { Paper,Box,TextField,IconButton,CardMedia,Typography,Stack,Checkbox,FormControl, FormLabel, FormControlLabel, Button,Grid,Radio, RadioGroup } from "@mui/material";
-
-import CloseIcon from '@mui/icons-material/Close';
+import { Paper,Box,TextField,IconButton,Dialog,DialogActions,DialogTitle,DialogContent,CardMedia,Typography,Stack,Checkbox,FormControl, FormLabel, FormControlLabel, Button,Grid,Radio, RadioGroup } from "@mui/material";
+import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import AddIcon from '@mui/icons-material/Add';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
-
-
-
-
-
-const tags = {
-    "Style": ["Casual", "Formal", "Business", "Streetwear", "Vintage"],
-    "Color": ["Black", "White", "Blue", "Red", "Green"],
-    "Fit Options" : ["Slim Fit", "Regular Fit", "Loose Fit", "Relaxed Fit", "Skinny Fit", "Oversized"],
-    "seasonOptions" :["Summer", "Winter", "Spring", "Fall", "All-season"],
-    "occasionOptions" : ["Casual", "Workwear", "Party", "Wedding", "Outdoor", "Gym", "Travel", "Evening", "Lounge"],
-
-  };
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import Layout from "../Layout/layout";
 
   const category = {
     "top": {
@@ -30,6 +16,15 @@ const tags = {
       categories: ["Pants", "Jeans", "Skirt", "Shorts", "Leggings", "Trousers"],
       materials: ["Denim", "Chino", "Corduroy", "Wool", "Cotton", "Linen"]
     },
+    "top/bottom": {
+    categories: [
+      "Shirt", "Blouse", "Sweater", "Jacket", "Cardigan", "Tank Top",
+      "Pants", "Jeans", "Skirt", "Shorts", "Leggings", "Trousers"
+    ],
+    materials: [
+      "Cotton", "Wool", "Silk", "Polyester", "Linen", "Rayon", 
+      "Denim", "Chino", "Corduroy"
+    ]},
     "accessories": {
       categories: ["Bag", "Belt", "Scarf", "Hat", "Watch", "Gloves"]
     }
@@ -37,96 +32,224 @@ const tags = {
    
 
 function NewProduct({ setAddProduct =true }){
-      const [detail,setDetail]=useState("");
-      const[tagSelection,setTags]=useState(false);
-      const [description,setDescription]=useState("");
-      const [image, setImage] = useState(null);
-      const [imageFile, setImageFile] = useState(null);
-      const [userId, setUserId] = useState(null);
+        const [images, setImages] = useState([]);
+        const [imageFiles, setImageFiles] = useState([]);
+        const[color,setColor]=useState("");
+        const [description,setDescription]=useState("");
+        const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+        const [customAddType, setCustomAddType] = useState(''); // 'category' or 'material'
+        const [customValue, setCustomValue] = useState('');
+        
       const [name, setName] = useState("");
       const [price, setPrice] = useState("");
       const [selectedOption, setSelectedOption] = useState("top");
-      const [isExpanded, setIsExpanded] = useState(false); {/*Find other solution for spacing (change it)*/}
-     
+      const [isExpanded, setIsExpanded] = useState(false); 
+      const [selectedCategories, setSelectedCategories] = useState([]);
+      const [selectedMaterials, setSelectedMaterials] = useState([]);
+
+      const [topSizes, setTopSizes] = useState({
+        waist: '',
+        armLength: '',
+        hips: '',
+        shoulderWidth: '',
+        bustChest: '',
+        neckCircumference: ''
+    });
+
+    const [bottomSizes, setBottomSizes] = useState({
+        waist: '',
+        hips: '',
+        inseam: '',
+        thighLegOpening: '',
+        rise: ''
+    });
+     const handleTopSizeChange = (e) => {
+        setTopSizes({
+            ...topSizes,
+            [e.target.name]: e.target.value
+        });
+    };
+
+    const handleBottomSizeChange = (e) => {
+        setBottomSizes({
+            ...bottomSizes,
+            [e.target.name]: e.target.value
+        });
+    };
 
 
-      useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem('user'));
-        if (storedUser) {
-            setUserId(storedUser.id);
+   
+
+
+
+        const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Validate required fields
+        if (!name || !price || !color || !selectedOption) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Incomplete Information',
+                text: 'Please fill in all required fields.'
+            });
+            return;
         }
-    }, []); 
-    
-    useEffect(() => {
-        console.log("userid", userId);
-    }, [userId]); 
-    
+
+        // Prepare form data
+        const formData = new FormData();
+        
+        // Add text fields
+        formData.append('name', name);
+      
+        formData.append('price', price);
+        formData.append('color', color);
+        formData.append('description', description);
+        formData.append('type', selectedOption);
+ 
+        // Add image files
+        imageFiles.forEach((file, index) => {
+            formData.append('images', file);
+            console.log('f',file)
+        });
+
+         // Add selected categories and materials
+        formData.append('categories', JSON.stringify(selectedCategories));
+         formData.append('materials', JSON.stringify(selectedMaterials));
 
 
-    const handleEnter = async () => {
+       
+        // Add sizes based on selected type
+        if (selectedOption === 'top' || selectedOption === 'top/bottom') {
+            formData.append('topSizes', JSON.stringify(topSizes));
+        }
+
+        if (selectedOption === 'bottom' || selectedOption === 'top/bottom') {
+            formData.append('bottomSizes', JSON.stringify(bottomSizes));
+        }
+        // formData.forEach((value, key) => {
+        //   console.log(`${key}: ${value}`);
+        //  });
+
+
         try {
-
-            const formData = new FormData();
-            
-           
-
-            formData.append('user', userId);
-                formData.append('name', name);
-                formData.append('description', description);
-                formData.append(`detail`, detail);
-                formData.append('image', imageFile);
-    
-
-            for (let pair of formData.entries()) {
-                if (pair[0] === 'image') {
-                    console.log(pair[0] + 'image: ' + pair[1].name); 
-                } else {
-                    console.log(pair[0] + ': ' + pair[1]);
-                }
-            }
-            const response = await axios.post('https://localhost:3500/api/products', formData, {
+ 
+            const response = await axios.post('http://localhost:5000/api/product/create', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                },
+                    'Authorization': localStorage.getItem('token') 
+                }
             });
-            console.log('Recipe created successfully:', response.data);
-    
+
+            // Success handling
             Swal.fire({
                 icon: 'success',
-                title: 'Success!',
-                text: 'Recipe created successfully!',
+                title: 'Product Added',
+                text: 'Your product has been successfully added!'
+            });
+
+            // Reset form or close dialog
+            resetForm();
+        } catch (error) {
+            // Error handling
+            Swal.fire({
+                icon: 'error',
+                title: 'Submission Failed',
+                text: error.response?.data?.message || 'Failed to add product. Please try again.'
+            });
+            console.error('Product submission error:', error);
+        }
+    }; const resetForm = () => {
+        // Reset all form fields
+        setName('');
+        setPrice('');
+        setColor('');
+        setDescription('');
+        setImages([]);
+        setImageFiles([]);
+        setTopSizes({
+            waist: '', armLength: '', hips: '', 
+            shoulderWidth: '', bustChest: '', 
+            neckCircumference: ''
+        });
+        setBottomSizes({
+            waist: '', hips: '', inseam: '', 
+            thighLegOpening: '', rise: ''
+        });
+    };
+       const handleImageChange = (event) => {
+        const newFiles = Array.from(event.target.files);
+        
+        // Limit to 5 images
+        if (images.length + newFiles.length > 5) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Image Limit',
+                text: 'You can only upload up to 5 images.',
                 confirmButtonText: 'OK'
             });
-    
-            /*setAddProduct(false); // Close the form on success*/
-        } catch (error) {
-            console.error('Error creating recipe:', error);
+            return;
         }
-    };
-    
-    
 
-     const handleImageChange = (event) => {
-        console.log("handleImageChange triggered");
-            const file = event.target.files[0];
-            console.log("Image Data URL:", event.target.files[0]); 
-            if (file) {
-                setImageFile(file);
-                const imageURL = URL.createObjectURL(file);
-                setImage(imageURL);
-                
-            }
-        };
+        const newImages = newFiles.map(file => URL.createObjectURL(file));
+        
+        setImageFiles(prevFiles => [...prevFiles, ...newFiles]);
+        setImages(prevImages => [...prevImages, ...newImages]);
+    };
+
+    const removeImage = (index) => {
+        setImages(prevImages => prevImages.filter((_, i) => i !== index));
+        setImageFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    };
+
+      
+
+   const handleAddCustom = () => {
+        if (!customValue.trim()) return;
+
+        // Create a deep copy of the category object
+        const updatedCategory = JSON.parse(JSON.stringify(category));
+
+        if (customAddType === 'category') {
+            // Add to the specific category's categories
+            updatedCategory[selectedOption].categories.push(customValue);
+        } else if (customAddType === 'material' && selectedOption !== 'accessories') {
+            // Add to the specific category's materials
+            updatedCategory[selectedOption].materials.push(customValue);
+        }
+
+        // Update the global category object (you might want to manage this differently in a real app)
+        Object.assign(category, updatedCategory);
+
+        // Close dialog and reset custom value
+        setIsAddDialogOpen(false);
+        setCustomValue('');
+    };
+    const handleCategoryChange = (event) => {
+  const { checked, value } = event.target;
+  setSelectedCategories((prev) =>
+    checked ? [...prev, value] : prev.filter((category) => category !== value)
+  );
+};
+
+const handleMaterialChange = (event) => {
+  const { checked, value } = event.target;
+  setSelectedMaterials((prev) =>
+    checked ? [...prev, value] : prev.filter((material) => material !== value)
+  );
+};
 
     
     
     return(
-         <Box  sx={{position: 'absolute', zIndex: 4,backgroundColor: 'rgba(0, 0, 0, 0.5)',width:"80%",top:"10%",left:"10%",overflowY: "auto",}}>
-            <Paper sx={{p:{xs:3,sm:6}}} elevation={24}>
+        <>
+            <Layout>
 
-                    <IconButton onClick={() => setAddProduct(false)}> {/*To close the product page*/}
-                        <CloseIcon/>
-                    </IconButton>
+         
+         <Box   p={6} sx={{backgroundColor: 'rgba(0, 0, 0, 0.5)',}}>
+            <Paper sx={{p:{xs:3,sm:3},border:"1px solid black"}} elevation={24}>
+
+                        <form onSubmit={handleSubmit}>
+
                 
                     <Typography variant="h3" sx={{textAlign:"center"}}>Create New Product</Typography>
                     <Grid container direction={{xs:"column",md:"row"}} md={12}  justifyContent="space-between">
@@ -136,8 +259,11 @@ function NewProduct({ setAddProduct =true }){
                            <TextField label='Enter Product Name' value={name} onChange={(e) => setName(e.target.value)} />
 
                           <Typography   marginTop={2}  variant="h5" >Price</Typography> 
-                          <TextField label='Rs' value={price} onChange={(e) => setPrice(e.target.value)} />
+                          <TextField   id="standard-number" label="Rs" name="bustChest" type="number" variant="standard" value={price} onChange={(e) => setPrice(e.target.value)}/>
 
+                          
+                          <Typography   marginTop={2}  variant="h5" >Color</Typography> 
+                          <TextField label='Rs' value={color} onChange={(e) => setColor(e.target.value)} />
                           <Typography  marginTop={2}  variant="h5" sx={{marginTop:4}}>Type</Typography> 
                           <Grid container p={4} spacing={2} >
                                 <FormControl component="fieldset">
@@ -145,93 +271,165 @@ function NewProduct({ setAddProduct =true }){
                                 <RadioGroup  row aria-label="category" name="category" value={selectedOption}onChange={(e) => setSelectedOption(e.target.value)}>
                                      <FormControlLabel value="top" control={<Radio />} label="Top" />
                                      <FormControlLabel value="bottom" control={<Radio />} label="Bottom" />
+                                      <FormControlLabel value="top/bottom" control={<Radio />} label="top/bottom" />
                                      <FormControlLabel value="accessories" control={<Radio />} label="Accessories" />
                                 </RadioGroup>
                                 </FormControl>
                             </Grid>
 
+            
+            {selectedOption && category[selectedOption] && (
+                <Box p={2}>
+                    <Typography variant="h6" gutterBottom>
+                        Select Tags for {selectedOption.charAt(0).toUpperCase() + selectedOption.slice(1)}
+                    </Typography>
 
-                            {/* Display tags based on selected category */}
-                            {selectedOption && category[selectedOption] && (
-                            <Box p={2}>
-                                   <Typography variant="h6" gutterBottom> Select Tags for {selectedOption.charAt(0).toUpperCase() + selectedOption.slice(1)}</Typography>
+                    {/* Categories section with Add button */}
+                    <Typography variant="subtitle1" gutterBottom>
+                        Categories 
+                        <IconButton  size="small"    onClick={() => {  setIsAddDialogOpen(true);  setCustomAddType('category');  }}  >
+                            <AddIcon />
+                        </IconButton>
+                    </Typography>
+                    <Grid container spacing={2} p={2}>
+                        {category[selectedOption].categories.map(tag => (
+                            <Grid item xs={6} md={4} lg={3} key={tag}>
+                                <FormControlLabel    control={<Checkbox value={tag} onChange={handleCategoryChange} />}   label={tag}   sx={{ width: '100%' }}  />
+                            </Grid>
+                        ))}
+                    </Grid>
+                    
 
-                                    {/* Display Category Tags */}
-                                   <Typography variant="subtitle1" gutterBottom>Categories </Typography>
-                                   <Grid  container spacing={2} p={2}>
-                                   {category[selectedOption].categories.map(tag => (
-                                           <Grid item xs={6} md={4} lg={3} key={tag}>
-                                                <FormControlLabel control={<Checkbox />}label={tag} sx={{ width: '100%' }}/>
-                                           </Grid>
-                                    ))}
-                                   </Grid>
+                    {/* Materials section (for non-accessories) with Add button */}
+                    {selectedOption !== "accessories" && (
+                        <>
+                            <Typography variant="subtitle1" gutterBottom mt={4}>
+                                Cloth Materials
+                                <IconButton    size="small"   onClick={() => {  setIsAddDialogOpen(true); setCustomAddType('material');   }} >
+                                    <AddIcon />
+                                </IconButton>
+                            </Typography>
+                            <Grid container spacing={2} p={2}>
+                                {category[selectedOption].materials.map(material => (
+                                    <Grid item xs={6} md={4} lg={3} key={material}>
+                                        <FormControlLabel 
+                                          control={<Checkbox value={material} onChange={handleMaterialChange} />}
+                                            label={material} 
+                                           
+                                            sx={{ width: '100%' }}
+                                        />
+                                    </Grid>
+                                ))}
+                            </Grid>
+                        </>
+                    )}
+                </Box>
+            )}
 
-                                    {/* Display Cloth Material Tags if applicable */}
-                                    {selectedOption !== "accessories" && (
-                                       <>
-                                          <Typography variant="subtitle1" gutterBottom mt={4}>Cloth Materials</Typography>
-                                          <Grid container spacing={2} p={2}>
-                                          {category[selectedOption].materials.map(material => (
-                                              <Grid item xs={6} md={4} lg={3} key={material}>
-                                                 <FormControlLabel control={<Checkbox />} label={material} sx={{ width: '100%' }}   />
-                                              </Grid>
-                                          ))}
-                                         </Grid>
-                                       </>
-                                    )}
-                            </Box>
-                             )}
+            {/* Dialog for adding custom category/material */}
+            <Dialog  open={isAddDialogOpen}     onClose={() => setIsAddDialogOpen(false)} >
+                <DialogTitle>
+                    Add Custom {customAddType === 'category' ? 'Category' : 'Material'}
+                </DialogTitle>
+                <DialogContent>
+                    <TextField  autoFocus margin="dense"   label={`Enter ${customAddType === 'category' ? 'Category' : 'Material'}`} fullWidth  value={customValue} onChange={(e) => setCustomValue(e.target.value)}  />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+                    <Button onClick={handleAddCustom}>Add</Button>
+                </DialogActions>
+            </Dialog>
                      
-                            { selectedOption === 'top' && (
+   
+                     
+                         
+
+                        </Grid>
+
+                       {/* Left side */}
+                       <Grid container direction={{xs:"column",md:"row" }} py={4}  md={6} spacing={2} sx={{maxHeight: isExpanded ? 'none' : 650,}}> {/*will not apply height when user clicks button */}
+
+                               <Grid item md={12}>
+                                       <Typography variant="h5">Add Image</Typography>
+                                                   {/* Image Upload Section */}
+                                            <Paper    variant="outlined"  sx={{  p: 2,  textAlign: 'center',  border: '2px dashed',    borderColor: 'grey.400',  cursor: 'pointer'  }} >
+                                               <input  type="file"   accept="image/*"   multiple  hidden   id="image-upload" onChange={handleImageChange} />
+                                               <label htmlFor="image-upload">
+                                                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                         <AddPhotoAlternateIcon sx={{ fontSize: 50, color: 'grey.600' }} />
+                                                         <Typography variant="body1" color="text.secondary">    Click to Upload Images (Max 5) </Typography>
+                                                    </Box>
+                                              </label>
+                                           </Paper>
+                                             {/* Uploaded Images Preview */}
+                                       {images.length > 0 && (
+                                    <Box sx={{  display: 'flex',    flexWrap: 'wrap',   gap: 2,   mt: 2,   justifyContent: 'center'   }}>
+                                      {images.map((image, index) => (
+                                           <Box   key={index}  sx={{   position: 'relative',   width: 100,  height: 100, border: '1px solid grey'   }}   >
+                                                 <CardMedia   component="img"  image={image}  alt={`Product image ${index + 1}`}sx={{   width: '100%',   height: '100%',   objectFit: 'cover'   }}  />
+                                                <IconButton     size="small"  sx={{ position: 'absolute',  top: 0,  right: 0,    color: 'red',  backgroundColor: 'white',  '&:hover': { backgroundColor: 'rgba(255,255,255,0.8)' } }}  onClick={() => removeImage(index)}  >
+                                                   <DeleteIcon fontSize="small" />
+                                                 </IconButton>
+                                           </Box>
+                                      ))}
+                                  </Box>
+                                    )}
+                                  
+                               </Grid>
+
+                              <Grid item md={12}>
+                                 { (selectedOption === 'top' || selectedOption ==="top/bottom")&& (
                             <>
                                    <Stack direction="row" alignItems="center" marginTop={2}>
-                                       <Typography variant="h5" >Size</Typography>
+                                       <Typography variant="h5" >Top Size</Typography>
                                        <FormLabel component="legend"> (Inches)</FormLabel>
                                    </Stack>
                                    <Grid container spacing={2} md={10} p={2}>
                                           <Grid item xs={6} sm={4}>
-                                               <TextField   id="standard-number" label="Waist" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                               <TextField   id="standard-number" label="Waist" name="waist" type="number" variant="standard" value={topSizes.waist}   onChange={handleTopSizeChange} />
                                           </Grid>
                                           <Grid item xs={6} sm={4}>
-                                               <TextField   id="standard-number" label="Arm Length" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                               <TextField   id="standard-number" label="Arm Length" name="armLength" type="number" variant="standard" value={topSizes.armLength}   onChange={handleTopSizeChange} />
                                           </Grid>
                                           <Grid item xs={6} sm={4}>
-                                               <TextField   id="standard-number" label="Hips" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                               <TextField   id="standard-number" label="Hips" name="hips" type="number" variant="standard" value={topSizes.hips}   onChange={handleTopSizeChange} />
                                           </Grid>
                                           <Grid item xs={6} sm={4}>
-                                               <TextField   id="standard-number" label="Shoulder Width" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                               <TextField   id="standard-number" label="Shoulder Width" name="shoulderWidth" type="number" variant="standard" value={topSizes.shoulderWidth}   onChange={handleTopSizeChange} />
                                           </Grid>
                                           <Grid item xs={6} sm={4}>
-                                               <TextField   id="standard-number" label="Bust/Chest" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                               <TextField   id="standard-number" label="Bust/Chest" name="bustChest" type="number" variant="standard" value={topSizes.bustChest}   onChange={handleTopSizeChange} />
                                           </Grid>
                                           <Grid item xs={6} sm={4}>
-                                               <TextField   id="standard-number" label="Neck Circumference" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                               <TextField   id="standard-number" label="Neck Circumference" name="neckCircumference" type="number" variant="standard" value={topSizes.neckCircumference}   onChange={handleTopSizeChange} />
                                           </Grid>
                                    </Grid>
                             </>
                               )}
 
-                            { selectedOption === 'bottom'&& (
+                              
+
+                            {( selectedOption === 'bottom' || selectedOption ==="top/bottom")&& (
                              <>
                                     <Stack direction="row" alignItems="center" marginTop={2}>
-                                       <Typography variant="h5" >Size</Typography>
-                                       <FormLabel component="legend">Inches</FormLabel>
+                                       <Typography variant="h5" >Bottom Size</Typography>
+                                       <FormLabel component="legend">(Inches)</FormLabel>
                                     </Stack>
                                     <Grid container spacing={2} md={10} p={2}>
                                             <Grid item xs={6} sm={4}>
-                                                <TextField   id="standard-number" label="Waist" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                                <TextField   id="standard-number" label="Waist" name="waist" type="number" variant="standard" value={bottomSizes.waist}   onChange={handleBottomSizeChange} />
                                             </Grid>
                                             <Grid item xs={6} sm={4}>
-                                                <TextField   id="standard-number" label="Hips" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                                <TextField   id="standard-number" label="Hips" name="hips" type="number" variant="standard" value={bottomSizes.hips}   onChange={handleBottomSizeChange} />
                                             </Grid>
                                             <Grid item xs={6} sm={4}>
-                                                <TextField   id="standard-number" label="Inseam" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                                <TextField   id="standard-number" label="Inseam" name="inseam" type="number" variant="standard" value={bottomSizes.inseam}   onChange={handleBottomSizeChange} />
                                             </Grid>
                                             <Grid item xs={6} sm={4}>
-                                                <TextField   id="standard-number" label="Thigh and Leg Opening" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                                <TextField   id="standard-number" label="Thigh and Leg Opening" name="thighLegOpening" type="number" variant="standard" value={bottomSizes.thighLegOpening}   onChange={handleBottomSizeChange} />
                                             </Grid>
                                             <Grid item xs={6} sm={4}>
-                                                <TextField   id="standard-number" label="Rise" type="number" variant="standard" slotProps={{ inputLabel: {shrink: true, },  }} />
+                                                <TextField   id="standard-number" label="Rise" type="number" name="rise" variant="standard" value={bottomSizes.rise}   onChange={handleBottomSizeChange} />
                                             </Grid>
 
                                     </Grid>
@@ -242,63 +440,23 @@ function NewProduct({ setAddProduct =true }){
 
                             
 
-                        </Grid>
-
-                       {/* Left side */}
-                       <Grid container direction={{xs:"column",md:"row" }} py={4}  md={6} spacing={2} sx={{maxHeight: isExpanded ? 'none' : 650,}}> {/*will not apply height when user clicks button */}
-
-                               <Grid item md={12}>
-                                       <Typography variant="h5">Add Image</Typography>
-                                       <Paper component="label" sx={{  position: 'relative', padding: 3,backgroundColor: "lightgrey", cursor: "pointer",width: {xs:'200px',sm:'300px'}, display: 'flex',flexDirection: 'column', alignItems: 'center', }} >
-                                                 <input type="file" name="image" accept="image/*" hidden onChange={handleImageChange} />
-                                                 <CardMedia  component="img" image={typeof image === 'string' ? image : "https://via.placeholder.com/150"} alt="Selected"  sx={{ height: 150,width: '100%',  objectFit: 'contain', maxWidth: '100%',   }} />
-                                                 {!image && (
-                                                         <Box sx={{   position: 'absolute', top: 0,left: 0, height: '100%',width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255, 255, 255, 0.5)', }}>
-                                                              <IconButton size="large">
-                                                                  <AddIcon sx={{ color: "black" }} />
-                                                              </IconButton>
-                                                         </Box>
-                                                   )}
-                                      </Paper>
-                               </Grid>
-
-                              <Grid item md={12} >
-                                       <Box >
-                                          <Button  onClick={() => {setIsExpanded(prev => !prev); setTags(prev => !prev);}} sx={{color:"black",width:"100%", borderBottom: "1px outset black",borderLeft: "1px outset black", }}  endIcon={<KeyboardArrowDown />}>Add Descriptive Tags</Button>
-                                             {tagSelection &&( 
-                                                <Box mt={2}>
-                                                    {Object.keys(tags).map(category => (
-                                                    <Box mb={4} px={3} key={category}>
-                                                         <Typography variant="h6" gutterBottom>  {category} </Typography>
-                                                          <Grid  container spacing={2} p={2}>
-                                                              {tags[category].map(tag => (
-                                                                   <Grid item xs={6} sm={4}  lg={3} key={tag}>
-                                                                          <FormControlLabel control={<Checkbox />}label={tag}sx={{ width: '100%' }}/>
-                                                                  </Grid>
-                                                                 ))}
-                                                         </Grid>
-                                                  </Box>
-                                                   ))}
-                                                </Box>
-                                            )}  
-                                      </Box>
-
-                                 </Grid>
-
+                              </Grid>
 
                                 <Grid item md={12}>
                                         <TextField  label="Description" value={description} onChange={(e) => setDescription(e.target.value)}multiline  rows={6} sx={{ width: "100%", border: "1px ridge white" }}/>
-                                        <Button marginTop={2} sx={{ color: "black", backgroundColor:"#A86464" }} onClick={handleEnter}> Enter</Button>
+                                        <Button type="submit" marginTop={2} sx={{ color: "black", backgroundColor:"#A86464" }}> Enter</Button>
                                  </Grid>
                        </Grid>
                  
 
                 </Grid>
 
-                   
+                   </form>
                  
             </Paper>
      </Box>   
+        </Layout>
+        </>
     );  
     
 }

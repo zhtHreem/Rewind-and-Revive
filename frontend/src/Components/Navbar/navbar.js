@@ -84,7 +84,7 @@ function Navbar() {
           <IconButton onClick={handleCartOpen}>
             {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
           </IconButton>
-          <IconButton onClick={handleAddProductClick}>
+          <IconButton onClick={() => navigate("/createproduct")}>
              <AddIcon/>
          {/*  {addProduct &&(
               <NewProduct setAddProduct={setAddProduct}/>

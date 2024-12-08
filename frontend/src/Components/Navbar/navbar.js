@@ -89,40 +89,15 @@ function Navbar() {
   };
 
   const NotificationsDropdown = () => (
-    <Paper 
-      sx={{ 
-        position: 'absolute',  boxShadow: 3, borderRadius: 2,
-        top: '100%', 
-        right: 60, 
-        width: 300, 
-       
-        maxHeight: '75vh',
-        overflow: 'auto', 
-        zIndex: 10, 
-        p: 2 
-      }}
-    >
+    <Paper sx={{  position: 'absolute',  boxShadow: 3, borderRadius: 2, top: '100%',   right: 60,  width: 300,  maxHeight: '75vh', overflow: 'auto',    zIndex: 10,  p: 2 }} >
       <Typography variant="h6" sx={{ mb: 2 }}>Notifications</Typography>
       {/* Add your notification items here */}
               Notifications ({notificationsList.length})
 
-   
-
-
+  
        {notificationsList.map((notification) => (
         <React.Fragment key={notification.id}>
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              py: 1.5, 
-              px: 1,
-              '&:hover': { 
-                backgroundColor: '#f0f0f0',
-                cursor: 'pointer'
-              }
-            }}
-          >
+          <Box   sx={{   display: 'flex',   alignItems: 'center',   py: 1.5,   px: 1, '&:hover': {  backgroundColor: '#f0f0f0', cursor: 'pointer'   } }}  >
             <Box sx={{ mr: 2 }}>{notification.icon}</Box>
             <Box>
               <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>

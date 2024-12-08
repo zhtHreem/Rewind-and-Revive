@@ -1,137 +1,32 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Grid, Card, CardContent, CardMedia, Typography, Chip, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import chanel from './images/chanel.jpg';
-import LV from './images/LV.jpg';
-import prada from './images/prada.jpg';
-import NouseenShah from './images/NouseenShah.jpg'
-import silverSapphire from './images/silverSapphire.jpg'
-import MahnoorBaloch from './images/MahnoorBaloch.jpg'
-import red from './images/red.jpg'
-import ring from './images/rings.jpg'
+import axios from 'axios';
 import Layout from '../Layout/layout';
-import biddingProduct from './BiddingProduct';
-const products = [
-  {
-    id: 1,
-    title: 'Nouseen Shah Awards Wear',
-    image: NouseenShah,
-    currentBid: '$150',
-    startingPrice: '$100',
-    totalBids: 13,
-    onStock: true,
-  },
-  {
-    id: 2,
-    title: 'Rubby Red Set',
-    image: red,
-    currentBid: '$970',
-    startingPrice: '$900',
-    totalBids: 13,
-    onStock: true,
-  },
-  {
-    id: 3,
-    title: 'Limited Edition LV',
-    image: LV,
-    currentBid: '$350',
-    startingPrice: '$320',
-    totalBids: 8,
-    onStock: true,
-  },
-  {
-    id: 4,
-    title: 'Classic Silver Sapphire Earrings',
-    image: silverSapphire,
-    currentBid: '$700',
-    startingPrice: '$550',
-    totalBids: 15,
-    outOfStock: true,
-  },
-  {
-    id: 5,
-    title: 'Mahnoor Baloch Award Wear',
-    image: MahnoorBaloch,
-    currentBid: '$450',
-    startingPrice: '$400',
-    totalBids: 5,
-    onStock: true,
-  },
-  {
-    id: 6,
-    title: 'Classic Prada bag',
-    image: prada,
-    currentBid: '$400',
-    startingPrice: '$350',
-    totalBids: 9,
-    outOfStock: true,
-  },
-  {
-    id: 7,
-    title: 'Chanel cream premium',
-    image: chanel,
-    currentBid: '$150',
-    startingPrice: '$100',
-    totalBids: 5,
-    onStock: true,
-  },
-  {
-    id: 8,
-    title: 'Platinum with diamond stone',
-    image: ring,
-    currentBid: '$350',
-    startingPrice: '$300',
-    totalBids: 5,
-    onStock: true,
-  },
-];
+
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
+
   return (
     <Card sx={{ width: 350, position: 'relative' }}>
       <CardMedia
         component="img"
         height="130"
-        image={product.image}
-        alt={product.title}
+        image={product.images && product.images[0]}
+        alt={product.name}
       />
       <CardContent>
-        <Typography variant="h6">{product.title}</Typography>
+        <Typography variant="h6">{product.name}</Typography>
         <Typography variant="body2" color="text.secondary">
-          Current Bid: {product.currentBid}
+          {product.description}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Starting Price: {product.startingPrice}
+          Starting Price: ${product.startingPrice}
         </Typography>
-        {product.totalBids && (
-          <Chip
-            label={`Total Bids: ${product.totalBids}`}
-            color="primary"
-            size="small"
-            sx={{ position: 'absolute', top: 8, left: 8 }}
-          />
-        )}
-        {product.onStock && (
-          <Chip
-            label="On Stock"
-            color="success"
-            size="small"
-            sx={{ position: 'absolute', top: 8, right: 8 }}
-          />
-        )}
-        {product.outOfStock && (
-          <Chip
-            label="Out of Stock"
-            color="success"
-            size="small"
-            sx={{ position: 'absolute', top: 8, right: 8 }}
-          />
-        )}
-
         <Button
-          onClick={() => navigate('/biddingProduct')}
           variant="contained"
+          onClick={() => navigate(`/biddingProduct/${product._id}`)}
           sx={{
             backgroundColor: '#576F72',
             mt: 2,
@@ -140,39 +35,71 @@ const ProductCard = ({ product }) => {
             },
           }}
         >
-          Place Your Bid
+          View Product
         </Button>
       </CardContent>
     </Card>
   );
 };
 
+
 const BidProductHome = () => {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/biddingProduct/get'); // Adjust URL as needed
+        setProducts(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return <Typography textAlign="center">Loading...</Typography>;
+  }
+
   return (
     <>
-    <Layout>
-    <Box p={10} sx={{ flexGrow: 1,
-        backgroundColor: '#F0EBE3',
-     }} >
-      <Typography textAlign="center" variant="h3" sx={{backgroundColor:"#D1D1D1"}}>Explore our Bidding Products</Typography>
-      <Grid
-        container
-        spacing={5}
-        sx={{
-          display: 'flex',
-        
-          gap: 0,
-          margin: 0,
-        }}
-      >
-        {products.map((product) => (
-          <Grid item key={product.id} md={4}>
-            <ProductCard product={product} />
+      <Layout>
+        <Box
+          p={10}
+          sx={{
+            flexGrow: 1,
+            backgroundColor: '#F0EBE3',
+          }}
+        >
+          <Typography
+            textAlign="center"
+            variant="h3"
+            sx={{ backgroundColor: '#D1D1D1' }}
+          >
+            Explore our Bidding Products
+          </Typography>
+          <Grid
+            container
+            spacing={5}
+            sx={{
+              display: 'flex',
+              gap: 0,
+              margin: 0,
+            }}
+          >
+            {products.map((product) => (
+              <Grid item key={product._id} md={4}>
+                <ProductCard product={product} />
+              </Grid>
+            ))}
           </Grid>
-        ))}
-      </Grid>
-    </Box>
-    </Layout>
+        </Box>
+      </Layout>
     </>
   );
 };

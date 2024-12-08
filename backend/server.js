@@ -5,11 +5,12 @@ import cors from 'cors';
 import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
+
 import FormData from 'form-data';
-import userRoute from './src/routes/user.js';
-import productRoute from './src/routes/product.js';
+import userRoute from './src/routes/user.js'
+import productRoute from './src/routes/product.js'
+import bidRoute from './src/routes/biddingProduct.js'
+
 
 const app = express();
 const server = http.createServer(app);
@@ -55,12 +56,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
 
-app.use('/api/user', userRoute);
-app.use('/api/product', productRoute);
 
+app.use('/api/user',userRoute)
+app.use('/api/product',productRoute)
+app.use('/api/biddingProduct', bidRoute)
+
+
+//app.use('/api', ProductRoutes);
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Something went wrong!' });

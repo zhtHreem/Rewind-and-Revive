@@ -1,40 +1,38 @@
 import React, { useState ,useEffect} from "react";
 import io from 'socket.io-client';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useLogin } from "../Login/logincontext";
+
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleNotifications,addNotification,  closeNotifications,markNotificationAsRead,markAllNotificationsAsRead} from '../../redux/slices/notificationsSlice.js';
+
+
 import { Stack, Link, Box, IconButton, Typography, Button,Badge, Drawer, Divider,Paper } from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useLogin } from "../Login/logincontext";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AddCart from "../ShoppingCart/AddCart";
 import AddIcon from '@mui/icons-material/Add';
 
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import LocalShippingIcon from '@mui/icons-material/LocalShipping';
-import DiscountIcon from '@mui/icons-material/Discount';
-
-
-import { useDispatch, useSelector } from 'react-redux';
-import { toggleNotifications,addNotification,  closeNotifications,markNotificationAsRead,markAllNotificationsAsRead} from '../../redux/slices/notificationsSlice.js';
 
  
 function Navbar() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [shoppingCart, setShoppingCart] = useState(false);
- // const [notifications, setNotifications] = useState(false);
   const [login, setLogin] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { setLoginOpen } = useLogin();
-   const dispatch = useDispatch();
   const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
 
  useEffect(() => {
     // Create socket connection
-    const socket = io('http://localhost:5000'); // Your backend socket URL
+    const socket = io('http://localhost:5000'); 
       socket.emit('request_test_notification');
 
     // Listen for new notifications
@@ -47,6 +45,7 @@ function Navbar() {
       socket.disconnect();
     };
   }, [dispatch]);
+  
   const handleMarkAsRead = (notificationId) => {
     dispatch(markNotificationAsRead(notificationId));
   };

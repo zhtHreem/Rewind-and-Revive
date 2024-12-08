@@ -48,7 +48,6 @@ export const createProduct = async (req, res) => {
         description,
         bidStartTime,
         bidEndTime,
-        biddingDay,
         imageUrl: `/uploads/${req.file.filename}`, // Store file path
       });
 

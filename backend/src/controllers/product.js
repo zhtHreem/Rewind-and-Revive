@@ -97,3 +97,31 @@ export const createProduct = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+// Get a single product by ID
+export const getProduct = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .populate('owner', 'username') // Populate only the username field
+      .exec();
+    
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+    
+    res.json(product);
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    
+    if (error.kind === 'ObjectId') {
+      return res.status(400).json({ message: 'Invalid product ID' });
+    }
+    
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

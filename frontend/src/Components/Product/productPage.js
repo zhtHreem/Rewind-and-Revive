@@ -1,54 +1,46 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Grid, Box, Typography, Button } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import Layout from '../Layout/layout';
-import ChatFeature from '../ChatFeature/ChatFeature';  // Import ChatFeature
+import ChatFeature from '../ChatFeature/ChatFeature';
 
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
-
-const item = {
-  username: "Seller name",
-  name: "Product name",
-  price: "200",
-  description: "This is the product description.",
-  sizeDetail: [
-    { label: 'Waist', value: '32 inches' },
-    { label: 'Arm Length', value: '25 inches' },
-    { label: 'Hips', value: '40 inches' },
-    { label: 'Shoulder Width', value: '18 inches' },
-    { label: 'Bust/Chest', value: '36 inches' },
-    { label: 'Neck Circumference', value: '15 inches' }
-  ],
-  shippingAndReturn: "Shipping and return policy details."
-};
+import axios from 'axios';
 
 const ProductPage = () => {
+  const navigate = useNavigate();
+  const [product, setProduct] = useState(null);
   const [description, setDescription] = useState(false);
   const [size, setSize] = useState(false);
   const [shipping, setShipping] = useState(false);
-
-  const images = [
-    require('./images/1.jpg'),
-    require('./images/2.jpg'),
-    require('./images/3.jpg'),
-    require('./images/4.jpg'),
-    require('./images/5.jpg'),
-  ];
-
-  const [mainImage, setMainImage] = useState(images[0]);
-
-  const handleImageClick = (image) => {
-    setMainImage(image);
-  };
-
+  const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
+  const productId = "67555732d7527b45fdcde2f0";
 
   useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
+        setProduct(response.data);
+        console.log("product", response.data);
+        if (response.data.images && response.data.images.length > 0) {
+          setMainImage(response.data.images[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      }
+    };
+
+    if (productId) {
+      fetchProduct();
+    }
+
     const handleResize = () => {
       if (window.innerWidth <= 600) {
         setSlidesPerView(3);
@@ -63,128 +55,88 @@ const ProductPage = () => {
     window.addEventListener('resize', handleResize);
 
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [productId]);
+
+  const handleImageClick = (image) => {
+    setMainImage(image);
+  };
+
+  if (!product) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  const sizeDetails = product.type === 'top/bottom' ? [
+    { label: 'Top - Waist', value: `${product.topSizes.waist} inches` },
+    { label: 'Top - Arm Length', value: `${product.topSizes.armLength} inches` },
+    { label: 'Top - Hips', value: `${product.topSizes.hips} inches` },
+    { label: 'Top - Shoulder Width', value: `${product.topSizes.shoulderWidth} inches` },
+    { label: 'Top - Bust/Chest', value: `${product.topSizes.bustChest} inches` },
+    { label: 'Top - Neck Circumference', value: `${product.topSizes.neckCircumference} inches` },
+    { label: 'Bottom - Waist', value: `${product.bottomSizes.waist} inches` },
+    { label: 'Bottom - Hips', value: `${product.bottomSizes.hips} inches` },
+    { label: 'Bottom - Inseam', value: `${product.bottomSizes.inseam} inches` },
+    { label: 'Bottom - Thigh Leg Opening', value: `${product.bottomSizes.thighLegOpening} inches` },
+    { label: 'Bottom - Rise', value: `${product.bottomSizes.rise} inches` }
+  ] : product.type === 'top' ? [
+    { label: 'Waist', value: `${product.topSizes.waist} inches` },
+    { label: 'Arm Length', value: `${product.topSizes.armLength} inches` },
+    { label: 'Hips', value: `${product.topSizes.hips} inches` },
+    { label: 'Shoulder Width', value: `${product.topSizes.shoulderWidth} inches` },
+    { label: 'Bust/Chest', value: `${product.topSizes.bustChest} inches` },
+    { label: 'Neck Circumference', value: `${product.topSizes.neckCircumference} inches` }
+  ] : product.type === 'bottom' ? [
+    { label: 'Waist', value: `${product.bottomSizes.waist} inches` },
+    { label: 'Hips', value: `${product.bottomSizes.hips} inches` },
+    { label: 'Inseam', value: `${product.bottomSizes.inseam} inches` },
+    { label: 'Thigh Leg Opening', value: `${product.bottomSizes.thighLegOpening} inches` },
+    { label: 'Rise', value: `${product.bottomSizes.rise} inches` }
+  ] : [];
 
   return (
     <Layout>
       <Box sx={{ flexGrow: 1, padding: 6 }}>
         <Grid container spacing={2}>
-          {/* Main Image */}
           <Grid item xs={12} md={6}>
-            <Box
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              sx={{
-                width: '100%',
-                height: { xs: 300, md: 600, lg: 500 },
-                border: '1px solid #ccc',
-                padding: 2,
-                backgroundColor: '#f9f9f9',
-              }}
-            >
-              <Box
-                component="img"
-                src={mainImage}
-                alt="Main Product"
-                sx={{ width: '100%', height: '100%', objectFit: 'contain' }}
-              />
+            <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2, backgroundColor: '#f9f9f9' }}>
+              <Box component="img" src={mainImage} alt="Main Product" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </Box>
 
-            {/* Thumbnails with Swiper */}
-            <Swiper
-              slidesPerView={slidesPerView}
-              spaceBetween={10}
-              pagination={{ clickable: true }}
-              className="mySwiper"
-              modules={[Pagination]}
-              style={{ marginTop: '20px', height: 100 }}
-            >
-              {images.map((image, index) => (
-                <SwiperSlide
-                  key={index}
-                  onClick={() => handleImageClick(image)}
-                >
-                  <Box
-                    component="img"
-                    src={image}
-                    alt={`Thumbnail ${index + 1}`}
-                    sx={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                      cursor: 'pointer',
-                      border:
-                        mainImage === image
-                          ? '2px solid #007bff'
-                          : '2px solid transparent',
-                      transition: 'border-color 0.3s ease',
-                      '&:hover': { borderColor: '#0056b3' },
-                    }}
-                  />
+            <Swiper slidesPerView={slidesPerView} spaceBetween={10} pagination={{ clickable: true }} className="mySwiper" modules={[Pagination]} style={{ marginTop: '20px', height: 100 }}>
+              {product.images.map((image, index) => (
+                <SwiperSlide key={index} onClick={() => handleImageClick(image)}>
+                  <Box component="img" src={image} alt={`Thumbnail ${index + 1}`} sx={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer', border: mainImage === image ? '2px solid #007bff' : '2px solid transparent', transition: 'border-color 0.3s ease', '&:hover': { borderColor: '#0056b3' } }} />
                 </SwiperSlide>
               ))}
             </Swiper>
           </Grid>
 
-          {/* Product Details */}
           <Grid item xs={12} md={6}>
             <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <Typography variant="h2">{item.name}</Typography>
+              <Typography variant="h2">{product.name}</Typography>
 
-              <Typography variant="h4" sx={{ marginBottom: 2 }}>
-                ${item.price}
-              </Typography>
-              <Typography variant="overline" sx={{ marginLeft: '80%' }}>
-                {item.username}
+              <Typography variant="h4" sx={{ marginBottom: 2 }}>${product.price}</Typography>
+              
+              <Typography variant="overline" sx={{ marginLeft: '80%', cursor: 'pointer', '&:hover': { textDecoration: 'underline', color: 'primary.main' } }} onClick={() => navigate(`/profile/${product.owner._id}`)}>
+                {product.owner.username}
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    width: '100%',
-                    backgroundColor: 'black',
-                    '&:hover': { backgroundColor: '#85586F' },
-                  }}
-                >
-                  Add to Cart
-                </Button>
-                <Button
-                  variant="contained"
-                  size="large"
-                  sx={{
-                    width: '100%',
-                    backgroundColor: '#85586F',
-                    '&:hover': { backgroundColor: 'black' },
-                  }}
-                >
-                  Buy Now
-                </Button>
+                <Button variant="contained" size="large" sx={{ width: '100%', backgroundColor: 'black', '&:hover': { backgroundColor: '#85586F' } }}>Add to Cart</Button>
+                <Button variant="contained" size="large" sx={{ width: '100%', backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}>Buy Now</Button>
               </Box>
 
-              {/* Size Detail Section */}
-              <Button
-                onClick={() => setSize((prev) => !prev)}
-                sx={{
-                  color: 'black',
-                  width: '100%',
-                  borderBottom: '1px outset black',
-                  borderLeft: '1px outset black',
-                }}
-                endIcon={<KeyboardArrowDown />}
-              >
+              <Button onClick={() => setSize((prev) => !prev)} sx={{ color: 'black', width: '100%', borderBottom: '1px outset black', borderLeft: '1px outset black' }} endIcon={<KeyboardArrowDown />}>
                 Size Detail
               </Button>
+              
               {size && (
                 <TableContainer component={Paper}>
                   <Table>
                     <TableBody>
-                      {item.sizeDetail.map((size, index) => (
+                      {sizeDetails.map((detail, index) => (
                         <TableRow key={index}>
-                          <TableCell>{size.label}</TableCell>
-                          <TableCell>{size.value}</TableCell>
+                          <TableCell>{detail.label}</TableCell>
+                          <TableCell>{detail.value}</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -192,41 +144,21 @@ const ProductPage = () => {
                 </TableContainer>
               )}
 
-              <Button
-                onClick={() => setShipping((prev) => !prev)}
-                sx={{
-                  color: 'black',
-                  width: '100%',
-                  borderBottom: '1px outset black',
-                  borderLeft: '1px outset black',
-                }}
-                endIcon={<KeyboardArrowDown />}
-              >
+              <Button onClick={() => setShipping((prev) => !prev)} sx={{ color: 'black', width: '100%', borderBottom: '1px outset black', borderLeft: '1px outset black' }} endIcon={<KeyboardArrowDown />}>
                 Shipping and return
               </Button>
-              {shipping && <Typography>{item.shippingAndReturn}</Typography>}
+              {shipping && <Typography>Shipping and return policy details.</Typography>}
 
-              <Button
-                onClick={() => setDescription((prev) => !prev)}
-                sx={{
-                  color: 'black',
-                  width: '100%',
-                  borderBottom: '1px outset black',
-                  borderLeft: '1px outset black',
-                }}
-                endIcon={<KeyboardArrowDown />}
-              >
+              <Button onClick={() => setDescription((prev) => !prev)} sx={{ color: 'black', width: '100%', borderBottom: '1px outset black', borderLeft: '1px outset black' }} endIcon={<KeyboardArrowDown />}>
                 Description
               </Button>
-              {description && <Typography>{item.description}</Typography>}
+              {description && <Typography>{product.description}</Typography>}
             </Box>
           </Grid>
         </Grid>
       </Box>
 
-      {/* Chat Feature added here */}
       <ChatFeature />
-      
     </Layout>
   );
 };

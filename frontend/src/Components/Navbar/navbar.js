@@ -1,18 +1,59 @@
 import React, { useState } from "react";
 
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Stack, Link, Box, IconButton, Typography, Button, Drawer } from "@mui/material";
+import { Stack, Link, Box, IconButton, Typography, Button, Drawer, Divider,Paper } from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
-import MenuIcon from '@mui/icons-material/Menu'; // Menu button icon
+import MenuIcon from '@mui/icons-material/Menu';
 import { useLogin } from "../Login/logincontext";
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AddCart from "../ShoppingCart/AddCart";
 import AddIcon from '@mui/icons-material/Add';
-import NewProduct from "../Product/createNewProduct";
+
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import DiscountIcon from '@mui/icons-material/Discount';
+ // Sample notifications data
+  const notificationsList = [
+    {
+      id: 1,
+      icon: <CheckCircleOutlineIcon color="success" />,
+      title: "Order Confirmed",
+      description: "Your order #1234 has been confirmed and is being processed.",
+      time: "2 mins ago"
+    },
+    {
+      id: 2,
+      icon: <LocalShippingIcon color="primary" />,
+      title: "Shipping Update",
+      description: "Your package is out for delivery.",
+      time: "1 hour ago"
+    },
+    {
+      id: 3,
+      icon: <DiscountIcon color="secondary" />,
+      title: "New Discount",
+      description: "Get 20% off on summer collection!",
+      time: "3 hours ago"
+    },
+    {
+      id: 4,
+      icon: <CheckCircleOutlineIcon color="success" />,
+      title: "Return Processed",
+      description: "Your return request has been approved.",
+      time: "1 day ago"
+    },
+    {
+      id: 5,
+      icon: <LocalShippingIcon color="primary" />,
+      title: "Delivery Scheduled",
+      description: "Your order will be delivered tomorrow.",
+      time: "2 days ago"
+    }
+  ];
 
 function Navbar() {
   const navigate = useNavigate();
@@ -20,7 +61,6 @@ function Navbar() {
   const [notifications, setNotifications] = useState(false);
   const [login, setLogin] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const[addProduct,setAddProduct]=useState(false);
   const { setLoginOpen } = useLogin();
 
   const handleCartOpen = () => {
@@ -39,13 +79,68 @@ function Navbar() {
   const handleDrawerToggle = () => {
     setDrawerOpen(prevState => !prevState);
   };
-  const handleAddProductClick = () => {
-    setAddProduct(true); // Set addProduct to true when the button is clicked
+
+  const handleNotificationsToggle = () => {
+    setNotifications(prevState => !prevState);
   };
 
   const performSearch = () => {
     // Your search functionality here
   };
+
+  const NotificationsDropdown = () => (
+    <Paper 
+      sx={{ 
+        position: 'absolute',  boxShadow: 3, borderRadius: 2,
+        top: '100%', 
+        right: 60, 
+        width: 300, 
+       
+        maxHeight: '75vh',
+        overflow: 'auto', 
+        zIndex: 10, 
+        p: 2 
+      }}
+    >
+      <Typography variant="h6" sx={{ mb: 2 }}>Notifications</Typography>
+      {/* Add your notification items here */}
+              Notifications ({notificationsList.length})
+
+   
+
+
+       {notificationsList.map((notification) => (
+        <React.Fragment key={notification.id}>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              py: 1.5, 
+              px: 1,
+              '&:hover': { 
+                backgroundColor: '#f0f0f0',
+                cursor: 'pointer'
+              }
+            }}
+          >
+            <Box sx={{ mr: 2 }}>{notification.icon}</Box>
+            <Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                {notification.title}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {notification.description}
+              </Typography>
+              <Typography variant="caption" color="text.disabled">
+                {notification.time}
+              </Typography>
+            </Box>
+          </Box>
+          <Divider />
+        </React.Fragment>
+      ))}
+    </Paper>
+  );
 
   return (
     <>
@@ -86,11 +181,6 @@ function Navbar() {
           </IconButton>
           <IconButton onClick={() => navigate("/createproduct")}>
              <AddIcon/>
-         {/*  {addProduct &&(
-              <NewProduct setAddProduct={setAddProduct}/>
-            )             
-            }
-            */} 
           </IconButton>
           {!login && (
             <>
@@ -98,13 +188,12 @@ function Navbar() {
               <PersonIcon />
             </IconButton>
 
-            <IconButton>
+            <IconButton onClick={handleNotificationsToggle}>
                  {notifications ? <NotificationsIcon />: <NotificationsNoneIcon />  }
             </IconButton>
             </>
           )}
               
-
           <IconButton onClick={performSearch}>
             <SearchIcon fontSize="medium" />
           </IconButton>
@@ -116,6 +205,8 @@ function Navbar() {
             <MenuIcon />
           </IconButton>
         </Stack>
+
+        {notifications && <NotificationsDropdown />}
 
         <Drawer PaperProps={{ sx: { width: 240 } }} anchor="left" open={drawerOpen} onClose={handleDrawerToggle}>
           <Stack direction="column" spacing={2} p={2}>

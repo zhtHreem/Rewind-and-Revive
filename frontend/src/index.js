@@ -20,7 +20,7 @@ import Confirmation from './Components/Payment/Confirmation'
 import ContactUs from './Components/ContactUs/ContactUs'; // Correct import for ContactUs
 import Cart from './Components/ShoppingCart/AddCart';
 import Payment from './Components/Payment/payment'; 
-import CreateProduct from './Components/BidProduct/createProduct';
+import Create from './Components/BidProduct/createProduct';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
 
@@ -54,7 +54,7 @@ const router = createBrowserRouter([
     element: <BiddingProduct />,
   },{
     path: "/create",
-    element: <CreateProduct />,
+    element: <Create/>,
   },
   {
     path: "/c",

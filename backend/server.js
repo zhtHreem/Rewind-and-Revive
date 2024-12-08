@@ -9,6 +9,7 @@ import { dirname } from 'path';
 import FormData from 'form-data';
 import userRoute from './src/routes/user.js'
 import productRoute from './src/routes/product.js'
+import bidRoute from './src/routes/biddingProduct.js'
 
 
 const app = express();
@@ -30,7 +31,7 @@ app.use('/upload',express.static((path.join(__dirname,'src','database', 'models'
 
 app.use('/api/user',userRoute)
 app.use('/api/product',productRoute)
-
+app.use('/api/biddingProduct', bidRoute)
 
 
 //app.use('/api', ProductRoutes);

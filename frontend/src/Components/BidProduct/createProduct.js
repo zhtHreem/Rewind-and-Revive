@@ -1,13 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  TextareaAutosize,
-  Grid,
-} from "@mui/material";
+import { Box, Button, TextField, Typography, TextareaAutosize,} from "@mui/material";
 
 const CreateProductForm = () => {
   const [formData, setFormData] = useState({
@@ -16,8 +9,7 @@ const CreateProductForm = () => {
     description: "",
     bidStartTime: "",
     bidEndTime: "",
-    biddingDay: "",
-    image: null,
+    image: ([]),
   });
 
   const handleChange = (e) => {
@@ -37,16 +29,14 @@ const CreateProductForm = () => {
       data.append(key, formData[key]);
     });
 
-//     try {
-//       await axios.post("/api/products", data, {
-//         headers: { "Content-Type": "multipart/form-data" },
-//       });
-//       alert("Product created successfully!");
-//     } catch (error) {
-//       console.error("Error creating product:", error);
-//       alert("Failed to create product.");
-//     }
-//   };
+    try {
+        await axios.post('http://localhost:5000/api/biddingProduct/create', data);
+      alert("Product created successfully!");
+    } catch (error) {
+      console.error("Error creating product:", error);
+      alert("Failed to create product.");
+    }
+  };
 
   return (
     <Box
@@ -70,7 +60,6 @@ const CreateProductForm = () => {
       <TextField
         label="Product Name"
         name="name"
-        value={formData.name}
         onChange={handleChange}
         required
         fullWidth
@@ -123,14 +112,6 @@ const CreateProductForm = () => {
         }}
         fullWidth
       />
-      <TextField
-        label="Bidding Day"
-        name="biddingDay"
-        value={formData.biddingDay}
-        onChange={handleChange}
-        required
-        fullWidth
-      />
       <Button variant="contained" component="label">
         Upload Image
         <input
@@ -155,5 +136,4 @@ const CreateProductForm = () => {
   
   );
 };
-}
 export default CreateProductForm;

@@ -1,65 +1,76 @@
 import multer from "multer";
 import path from "path";
+import fs from "fs";
+import axios from "axios";
 import Product from "../models/biddingProduct.js";
+import FormData from "form-data";
 
 // Configure Multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Ensure the 'uploads/' directory exists
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}${path.extname(file.originalname)}`); // Generate a unique file name
+    cb(null, `${Date.now()}${path.extname(file.originalname)}`);
   },
 });
 
-const upload = multer({ storage }).single("image");
+const upload = multer({ storage }).array("image", 5); // Allow multiple file uploads
 
-// Create a new product
 export const createProduct = async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       return res.status(500).json({ error: "Image upload failed." });
     }
-
-    const {
-      name,
-      startingPrice,
-      description,
-      bidStartTime,
-      bidEndTime,
-    } = req.body;
-
-    // Validate required fields
-    if (
-      !name ||
-      !startingPrice ||
-      !description ||
-      !bidStartTime ||
-      !bidEndTime ||
-      !req.file
-    ) {
-      return res.status(400).json({ error: "All fields are required." });
+  
+    console.log("Uploaded files:", req.files);
+  
+    if (!req.files || req.files.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "At least one image must be uploaded." });
     }
-
+  
+    const imageUrls = [];
+    for (const file of req.files) {
+      const filePath = file.path;
+      const formData = new FormData();
+      formData.append("key", process.env.IMGBB_API_KEY);
+      formData.append("image", fs.readFileSync(filePath).toString("base64"));
+  
+      try {
+        const imgBBResponse = await axios.post("https://api.imgbb.com/1/upload", formData, {
+          headers: formData.getHeaders(),
+        });
+        console.log("ImgBB Response:", imgBBResponse.data); // Log the ImgBB response
+        imageUrls.push(imgBBResponse.data.data.url);
+      } catch (error) {
+        console.error("ImgBB upload failed:", error.message);
+        return res.status(500).json({ error: "Failed to upload image to ImgBB." });
+      }
+    }
+  
+    console.log("Image URLs to save:", imageUrls);
+  
     try {
       const product = new Product({
-        name,
-        startingPrice,
-        description,
-        bidStartTime,
-        bidEndTime,
-        imageUrl: `/uploads/${req.file.filename}`, // Store file path
+        name: req.body.name,
+        startingPrice: req.body.startingPrice,
+        description: req.body.description,
+        bidStartTime: req.body.bidStartTime,
+        bidEndTime: req.body.bidEndTime,
+        images: imageUrls,
       });
-
-      await product.save();
-      res.status(201).json({ message: "Product created successfully", product });
+  
+      const savedProduct = await product.save();
+      console.log("Saved Product:", savedProduct);
+      res.status(201).json({ message: "Product created successfully", product: savedProduct });
     } catch (error) {
-      console.error("Error creating product:", error);
-      res.status(500).json({ error: "Failed to create product." });
+      console.error("Error saving product:", error.message);
+      res.status(500).json({ error: "Failed to save product." });
     }
   });
-};
-
+}  
 // Get all products
 export const getProducts = async (req, res) => {
   try {

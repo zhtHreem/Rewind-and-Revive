@@ -1,6 +1,12 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { Box, Button, TextField, Typography, TextareaAutosize,} from "@mui/material";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  TextareaAutosize,
+} from "@mui/material";
 
 const CreateProductForm = () => {
   const [formData, setFormData] = useState({
@@ -9,7 +15,7 @@ const CreateProductForm = () => {
     description: "",
     bidStartTime: "",
     bidEndTime: "",
-    image: ([]),
+    image: null,
   });
 
   const handleChange = (e) => {
@@ -30,7 +36,11 @@ const CreateProductForm = () => {
     });
 
     try {
-        await axios.post('http://localhost:5000/api/biddingProduct/create', data);
+      await axios.post("http://localhost:5000/api/biddingProduct/create", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       alert("Product created successfully!");
     } catch (error) {
       console.error("Error creating product:", error);
@@ -133,7 +143,7 @@ const CreateProductForm = () => {
         Create Product
       </Button>
     </Box>
-  
   );
 };
+
 export default CreateProductForm;

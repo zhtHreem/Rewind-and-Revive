@@ -26,7 +26,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 //Static folder for uploaded files
-app.use('/upload',express.static((path.join(__dirname,'src','database', 'models', 'upload') )));
+app.use('/uploads',express.static((path.join(__dirname,'src','database', 'models', 'upload') )));
 //console.log("Static file serving at:", path.join(__dirname, 'src', 'database', 'models', 'upload'));
 
 app.use('/api/user',userRoute)

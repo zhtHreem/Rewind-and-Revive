@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-
+import React, { useState ,useEffect} from "react";
+import io from 'socket.io-client';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { Stack, Link, Box, IconButton, Typography, Button, Drawer, Divider,Paper } from "@mui/material";
+import { Stack, Link, Box, IconButton, Typography, Button,Badge, Drawer, Divider,Paper } from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
@@ -16,52 +16,43 @@ import AddIcon from '@mui/icons-material/Add';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DiscountIcon from '@mui/icons-material/Discount';
- // Sample notifications data
-  const notificationsList = [
-    {
-      id: 1,
-      icon: <CheckCircleOutlineIcon color="success" />,
-      title: "Order Confirmed",
-      description: "Your order #1234 has been confirmed and is being processed.",
-      time: "2 mins ago"
-    },
-    {
-      id: 2,
-      icon: <LocalShippingIcon color="primary" />,
-      title: "Shipping Update",
-      description: "Your package is out for delivery.",
-      time: "1 hour ago"
-    },
-    {
-      id: 3,
-      icon: <DiscountIcon color="secondary" />,
-      title: "New Discount",
-      description: "Get 20% off on summer collection!",
-      time: "3 hours ago"
-    },
-    {
-      id: 4,
-      icon: <CheckCircleOutlineIcon color="success" />,
-      title: "Return Processed",
-      description: "Your return request has been approved.",
-      time: "1 day ago"
-    },
-    {
-      id: 5,
-      icon: <LocalShippingIcon color="primary" />,
-      title: "Delivery Scheduled",
-      description: "Your order will be delivered tomorrow.",
-      time: "2 days ago"
-    }
-  ];
 
+
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleNotifications,addNotification,  closeNotifications,markNotificationAsRead,markAllNotificationsAsRead} from '../../redux/slices/notificationsSlice.js';
+
+ 
 function Navbar() {
   const navigate = useNavigate();
   const [shoppingCart, setShoppingCart] = useState(false);
-  const [notifications, setNotifications] = useState(false);
+ // const [notifications, setNotifications] = useState(false);
   const [login, setLogin] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { setLoginOpen } = useLogin();
+   const dispatch = useDispatch();
+  const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
+
+ useEffect(() => {
+    // Create socket connection
+    const socket = io('http://localhost:5000'); // Your backend socket URL
+      socket.emit('request_test_notification');
+
+    // Listen for new notifications
+    socket.on('new_notification', (notification) => {
+      dispatch(addNotification(notification));
+    });
+
+    // Cleanup socket connection on component unmount
+    return () => {
+      socket.disconnect();
+    };
+  }, [dispatch]);
+  const handleMarkAsRead = (notificationId) => {
+    dispatch(markNotificationAsRead(notificationId));
+  };
+  const handleNotificationsToggle = () => {
+    dispatch(toggleNotifications());
+  };
 
   const handleCartOpen = () => {
     setShoppingCart(true);
@@ -80,27 +71,28 @@ function Navbar() {
     setDrawerOpen(prevState => !prevState);
   };
 
-  const handleNotificationsToggle = () => {
-    setNotifications(prevState => !prevState);
-  };
+  
 
   const performSearch = () => {
     // Your search functionality here
   };
 
-  const NotificationsDropdown = () => (
-    <Paper sx={{  position: 'absolute',  boxShadow: 3, borderRadius: 2, top: '100%',   right: 60,  width: 300,  maxHeight: '75vh', overflow: 'auto',    zIndex: 10,  p: 2 }} >
-      <Typography variant="h6" sx={{ mb: 2 }}>Notifications</Typography>
-      {/* Add your notification items here */}
-              Notifications ({notificationsList.length})
+ 
 
+
+    const NotificationsDropdown = () => (
+    <Paper sx={{  position: 'absolute',boxShadow: 3,borderRadius: 2,  top: '100%',right: 60, width: 300,   maxHeight: '75vh', overflow: 'auto',zIndex: 10,   p: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <Typography variant="h6" sx={{ mb: 2 }}>  Notifications ({unreadCount} unread) </Typography>
+        <Button   size="small"  onClick={() => dispatch(markAllNotificationsAsRead())} > Mark All as Read </Button>
+      </Box>
   
-       {notificationsList.map((notification) => (
+      {notifications.map((notification) => (
         <React.Fragment key={notification.id}>
-          <Box   sx={{   display: 'flex',   alignItems: 'center',   py: 1.5,   px: 1, '&:hover': {  backgroundColor: '#f0f0f0', cursor: 'pointer'   } }}  >
-            <Box sx={{ mr: 2 }}>{notification.icon}</Box>
+          <Box   sx={{ display: 'flex', alignItems: 'center',gap: 2  , backgroundColor: notification.isRead ? '#f0f0f0' : 'white', opacity: notification.isRead ? 0.7 : 1, cursor: 'pointer',  '&:hover': {  backgroundColor: notification.isRead ? '#e0e0e0' : '#f5f5f5'  }  }}  onClick={() => handleMarkAsRead(notification.id)}>
+            <Box sx={{ m: 2 ,display: 'flex', alignItems: 'center' }}>{notification.icon}</Box>
             <Box>
-              <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+              <Typography variant="subtitle1" sx={{  fontWeight: notification.isRead ? 'normal' : 'bold',color: notification.isRead ? 'text.secondary' : 'text.primary' }}>
                 {notification.title}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -115,11 +107,11 @@ function Navbar() {
         </React.Fragment>
       ))}
     </Paper>
-  );
+    );
 
   return (
     <>
-      <Box component="navbar" sx={{ position: "sticky", zIndex: 2, display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
+      <Box component="navbar" sx={{ position: "sticky", zIndex: 2, display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }} >
         <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
           <Typography variant="h4" className="logo">
             <span style={{ fontWeight: "bold" }}> R</span>
@@ -137,15 +129,10 @@ function Navbar() {
           <Link component={RouterLink} to="/c" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
             Products
           </Link>
-          <Link
-            component={RouterLink} to="#"
-            sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
+          <Link component={RouterLink} to="#" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
             About Us
           </Link>
-          <Link
-            component={RouterLink} to="/contact"
-            sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}
-          >
+          <Link component={RouterLink} to="/contact" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
             Contact Us
           </Link>
         </Stack>
@@ -163,9 +150,15 @@ function Navbar() {
               <PersonIcon />
             </IconButton>
 
-            <IconButton onClick={handleNotificationsToggle}>
-                 {notifications ? <NotificationsIcon />: <NotificationsNoneIcon />  }
-            </IconButton>
+            <IconButton onClick={(e) => { e.stopPropagation();   handleNotificationsToggle();  }} >
+              {unreadCount > 0 ? (
+                    <Badge badgeContent={unreadCount} color="primary">
+                        <NotificationsIcon />
+                    </Badge>
+            ) : (
+                     <NotificationsNoneIcon />
+                )}
+              </IconButton>
             </>
           )}
               
@@ -181,7 +174,7 @@ function Navbar() {
           </IconButton>
         </Stack>
 
-        {notifications && <NotificationsDropdown />}
+        {isOpen && <NotificationsDropdown />}
 
         <Drawer PaperProps={{ sx: { width: 240 } }} anchor="left" open={drawerOpen} onClose={handleDrawerToggle}>
           <Stack direction="column" spacing={2} p={2}>

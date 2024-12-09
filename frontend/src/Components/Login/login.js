@@ -1,4 +1,4 @@
-import React, { useState } from "react"; 
+import React, { useState,useEffect } from "react"; 
 import { useNavigate } from 'react-router-dom'; 
 import { Paper, Box, TextField, IconButton, Typography, Stack, Button, useMediaQuery, useTheme } from "@mui/material"; 
 import { GoogleLogin } from '@react-oauth/google';
@@ -46,7 +46,9 @@ function Login({ setLogin }) {
     const [signupPassword, setSignupPassword] = useState(''); 
     const [signupConfirmPassword, setSignupConfirmPassword] = useState(''); 
     const [errorMessage, setErrorMessage] = useState('');
+    
 
+    
     // Snackbar Close Handler 
     const handleCloseSnackbar = (event, reason) => { 
         if (reason === 'clickaway') return; 
@@ -111,22 +113,37 @@ function Login({ setLogin }) {
         } 
     };
 
+        // Decorative Images State
+    const [visibleIndexes, setVisibleIndexes] = useState([]);
+       const imageConfigs = [
+            { src: NewProductImage, top: "5%", left: "1%" },
+            { src: ArtificialIntelligenceImage, top: "30%", left: "-8%" },
+            { src: ShoppingOnlineImage, top: "55%", left: "-8%" },
+            { src: TrolleyImage, top: "80%", left: "3%" },
+            { src: BidImage, top: "90%", left: isMobile ? "-10%" : "43%" },
+            { src: ShoppingCartImage, top: "80%", left: "70%" },
+            { src: ShoppingImage, top: "55%", left: "85%" },
+            { src: TalkingImage, top: "30%", left: "90%" },
+            { src: RobotImage, top: "5%", left: "85%" },
+            { src: OnlineShopImage, top: "-10%", left: "45%" },
+        ];
+    // useEffect for decorative images visibility
+    useEffect(() => {
+     
+
+        const timeouts = imageConfigs.map((_, index) =>
+            setTimeout(() => setVisibleIndexes((prev) => [...prev, index]), index * 300) // 300ms delay between icons
+        );
+          return () => timeouts.forEach(clearTimeout); // Clear timeouts on unmount
+    }, []);
+
+
+
     // Decorative Images Renderer 
     const renderDecorativeImages = () => { 
-        const imageConfigs = [ 
-            { src: NewProductImage, top: "5%", left: "1%" }, 
-            { src: ArtificialIntelligenceImage, top: "30%", left: "-8%" }, 
-            { src: ShoppingOnlineImage, top: "55%", left: "-8%" }, 
-            { src: TrolleyImage, top: "80%", left: "3%" }, 
-            { src: BidImage, top: "90%", left: isMobile ? "-10%" : "43%" }, 
-            { src: ShoppingCartImage, top: "80%", left: "70%" }, 
-            { src: ShoppingImage, top: "55%", left: "85%" }, 
-            { src: TalkingImage, top: "30%", left: "90%" }, 
-            { src: RobotImage, top: "5%", left: "85%" }, 
-            { src: OnlineShopImage, top: "-10%", left: "45%" }, 
-        ]; 
+  
         return imageConfigs.map((config, index) => ( 
-            <Box key={index} component="img" src={config.src} sx={{ width: { xs: '1vw', md: "5vw" }, height: { xs: '1vh', md: "10vh" }, position: "absolute", top: config.top, left: config.left, zIndex: 1, userSelect: 'none', pointerEvents: 'none', display: { xs: 'none', md: 'block' } }} /> 
+            <Box key={index} component="img" src={config.src} sx={{ width: { xs: '1vw', md: "5vw" }, height: { xs: '1vh', md: "10vh" }, position: "absolute", top: config.top, left: config.left, zIndex: 1, userSelect: 'none', pointerEvents: 'none', display: { xs: 'none', md: 'block' },  opacity: visibleIndexes.includes(index) ? 1 : 0, transition: 'opacity 0.5s ease-in-out', }} /> 
         )); 
     };
 

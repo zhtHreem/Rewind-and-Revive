@@ -19,6 +19,7 @@ const ProductPage = () => {
   const [description, setDescription] = useState(false);
   const [size, setSize] = useState(false);
   const [shipping, setShipping] = useState(false);
+  const [cart, setCart] = useState([]);
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
   const productId = "67555732d7527b45fdcde2f0";
@@ -36,6 +37,7 @@ const ProductPage = () => {
         console.error('Error fetching product:', error);
       }
     };
+
 
     if (productId) {
       fetchProduct();
@@ -56,6 +58,16 @@ const ProductPage = () => {
 
     return () => window.removeEventListener('resize', handleResize);
   }, [productId]);
+
+  const handleAddToCart = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
+      setCart((prevCart) => (Array.isArray(prevCart) ? [...prevCart, response.data] : [response.data]));
+      navigate('/cart'); // Redirect to cart page
+    } catch (error) {
+      console.error('Error adding product to cart:', error);
+    }
+  };
 
   const handleImageClick = (image) => {
     setMainImage(image);
@@ -121,7 +133,14 @@ const ProductPage = () => {
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 2 }}>
-                <Button variant="contained" size="large" sx={{ width: '100%', backgroundColor: 'black', '&:hover': { backgroundColor: '#85586F' } }}>Add to Cart</Button>
+              <Button
+                variant="contained"
+                onClick={handleAddToCart}
+                size="large"
+                sx={{ width: '100%', backgroundColor: 'black', '&:hover': { backgroundColor: '#85586F' } }}
+               >
+                  Add to Cart
+              </Button>
                 <Button variant="contained" size="large" sx={{ width: '100%', backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}>Buy Now</Button>
               </Box>
 

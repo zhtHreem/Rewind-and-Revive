@@ -10,6 +10,7 @@ import FormData from 'form-data';
 import userRoute from './src/routes/user.js'
 import productRoute from './src/routes/product.js'
 import bidRoute from './src/routes/biddingProduct.js'
+import biddingRoute from './src/routes/bid.js'
 
 
 const app = express();
@@ -48,6 +49,11 @@ io.on('connection', (socket) => {
   });
 });
 
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
+
 const port = process.env.PORT || 5000;
 
 connectDB();
@@ -61,7 +67,7 @@ dotenv.config();
 app.use('/api/user',userRoute)
 app.use('/api/product',productRoute)
 app.use('/api/biddingProduct', bidRoute)
-
+app.use('/api/bid', biddingRoute);
 
 //app.use('/api', ProductRoutes);
 app.use((err, req, res, next) => {
@@ -78,4 +84,4 @@ server.listen(port, () => {
 });
 
 // Export io for potential use in other files
-export { io };
+export default { io , server};

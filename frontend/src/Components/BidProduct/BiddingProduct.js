@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import io from 'socket.io-client';
 import { Grid, Box, Typography, Button, Modal, TextField, Paper } from '@mui/material';
 import Layout from '../Layout/layout';
+
+const socket = io('http://localhost:5000');
 
 const BiddingProduct = () => {
   const { id } = useParams();
@@ -16,23 +19,69 @@ const BiddingProduct = () => {
         const response = await fetch(`http://localhost:5000/api/biddingProduct/${id}`);
         const data = await response.json();
         setProduct(data);
-        setBidders(data.bids || []); // Assuming the product includes a `bids` field
       } catch (error) {
         console.error('Error fetching product:', error);
       }
     };
 
+    const fetchBidders = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/bid/${id}`);
+        const data = await response.json();
+        setBidders(data);
+      } catch (error) {
+        console.error('Error fetching bidders:', error);
+      }
+    };
+
     fetchProduct();
+    fetchBidders();
+
+    // Listen for bid updates
+    socket.on(`bidUpdate:${id}`, (newBid) => {
+      setBidders((prevBids) => [newBid.bid, ...prevBids].sort((a, b) => b.bidAmount - a.bidAmount));
+    });
+
+    return () => {
+      socket.off('newBid');
+    };
   }, [id]);
 
-  const handleOpenModal = () => setIsModalOpen(true);
+  const handleOpenModal = async () => {
+    try {
+      // Fetch latest bidders when the modal is opened
+      const response = await fetch(`http://localhost:5000/api/bid/${id}`);
+      const data = await response.json();
+      setBidders(data); // Update bidders with fetched data
+      setIsModalOpen(true); // Open the modal
+    } catch (error) {
+      console.error('Error fetching bidders:', error);
+    }
+  };
+  
   const handleCloseModal = () => setIsModalOpen(false);
 
-  const handlePlaceBid = () => {
+  const handlePlaceBid = async () => {
     if (bidAmount) {
-      const newBid = { name: 'You', bidAmount };
-      setBidders(prevBids => [newBid, ...prevBids]);
-      setBidAmount('');
+      try {
+        const response = await fetch('http://localhost:5000/api/bid', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            productId: id,
+            name: 'You', // Replace with actual user name if available
+            bidAmount: Number(bidAmount),
+          }),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          console.error('Error placing bid:', data.message);
+        }
+        setBidAmount('');
+      } catch (error) {
+        console.error('Error placing bid:', error);
+      }
     }
   };
 
@@ -89,33 +138,37 @@ const BiddingProduct = () => {
 
               {/* Modal: List of Bidders */}
               <Modal open={isModalOpen} onClose={handleCloseModal}>
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 400,
-                    bgcolor: 'background.paper',
-                    borderRadius: 1,
-                    boxShadow: 24,
-                    p: 4,
-                  }}
-                >
-                  <Typography variant="h6" component="h2">
-                    Top Bidders
-                  </Typography>
-                  <Box sx={{ mt: 2 }}>
-                    {bidders.map((bid, index) => (
-                      <Paper key={index} sx={{ padding: 1, marginBottom: 1 }}>
-                        <Typography>
-                          {bid.name}: ${bid.bidAmount}
-                        </Typography>
-                      </Paper>
-                    ))}
-                  </Box>
-                </Box>
-              </Modal>
+  <Box
+    sx={{
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: 400,
+      bgcolor: 'background.paper',
+      borderRadius: 1,
+      boxShadow: 24,
+      p: 4,
+    }}
+  >
+    <Typography variant="h6" component="h2">
+      Top Bidders
+    </Typography>
+    <Box sx={{ mt: 2 }}>
+      {bidders.length > 0 ? (
+        bidders.map((bid, index) => (
+          <Paper key={index} sx={{ padding: 1, marginBottom: 1 }}>
+            <Typography>
+              <strong>{bid.name}</strong>: ${bid.bidAmount}
+            </Typography>
+          </Paper>
+        ))
+      ) : (
+        <Typography>No bids yet!</Typography>
+      )}
+    </Box>
+  </Box>
+</Modal>
 
               {/* Input for placing a bid */}
               <TextField

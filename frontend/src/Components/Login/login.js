@@ -60,6 +60,8 @@ function Login({ setLogin }) {
         const loginData = { email: loginEmail, password: loginPassword }; 
         try { 
             const response = await axios.post("http://localhost:5000/api/user/login", loginData); 
+            console.log("s",response)
+            localStorage.setItem('token', response.data.token);
             setSnackbarMessage('Login successful!'); 
             setSnackbarSeverity('success'); 
             setOpenSnackbar(true); 
@@ -101,7 +103,7 @@ function Login({ setLogin }) {
         const signupData = { username: signupUsername, email: signupEmail, password: signupPassword }; 
         try { 
             const response = await axios.post("http://localhost:5000/api/user/register", signupData, { headers: { 'Content-Type': 'application/json' } }); 
-            setSnackbarMessage('Signup successful!'); 
+            setSnackbarMessage(response.message,'Signup successful!'); 
             setSnackbarSeverity('success'); 
             setOpenSnackbar(true); 
             setSignup(false); 

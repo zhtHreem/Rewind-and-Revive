@@ -2,50 +2,78 @@ import User from "../models/user.js";
 //import { generateToken } from "../utils/jwtUtils.js";
 import { generateToken } from "../utils/jwtUtils.js";
 import { OAuth2Client } from 'google-auth-library';
+import { sendVerificationEmail } from "../utils/emailVerificationUtils.js";
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// Register a new user
+
 export const registerUser = async (req, res) => {
   console.log("Registration request body:", req.body);
   const { username, email, password } = req.body;
 
   try {
-    const existingUser = await User.findOne({ email });
-    if (existingUser) return res.status(400).json({ message: "User already exists." });
+    // Check for existing users with the same email or username
+    const existingUser = await User.findOne({ 
+      $or: [
+        { email },  // Check if email exists
+        { username } // Check if username exists
+      ]
+    });
 
-    const newUser = new User({ username, email, password // Do not set googleId for regular users
-});
+    if (existingUser) {
+      return res.status(400).json({ 
+        message: "User already exists", 
+        field: existingUser.email === email ? 'email' : 'username'
+      });
+    }
+
+    // Create new user
+    const newUser = new User({ 
+      username, 
+      email, 
+      password,
+      isEmailVerified: false,  // Explicitly set to false
+    });
 
     try {
-      // Attempt to save new user
+      // Save the user to the database
       const savedUser = await newUser.save();
-       const token = generateToken(savedUser);
-       console.log("User Save Attempt Result:", {  savedUser,savedSuccessfully: true });
 
-      // Respond with saved user
+      // Send verification email (make sure the function works as expected)
+      const emailSent = await sendVerificationEmail(savedUser);
+
+      if (!emailSent) {
+        return res.status(500).json({
+          message: 'User created, but verification email could not be sent',
+          user: {
+            id: savedUser._id,
+            username: savedUser.username,
+            email: savedUser.email
+          }
+        });
+      }
+
+      // Successfully created and sent email
       return res.status(201).json({
-        message: 'User created successfully',
-        user: savedUser,
-        token
+        message: 'User registered successfully. Please check your email to verify your account.',
+        user: {
+          id: savedUser._id,
+          username: savedUser.username,
+          email: savedUser.email
+        }
       });
+      
     } catch (saveError) {
       console.error("User Save Error:", saveError);
 
-      // Check for validation or duplicate key error
-      if (saveError.name === 'ValidationError') {
-        return res.status(400).json({
-          message: 'Validation Error',
-          errors: saveError.errors
-        });
-      }
       if (saveError.code === 11000) {
+        // Handle unique constraint violation (email or username)
+        const duplicateField = Object.keys(saveError.keyValue)[0];
         return res.status(409).json({
-          message: 'User already exists',
-          duplicateFields: saveError.keyValue
+          message: `${duplicateField} already exists`,
+          duplicateField
         });
       }
 
-      // Generic error response
       return res.status(500).json({
         message: 'Error creating user',
         error: saveError.message
@@ -68,9 +96,7 @@ export const loginUser = async (req, res) => {
     }
 
    const token = generateToken(user);
-    res.status(200).json({
-      user: { id: user._id, username: user.username, email: user.email },  token,
-    });
+    res.status(200).json({  token,});
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }

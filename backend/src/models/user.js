@@ -9,7 +9,10 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: function() { 
             return !this.googleId; 
         }},
-  googleId: { type: String, unique: true ,sparse: true},
+  googleId: {
+    type: String,  // Not required
+    sparse: true,  // Ensures that null or undefined values are not indexed
+  },  isEmailVerified: {type: Boolean,default: false},
   role: {
     type: String,
     enum: ['admin', 'user'],

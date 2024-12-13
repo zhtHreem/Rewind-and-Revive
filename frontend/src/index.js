@@ -3,7 +3,7 @@ import { Provider } from 'react-redux';
 import { store } from './redux/store';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import reportWebVitals from './reportWebVitals';
+import EmailVerification from './Components/Login/emailVerification';
 import Header from './Components/Header/header';
 import './index.css';
 import App from './App';
@@ -93,6 +93,10 @@ const router = createBrowserRouter([
   {
     path: "/confirmation",
     element: <Confirmation />,
+  },
+  {
+    path: "/verify-email",
+    element: <EmailVerification />,
   }
 
 ]);
@@ -104,6 +108,7 @@ root.render(
        <Provider store={store}>
         <LoginProvider>
           <RouterProvider router={router} />
+          
         </LoginProvider>
         </Provider>
       </GoogleOAuthProvider>

@@ -18,11 +18,12 @@ import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
-import Confirmation from './Components/Payment/Confirmation'
+import Confirmation from './Components/Payment/Confirmation';
 import ContactUs from './Components/ContactUs/ContactUs'; // Correct import for ContactUs
 import Cart from './Components/ShoppingCart/AddCart';
 import Payment from './Components/Payment/payment'; 
 import Create from './Components/BidProduct/createProduct';
+import ChatFeature from './Components/ProductChat/ProductChat'; // Import for ChatFeature
 import { GoogleOAuthProvider } from '@react-oauth/google';
 const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
 
@@ -44,7 +45,7 @@ const router = createBrowserRouter([
     element: <NewProduct/>,
   },
   {
-    path: "/product",
+    path: "/productpage",
     element: <ProductPage />,
   },
   {
@@ -97,6 +98,10 @@ const router = createBrowserRouter([
   {
     path: "/verify-email",
     element: <EmailVerification />,
+  },
+  {
+    path: "/chatfeature",
+    element: <ChatFeature />, // ChatFeature route
   }
 
 ]);

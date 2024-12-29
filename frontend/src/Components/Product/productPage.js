@@ -4,7 +4,7 @@ import { Grid, Box, Typography, Button } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import Layout from '../Layout/layout';
-import ChatFeature from '../ChatFeature/ChatFeature';
+import ProductChat from '../ProductChat/ProductChat'; // Chat component import
 
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -22,6 +22,7 @@ const ProductPage = () => {
   const [cart, setCart] = useState([]);
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
+  const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
   const productId = "67555732d7527b45fdcde2f0";
 
   useEffect(() => {
@@ -29,7 +30,6 @@ const ProductPage = () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
         setProduct(response.data);
-        console.log("product", response.data);
         if (response.data.images && response.data.images.length > 0) {
           setMainImage(response.data.images[0]);
         }
@@ -37,7 +37,6 @@ const ProductPage = () => {
         console.error('Error fetching product:', error);
       }
     };
-
 
     if (productId) {
       fetchProduct();
@@ -133,14 +132,14 @@ const ProductPage = () => {
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 2 }}>
-              <Button
-                variant="contained"
-                onClick={handleAddToCart}
-                size="large"
-                sx={{ width: '100%', backgroundColor: 'black', '&:hover': { backgroundColor: '#85586F' } }}
-               >
+                <Button
+                  variant="contained"
+                  onClick={handleAddToCart}
+                  size="large"
+                  sx={{ width: '100%', backgroundColor: 'black', '&:hover': { backgroundColor: '#85586F' } }}
+                >
                   Add to Cart
-              </Button>
+                </Button>
                 <Button variant="contained" size="large" sx={{ width: '100%', backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}>Buy Now</Button>
               </Box>
 
@@ -177,7 +176,44 @@ const ProductPage = () => {
         </Grid>
       </Box>
 
-      <ChatFeature />
+      {/* Floating Chat Button */}
+      <div
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          backgroundColor: '#007bff',
+          color: 'white',
+          padding: '10px 15px',
+          borderRadius: '30px',
+          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+          cursor: 'pointer',
+          zIndex: 1000,
+        }}
+        onClick={() => setIsChatOpen((prev) => !prev)}
+      >
+        💬 Chat
+      </div>
+
+      {/* Chatbox Visibility */}
+      {isChatOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '80px',
+            right: '20px',
+            width: '350px',
+            height: '500px',
+            backgroundColor: 'white',
+            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+            borderRadius: '10px',
+            zIndex: 1000,
+            overflow: 'hidden',
+          }}
+        >
+          <ProductChat productId={productId} ownerId={product.owner._id} />
+        </div>
+      )}
     </Layout>
   );
 };

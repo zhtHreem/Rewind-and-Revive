@@ -1,5 +1,5 @@
 import React, { useState, useEffect  } from "react";
-import { Paper,Box,TextField,IconButton,Dialog,DialogActions,DialogTitle,DialogContent,CardMedia,Typography,Stack,Checkbox,FormControl, FormLabel, FormControlLabel, Button,Grid,Radio, RadioGroup } from "@mui/material";
+import { MenuItem,Select,Paper,Box,TextField,IconButton,Dialog,DialogActions,DialogTitle,DialogContent,CardMedia,Typography,Stack,Checkbox,FormControl, FormLabel, FormControlLabel, Button,Grid,Radio, RadioGroup } from "@mui/material";
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import AddIcon from '@mui/icons-material/Add';
 import Swal from 'sweetalert2';
@@ -46,6 +46,8 @@ function NewProduct({ setAddProduct =true }){
       const [isExpanded, setIsExpanded] = useState(false); 
       const [selectedCategories, setSelectedCategories] = useState([]);
       const [selectedMaterials, setSelectedMaterials] = useState([]);
+      const [selectedCategory, setSelectedCategory] = useState("");
+
 
       const [topSizes, setTopSizes] = useState({
         waist: '',
@@ -86,7 +88,7 @@ function NewProduct({ setAddProduct =true }){
         e.preventDefault();
 
         // Validate required fields
-        if (!name || !price || !color || !selectedOption) {
+        if (!name || !price || !color || !selectedOption ||!selectedCategory) {
             Swal.fire({
                 icon: 'error',
                 title: 'Incomplete Information',
@@ -105,6 +107,7 @@ function NewProduct({ setAddProduct =true }){
         formData.append('color', color);
         formData.append('description', description);
         formData.append('type', selectedOption);
+        formData.append('category', selectedCategory);
  
         // Add image files
         imageFiles.forEach((file, index) => {
@@ -261,7 +264,22 @@ const handleMaterialChange = (event) => {
                           <Typography   marginTop={2}  variant="h5" >Price</Typography> 
                           <TextField   id="standard-number" label="Rs" name="bustChest" type="number" variant="standard" value={price} onChange={(e) => setPrice(e.target.value)}/>
 
-                          
+                              {/* Category Dropdown */}
+                        <Grid item>
+                            <Typography variant="h5" marginTop={2}>Category</Typography>
+                            <Select
+                                value={selectedCategory}
+                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                displayEmpty
+                        
+                            >
+                                <MenuItem value="" disabled>Select a Category</MenuItem>
+                                <MenuItem value="men">Men</MenuItem>
+                                <MenuItem value="women">Women</MenuItem>
+                                <MenuItem value="kids">Kids</MenuItem>
+                            </Select>
+                        </Grid>
+
                           <Typography   marginTop={2}  variant="h5" >Color</Typography> 
                           <TextField label='Rs' value={color} onChange={(e) => setColor(e.target.value)} />
                           <Typography  marginTop={2}  variant="h5" sx={{marginTop:4}}>Type</Typography> 

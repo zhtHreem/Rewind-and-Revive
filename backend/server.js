@@ -63,11 +63,42 @@ io.on('connection', (socket) => {
     }
   });
 
+
+
+  
   // Handle user disconnection
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
 });
+
+// Socket.IO connection handler
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  // Example of sending a test notification
+  socket.on('request_test_notification', () => {
+    // This is a sample notification structure matching your Redux slice
+    const testNotification = {
+      id: Date.now(), // unique id
+    //  icon: 'CheckCircleOutlineIcon', // you might want to pass icon name or component
+      title: 'Test Notification',
+      description: 'This is a test notification from the backend',
+      time: new Date().toLocaleTimeString(),
+      isRead: false
+    };
+
+    // Broadcast the notification to all connected clients
+    io.emit('new_notification', testNotification);
+    console.log('Test notification sent'); // Add this for debugging
+
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
 
 
 

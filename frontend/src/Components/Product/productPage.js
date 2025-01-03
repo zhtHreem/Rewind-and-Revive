@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate ,useParams} from 'react-router-dom';
+
 import { Grid, Box, Typography, Button } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
@@ -23,13 +24,16 @@ const ProductPage = () => {
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
   const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
-  const productId = "67555732d7527b45fdcde2f0";
+  const { productId }= useParams();
 
   useEffect(() => {
+
     const fetchProduct = async () => {
       try {
+
         const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
         setProduct(response.data);
+  
         if (response.data.images && response.data.images.length > 0) {
           setMainImage(response.data.images[0]);
         }

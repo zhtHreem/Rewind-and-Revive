@@ -1,37 +1,31 @@
 import React, { useEffect, useState } from "react";
 import { Box, IconButton, Grid, Typography, Button, Divider } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate ,useParams} from 'react-router-dom';
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import axios from "axios";
 import './style.css'; // Import the CSS
 
-// Replace this with a dynamic productId if needed
-const productId = "67555732d7527b45fdcde2f0";
 
 const AddCart = () => {
   const navigate = useNavigate();
   const [cart, setCart] = useState([]);
+  const { productId }= useParams();
 
   // Fetch cart data from the API
   useEffect(() => {
     const fetchCart = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
-        console.log("Fetched product data:", response.data); // Debugging line
-        if (typeof setCart === "function") {
-          setCart([response.data]); // Assuming the response is for a single product
-        } else {
-          console.error("setCart is not a function");
-        }
+        setCart([response.data]); // Response for a single product
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
     };
-
     fetchCart();
-  }, [setCart]); // Ensure this runs only when setCart changes
+  }, [productId]); // Trigger fetch when productId changes
+  
 
   const handleIncrement = (id) => {
     setCart(

@@ -84,7 +84,7 @@ const router = createBrowserRouter([
     element: <ContactUs />, // ContactUs route
   },
   {
-    path: "/cart",
+    path: "/cart/:productId",
     element: <Cart />, // ShoppingCart route
   },
   {

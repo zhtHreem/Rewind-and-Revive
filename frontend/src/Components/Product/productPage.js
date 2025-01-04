@@ -66,7 +66,7 @@ const ProductPage = () => {
     try {
       const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
       setCart((prevCart) => (Array.isArray(prevCart) ? [...prevCart, response.data] : [response.data]));
-      navigate('/cart'); // Redirect to cart page
+      navigate(`/cart/${productId}`); // Pass productId in route
     } catch (error) {
       console.error('Error adding product to cart:', error);
     }

@@ -66,36 +66,45 @@ const ProductPage = () => {
   }, [productId]);
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  }, [cart]);
-
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(storedCart);
+  }, []);
+  
   const handleAddToCart = async (product) => {
     try {
+      // Fetch product data from API using the correct product ID
       const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
       const productData = response.data;
-  
+      
+      // Update the cart state
       setCart((prevCart) => {
-        // Check if the product already exists in the cart
-        const isProductInCart = prevCart.find((item) => item.id === productData.id);
+        // Check if the product already exists in the cart by comparing product.id
+        const isProductInCart = prevCart.find((item) => item.id === productId);
         if (isProductInCart) {
-          return prevCart; // Avoid duplicate entries
+          console.log('Product already in cart:', productData);
+          return prevCart; // Avoid adding duplicates
         }
-        // Add product to the cart with initial quantity
-        return [...prevCart, { id: productData.id, image: product.images[0], name: productData.name, price: productData.price, quantity: 1 }];
+        
+        // Add product to cart with initial quantity
+        const updatedCart = [...prevCart, { id: productId, name: productData.name, price: productData.price, quantity: 1 }];
+        
+        // Log cart after update
+        console.log('Cart updated:', updatedCart);
+        
+        // Save updated cart to localStorage
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+        
+        return updatedCart;
       });
-  
-      // Save the updated cart to localStorage
-      const updatedCart = [...cart, { id: productData.id, image: product.images[0], name: productData.name, price: productData.price, quantity: 1 }];
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
-  
-      // Navigate to cart page
-      navigate(`/cart/${productData.id}`);
+
+      // Navigate to the cart page (optional)
+      navigate(`/cart/${productId}`);
     } catch (error) {
       console.error("Error adding product to cart:", error);
     }
   };
   
-
+  
   const handleImageClick = (image) => {
     setMainImage(image);
   };

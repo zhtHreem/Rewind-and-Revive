@@ -1,21 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Box, Button, Grid, Typography, Divider } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import "./payment.css"; 
+import { useNavigate } from 'react-router-dom';
+import axios from "axios";
+import "./payment.css";
 
-const sampleProducts = [
-  { id: 1, name: "Casual T-shirt", quantity: 1, price: 700, image: require("./assets/tshirt.jpg") },
-  { id: 2, name: "Stylish Jeans", quantity: 2, price: 850, image: require("./assets/jeans.jpg") },
-  { id: 3, name: "Sneakers", quantity: 1, price: 1500, image: require("./assets/sneakers.jpg") },
-  { id: 4, name: "Jacket", quantity: 1, price: 2000, image: require("./assets/jacket.jpg") },
-];
-
-function Payment() {
-  const [products] = useState(sampleProducts);
+const Payment = () => {
+  const [cart, setCart] = useState([]);
   const navigate = useNavigate();
 
+  // Fetch products from the backend (replace with correct endpoint)
+  useEffect(() => {
+    const fetchCartProducts = async () => {
+      try {
+        const savedCart = localStorage.getItem("cart");
+        const parsedCart = savedCart ? JSON.parse(savedCart) : [];
+
+        // Debugging to ensure products have valid IDs
+        console.log("Cart items:", parsedCart);
+
+        // Fetch product details from the backend (adjust API as needed)
+        const updatedCart = await Promise.all(
+          parsedCart.map(async (item) => {
+            if (!item.id) {
+              console.error("Product ID missing for item:", item);
+              return item; // Skip this item if no id (or productId)
+            }
+
+            // Use the correct product ID from cart item
+            const response = await axios.get(`http://localhost:5000/api/product/${item.id}`);
+            return { ...item, ...response.data };
+          })
+        );
+        setCart(updatedCart);
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      }
+    };
+
+    fetchCartProducts();
+  }, []);
+
   const getTotalPrice = () =>
-    products.reduce((total, product) => total + product.price * product.quantity, 0);
+    cart.reduce((total, product) => total + product.price * product.quantity, 0);
 
   return (
     <Box className="payment-container">
@@ -25,14 +51,12 @@ function Payment() {
 
       <table className="payment-table">
         <tbody>
-          {products.map((product) => (
-            <tr key={product.id} className="payment-row">
+          {cart.map((product) => (
+            <tr key={product._id} className="payment-row">
               <td>
-                <img src={product.image} alt={product.name} className="product-image" />
+              <img src={product.image || "https://via.placeholder.com/100"} alt={product.name} className="product-image" />
               </td>
-              <td className="product-name">
-                {product.name}
-              </td>
+              <td className="product-name">{product.name}</td>
               <td className="product-price">
                 {product.quantity} x ${product.price}
               </td>
@@ -53,7 +77,7 @@ function Payment() {
       <Box className="payment-buttons">
         <Button
           variant="outlined"
-          onClick={() => navigate("/c")}
+          onClick={() => navigate("/cart")}
           className="back-to-cart-btn"
           sx={{ color: "#85586F", borderColor: "#85586F" }}
         >
@@ -70,6 +94,6 @@ function Payment() {
       </Box>
     </Box>
   );
-}
+};
 
 export default Payment;

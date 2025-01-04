@@ -6,6 +6,7 @@ import RemoveIcon from "@mui/icons-material/Remove";
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import axios from "axios";
 import './style.css'; // Import the CSS
+import { CardTravel } from "@mui/icons-material";
 
 
 const AddCart = () => {
@@ -22,40 +23,57 @@ const AddCart = () => {
       try {
         const updatedCart = await Promise.all(
           cart.map(async (item) => {
-            const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
-            return { ...item, ...response.data };
+            // Fetch product data from API using item.id
+            const response = await axios.get(`http://localhost:5000/api/product/${item.id}`);
+            return { ...item, ...response.data }; // Merge response data with item data
           })
         );
-        setCart(updatedCart);
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
+        setCart(updatedCart); // Update cart with the fetched data
+        console.log('Saving cart to localStorage:', updatedCart);
+        localStorage.setItem("cart", JSON.stringify(updatedCart)); // Save updated cart to localStorage
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
     };
 
+    // Only fetch product data if cart has items
     if (cart.length > 0) {
       fetchCartProducts();
     }
-  }, [cart], [productId]);
+  }, []); // Only re-run when the cart changes (fetch updated product details)
+  
+  
   
 
   const handleIncrement = (id) => {
-    setCart(
-      cart.map((product) =>
-        product._id === id ? { ...product, quantity: (product.quantity || 1) + 1 } : product
+    setCart(prevCart => 
+      prevCart.map(product => 
+        productId === id ? { ...product, quantity: (product.quantity || 1) + 1 } : product
       )
     );
   };
-
+  
   const handleDecrement = (id) => {
-    setCart(
-      cart.map((product) =>
-        product._id === id && (product.quantity || 1) > 1
-          ? { ...product, quantity: product.quantity - 1 }
-          : product
-      )
-    );
+    setCart((prevCart) => {
+      const updatedCart = prevCart.map((product) => {
+        if (productId === id && product.quantity > 1) {
+          // Decrement the quantity if it's greater than 1
+          return { ...product, quantity: product.quantity - 1 };
+        }
+        if (productId === id && product.quantity === 1) {
+          // Remove the product when the quantity reaches 0
+          return null;
+        }
+        return product;
+      }).filter((product) => product !== null); // Filter out null values (deleted products)
+  
+      // Save the updated cart to localStorage
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+  
+      return updatedCart; // Return the updated cart state
+    });
   };
+  
 
   return (
     <Box className="cart-drawer">

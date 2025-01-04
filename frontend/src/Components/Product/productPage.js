@@ -20,7 +20,10 @@ const ProductPage = () => {
   const [description, setDescription] = useState(false);
   const [size, setSize] = useState(false);
   const [shipping, setShipping] = useState(false);
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
   const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
@@ -62,15 +65,36 @@ const ProductPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, [productId]);
 
-  const handleAddToCart = async () => {
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cart));
+  }, [cart]);
+
+  const handleAddToCart = async (product) => {
     try {
       const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
-      setCart((prevCart) => (Array.isArray(prevCart) ? [...prevCart, response.data] : [response.data]));
-      navigate(`/cart/${productId}`); // Pass productId in route
+      const productData = response.data;
+  
+      setCart((prevCart) => {
+        // Check if the product already exists in the cart
+        const isProductInCart = prevCart.find((item) => item.id === productData.id);
+        if (isProductInCart) {
+          return prevCart; // Avoid duplicate entries
+        }
+        // Add product to the cart with initial quantity
+        return [...prevCart, { id: productData.id, image: product.images[0], name: productData.name, price: productData.price, quantity: 1 }];
+      });
+  
+      // Save the updated cart to localStorage
+      const updatedCart = [...cart, { id: productData.id, image: product.images[0], name: productData.name, price: productData.price, quantity: 1 }];
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+  
+      // Navigate to cart page
+      navigate(`/cart/${productData.id}`);
     } catch (error) {
-      console.error('Error adding product to cart:', error);
+      console.error("Error adding product to cart:", error);
     }
   };
+  
 
   const handleImageClick = (image) => {
     setMainImage(image);

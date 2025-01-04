@@ -10,21 +10,33 @@ import './style.css'; // Import the CSS
 
 const AddCart = () => {
   const navigate = useNavigate();
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const { productId }= useParams();
 
   // Fetch cart data from the API
   useEffect(() => {
-    const fetchCart = async () => {
+    const fetchCartProducts = async () => {
       try {
-        const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
-        setCart([response.data]); // Response for a single product
+        const updatedCart = await Promise.all(
+          cart.map(async (item) => {
+            const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
+            return { ...item, ...response.data };
+          })
+        );
+        setCart(updatedCart);
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
       } catch (error) {
         console.error("Error fetching cart:", error);
       }
     };
-    fetchCart();
-  }, [productId]); // Trigger fetch when productId changes
+
+    if (cart.length > 0) {
+      fetchCartProducts();
+    }
+  }, [cart], [productId]);
   
 
   const handleIncrement = (id) => {
@@ -129,11 +141,11 @@ const AddCart = () => {
           <Button
             fullWidth
             variant="outlined"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate("/c")}
             className="cart-button"
             sx={{ color: "#85586F", borderColor: "#85586F" }}
           >
-            Cancel
+            Back 
           </Button>
         </Grid>
         <Grid item xs={5}>

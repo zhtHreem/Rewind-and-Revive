@@ -4,6 +4,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DiscountIcon from '@mui/icons-material/Discount';
 import BugReportIcon from '@mui/icons-material/BugReport';
+import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import io from 'socket.io-client';
 
 const socket = io('http://localhost:5000'); // Your backend socket URL
@@ -20,6 +21,8 @@ const getNotificationIcon = (title) => {
       return <DiscountIcon color="secondary" />;
     case 'Test Notification':
       return <BugReportIcon color="orange" />;
+     case 'Badge Unlocked!':
+      return <LocalPoliceIcon color="orange" />; 
     default:
       return null; // or a default icon
   }

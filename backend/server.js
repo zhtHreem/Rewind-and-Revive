@@ -89,12 +89,36 @@ io.on('connection', (socket) => {
       isRead: false
     };
 
+
+
+
     // Broadcast the notification to all connected clients
     io.emit('new_notification', testNotification);
     console.log('Test notification sent'); // Add this for debugging
 
   });
 
+
+
+
+
+   // Handle badge notifications
+  socket.on('badge_unlocked', async (data) => {
+    try {
+      const notification = await createNotification({
+        userId: data.userId,
+        title: 'Badge Unlocked!',
+        description: `Congratulations! You've earned the ${data.badge.name} badge`,
+        type: 'badge',
+        badgeData: data.badge
+      });
+      
+      // Emit to specific user's room
+      socket.emit('new_notification', notification);
+    } catch (error) {
+      console.error('Error creating badge notification:', error);
+    }
+  });
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });

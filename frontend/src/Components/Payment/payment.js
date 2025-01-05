@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Grid, Typography, Divider } from "@mui/material";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
 import "./payment.css";
 
 const Payment = () => {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
+  const { productId }= useParams();
 
   // Fetch products from the backend (replace with correct endpoint)
   useEffect(() => {
@@ -86,7 +87,7 @@ const Payment = () => {
         <Button
           variant="contained"
           sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}
-          onClick={() => navigate("/confirmation")}
+          onClick={() =>navigate(`/confirmation/${productId}`)}
           className="pay-now-btn"
         >
           Pay Now

@@ -15,6 +15,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Swal from 'sweetalert2';
 import axios from 'axios';
+import { useParams } from 'react-router-dom';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
 import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import SimCardRoundedIcon from '@mui/icons-material/SimCardRounded';
@@ -33,10 +34,11 @@ export default function PaymentForm() {
   const [cvv, setCvv] = React.useState('');
   const [name, setName] = React.useState('');
   const [expirationDate, setExpirationDate] = React.useState('');
-
   const handlePaymentTypeChange = (event) => {
     setPaymentType(event.target.value);
   };
+
+  const { productId } = useParams();
 
   const handleCardNumberChange = (event) => {
     const value = event.target.value.replace(/\D/g, '');
@@ -79,6 +81,7 @@ export default function PaymentForm() {
     if (!validateFields()) return;
 
     const formData = {
+      productId,
       cardNumber,
       cvv,
       name,

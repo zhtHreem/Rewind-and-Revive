@@ -88,11 +88,11 @@ const router = createBrowserRouter([
     element: <Cart />, // ShoppingCart route
   },
   {
-    path: "/payment",
+    path: "/payment/:productId",
     element: <Payment />, // Payment route
   },
   {
-    path: "/confirmation",
+    path: "/confirmation/:productId",
     element: <Confirmation />,
   },
   {

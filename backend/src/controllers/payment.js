@@ -1,12 +1,14 @@
 import Payment from "../models/payment.js";
+import Product from '../models/Product.js';
 
 export const addPayment = async (req, res) => {
   try {
-    // Extract data from the request body directly
-    const { cardNumber, cvv, name, expirationDate } = req.body;
+    const user = req.user.id;
+    const { productId, cardNumber, cvv, name, expirationDate } = req.body;
 
     // Log the data for debugging
     console.log('Received Payment Data:', {
+      productId,
       cardNumber,
       cvv,
       name,
@@ -18,12 +20,20 @@ export const addPayment = async (req, res) => {
       return res.status(400).json({ message: 'All fields are required' });
     }
 
-    // Create a new payment record
+    // Fetch the product to get the owner information
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    // Create a new payment record with the productOwner extracted from the product
     const newPayment = new Payment({
-      cardNumber, // Save as 'number' in the database
+      productBuyers: user,  // The buyer's user ID
+      productOwner: product.owner,  // The owner's user ID from the product
+      cardNumber,  // Save as 'number' in the database
       cvv,
       name,
-      expirationDate, // Save as 'expDate' in the database
+      expirationDate,  // Save as 'expDate' in the database
     });
 
     // Save the payment to the database

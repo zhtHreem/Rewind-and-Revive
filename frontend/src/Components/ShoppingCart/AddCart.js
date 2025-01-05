@@ -55,26 +55,27 @@ const AddCart = () => {
   
   const handleDecrement = (id) => {
     setCart((prevCart) => {
-      const updatedCart = prevCart.map((product) => {
-        if (productId === id && product.quantity > 1) {
-          // Decrement the quantity if it's greater than 1
-          return { ...product, quantity: product.quantity - 1 };
-        }
-        if (productId === id && product.quantity === 1) {
-          // Remove the product when the quantity reaches 0
-          return null;
-        }
-        return product;
-      }).filter((product) => product !== null); // Filter out null values (deleted products)
+      const updatedCart = prevCart
+        .map((product) => {
+          if (product.id === id && product.quantity > 1) {
+            // Decrement the quantity if it's greater than 1
+            return { ...product, quantity: product.quantity - 1 };
+          }
+          if (product.id === id && product.quantity <= 1) {
+            // Remove the product if quantity is 1 or 0
+            return null; // Mark the product for removal
+          }
+          return product;
+        })
+        .filter((product) => product !== null); // Filter out null values (deleted products)
   
       // Save the updated cart to localStorage
       localStorage.setItem("cart", JSON.stringify(updatedCart));
   
       return updatedCart; // Return the updated cart state
     });
-  };
+  };  
   
-
   return (
     <Box className="cart-drawer">
       {/* Cart Header */}
@@ -170,7 +171,7 @@ const AddCart = () => {
           <Button
             fullWidth
             variant="contained"
-            onClick={() => navigate("/payment")}
+            onClick={() => navigate(`/payment/${productId}`)}
             className="cart-button"
             sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}
           >

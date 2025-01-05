@@ -13,7 +13,8 @@ import RadioGroup from '@mui/material/RadioGroup';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-
+import Swal from 'sweetalert2';
+import axios from 'axios';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
 import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import SimCardRoundedIcon from '@mui/icons-material/SimCardRounded';
@@ -30,8 +31,8 @@ export default function PaymentForm() {
   const [paymentType, setPaymentType] = React.useState('creditCard');
   const [cardNumber, setCardNumber] = React.useState('');
   const [cvv, setCvv] = React.useState('');
+  const [name, setName] = React.useState('');
   const [expirationDate, setExpirationDate] = React.useState('');
-  const [success, setSuccess] = React.useState(false);
 
   const handlePaymentTypeChange = (event) => {
     setPaymentType(event.target.value);
@@ -60,15 +61,59 @@ export default function PaymentForm() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (paymentType === 'creditCard' && cardNumber && cvv && expirationDate) {
-      alert('Payment successful!'); // Alert on success for credit card payment
-      setSuccess(true);
-    } else if (paymentType === 'bankTransfer') {
-      setSuccess(true);
-    } else {
-      alert('Please fill in all the fields.');
+  const validateFields = () => {
+    if (!cardNumber || !cvv || !name || !expirationDate) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Incomplete Information',
+        text: 'Please fill in all required fields.',
+      });
+      return false;
     }
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validateFields()) return;
+
+    const formData = {
+      cardNumber,
+      cvv,
+      name,
+      expirationDate,
+    };
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/payment/add', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token'),
+        },
+      });
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Payment Added',
+        text: 'Your payment has been received!',
+      });
+      resetForm();
+    } catch (error) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        text: error.response?.data?.message || 'Failed to add payment. Please try again.',
+      });
+      console.error('Payment submission error:', error);
+    }
+  };
+
+  const resetForm = () => {
+    setCardNumber('');
+    setCvv('');
+    setName('');
+    setExpirationDate('');
   };
 
   return (
@@ -185,17 +230,20 @@ export default function PaymentForm() {
                     </FormGrid>
                   </Box>
                   <Box sx={{ display: 'flex', gap: 2 }}>
-                    <FormGrid sx={{ flexGrow: 1 }}>
-                      <FormLabel htmlFor="card-name" required>
-                        Name
-                      </FormLabel>
-                      <OutlinedInput
-                        id="card-name"
-                        autoComplete="card-name"
-                        placeholder="John Smith"
-                        required
-                      />
-                      </FormGrid>
+                  <FormGrid sx={{ flexGrow: 1 }}>
+                    <FormLabel htmlFor="card-name" required>
+                      Name
+                    </FormLabel>
+                   <OutlinedInput
+                     id="card-name"
+                     autoComplete="card-name"
+                     placeholder="John Smith"
+                     value={name} // Bind the input value to state
+                     onChange={(e) => setName(e.target.value)} // Update state on input change
+                     required
+                   />
+                 </FormGrid>
+
                       </Box>
                   <Box sx={{ display: 'flex', gap: 2 }}>
                     <FormGrid sx={{ flexGrow: 1 }}>

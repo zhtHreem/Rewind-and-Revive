@@ -11,6 +11,7 @@ import userRoute from './src/routes/user.js'
 import productRoute from './src/routes/product.js'
 import bidRoute from './src/routes/biddingProduct.js'
 import biddingRoute from './src/routes/bid.js'
+import paymentRoute from './src/routes/payment.js'
 import Chat from './src/models/chat.js';
 import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
 
@@ -119,6 +120,7 @@ app.use('/api/user', userRoute);
 app.use('/api/product', productRoute);
 app.use('/api/biddingProduct', bidRoute);
 app.use('/api/bid', biddingRoute);
+app.use('/api/payment', paymentRoute);
 app.use('/api/chats', chatRoutes); // Add chat routes here
 
 app.use((err, req, res, next) => {

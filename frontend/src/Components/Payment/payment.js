@@ -54,7 +54,7 @@ const Payment = () => {
           {cart.map((product) => (
             <tr key={product._id} className="payment-row">
               <td>
-              <img src={product.image || "https://via.placeholder.com/100"} alt={product.name} className="product-image" />
+              <img  src={product.images?.[0] || "https://via.placeholder.com/100"} alt={product.name} className="product-image" />
               </td>
               <td className="product-name">{product.name}</td>
               <td className="product-price">

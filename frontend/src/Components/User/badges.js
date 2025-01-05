@@ -1,9 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Paper, Typography, Box, Tabs, Tab, Grid, Card, Badge,CardContent,Tooltip, CardHeader, CardMedia, Button } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import LockIcon from '@mui/icons-material/Lock';
+import axios from 'axios';
+
 const Badges = () => {
   const [tabValue, setTabValue] = useState(0);
   const [showMore, setShowMore] = useState(false); // Control show more/less
+    const [badgesData, setBadgesData] = useState({
+  sellerBadges: [],
+  userBadges: []
+});
+
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -14,26 +22,41 @@ const Badges = () => {
     setShowMore((prevShowMore) => !prevShowMore);
   };
 
-  const sellerBadges = [
-    { name: 'Starter Seller', Description: 'Sold 10 Items', image: require('./badges/startseller.png') },
-    { name: 'Rising Star', Description: 'Sold 50 Items', image: require('./badges/star.png') },
-    { name: 'Market Leader', Description: 'Sold 100 Items', image: require('./badges/marketleader.png') },
-    { name: 'Popularity Pro', Description: 'Received 100 Likes', image: require('./badges/popularitypro.png') },
-    { name: 'Top Seller', Description: 'Received 500 Likes', image: require('./badges/sell.png') },
-    { name: 'Customer Choice', Description: 'Achieved 5-Star Rating', image: require('./badges/bestseller.png') }
-  ];
+   useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        const response =await axios.get(`http://localhost:5000/api/user/badges`,{headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('token') 
+                }});
+      
+        setBadgesData(response.data);
+        console.log('Badges data:',badgesData);
+      } catch (err) {
+        console.error('Error fetching badges:', err);
+      }
+    };
 
-  const userBadges = [
-    { name: 'First Purchase', Description: 'Bought 1 Item', image: require('./badges/firstpurchase.png') },
-    { name: 'Frequent Buyer', Description: 'Bought 10 Items', image: require('./badges/frequentpurchase.png') },
-    { name: 'Loyal Shopper', Description: 'Bought 25 Items', image: require('./badges/loyalshopper.png') },
-    { name: 'Big Spender', Description: 'Bought 50 Items', image: require('./badges/bigspender.png') },
-    { name: 'Ultimate Collector', Description: 'Bought 100 Items', image: require('./badges/ultimatecollector.png') },
-    { name: 'Shopping Spree', Description: 'Spent $500', image: require('./badges/shoppingspree.png') }
-  ];
+    fetchBadges();
+  }, []);
 
-  const badges = tabValue === 0 ? sellerBadges : userBadges;
+  const badgeImages = {
+  'Starter Seller': require('./badges/startseller.png'),
+  'Rising Star': require('./badges/star.png'),
+  'Market Leader': require('./badges/marketleader.png'),
+  'Popularity Pro': require('./badges/popularitypro.png'),
+  'Top Seller': require('./badges/sell.png'),
+  'Customer Choice': require('./badges/bestseller.png'),
+  'First Purchase': require('./badges/firstpurchase.png'),
+  'Frequent Buyer': require('./badges/frequentpurchase.png'),
+  'Loyal Shopper': require('./badges/loyalshopper.png'),
+  'Big Spender': require('./badges/bigspender.png'),
+  'Ultimate Collector': require('./badges/ultimatecollector.png'),
+  'Shopping Spree': require('./badges/shoppingspree.png'),
+};
 
+
+  const badges = tabValue === 0 ? badgesData.sellerBadges || [] : badgesData.userBadges || [];
   // Only show the first 2 badges initially, and all if "Show More" is clicked
   const displayedBadges = showMore ? badges : badges.slice(0, 3);
 
@@ -62,13 +85,22 @@ const Badges = () => {
               >
               <Card sx={{ height: '150px', width: '100%' }}>
               <Card sx={{ borderRadius: '16px' }}>
-                <CardMedia
-                  component="img"
-                   sx={{ height: 50, width: 80, objectFit: 'contain' }} // Fixed size and scale the image properly
+               {badge.isAchieved ? (
+                 <CardMedia
+                      component="img"
+                      sx={{  height: 50, width: 80,objectFit: 'contain',boxShadow: 8,border: '2px solid #FFD700',  borderRadius: 2, p: 1,backgroundColor: '#fff', }}
+                      image={badgeImages[badge.name]}
+                      alt={badge.name}
+                      />
+               ) : (
+                  <>
+                 <CardMedia
+                      component="img"
+                      sx={{ height: 50, width: 80, objectFit: 'contain', filter: 'grayscale(100%)', opacity: 0.5,  cursor: 'not-allowed', boxShadow: 1,   borderRadius: 2, }}
+                      image={badgeImages[badge.name]}   alt="Locked Badge"/>
+                  </>
+                 )}
 
-                  image={badge.image}
-                  alt={badge.name}
-                />
                 </Card>
                 <CardHeader color='black'
                   subheader={badge.name}

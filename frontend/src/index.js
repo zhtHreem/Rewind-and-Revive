@@ -29,7 +29,7 @@ const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.goog
 
 const router = createBrowserRouter([
   {
-    path: "/",
+    path: "/app",
     element: <App />,
   },
   {
@@ -45,7 +45,7 @@ const router = createBrowserRouter([
     element: <NewProduct/>,
   },
   {
-    path: "/product/:productId",
+    path: "/",
     element: <ProductPage />,
   },
   {

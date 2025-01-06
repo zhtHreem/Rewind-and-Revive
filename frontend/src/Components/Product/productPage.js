@@ -1,41 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate ,useParams} from 'react-router-dom';
-
 import { Grid, Box, Typography, Button } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import { Pagination } from 'swiper/modules';
+import '..swiper/css';
+import '..swiper/css/pagination';
+import { Pagination } from 'swiper';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const ProductPage = () => {
-  const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
-  const [description, setDescription] = useState(false);
-  const [size, setSize] = useState(false);
-  const [shipping, setShipping] = useState(false);
-  const [cart, setCart] = useState(() => {
-    const savedCart = localStorage.getItem("cart");
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const [cart, setCart] = useState([]);
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
-  const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
-  const { productId }= useParams();
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [product, setProduct] = useState(null);
+  const [size, setSize] = useState(false);
+  const [shipping, setShipping] = useState(false);
+  const [description, setDescription] = useState(false);
+  const productId = "67720e9813993fae4cbcfadd";
+  const navigate = useNavigate();
 
   useEffect(() => {
-
     const fetchProduct = async () => {
       try {
-
         const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
         setProduct(response.data);
-  
-        if (response.data.images && response.data.images.length > 0) {
+        if (response.data.images?.length > 0) {
           setMainImage(response.data.images[0]);
         }
       } catch (error) {
@@ -53,109 +46,82 @@ const ProductPage = () => {
     window.addEventListener('resize', handleResize);
 
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [productId]);
 
-  useEffect(() => {
-    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
-    setCart(storedCart);
-  }, []);
-  
-  const handleAddToCart = async (product) => {
+  const handleAddToCart = async () => {
     try {
-      // Fetch product data from API using the correct product ID
       const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
-      const productData = response.data;
-      
-      // Update the cart state
-      setCart((prevCart) => {
-        // Check if the product already exists in the cart by comparing product.id
-        const isProductInCart = prevCart.find((item) => item.id === productId);
-        if (isProductInCart) {
-          console.log('Product already in cart:', productData);
-          return prevCart; // Avoid adding duplicates
-        }
-        
-        // Add product to cart with initial quantity
-        const updatedCart = [...prevCart, { id: productId, name: productData.name, price: productData.price, quantity: 1 }];
-        
-        // Log cart after update
-        console.log('Cart updated:', updatedCart);
-        
-        // Save updated cart to localStorage
-        localStorage.setItem('cart', JSON.stringify(updatedCart));
-        
-        return updatedCart;
-      });
-
-      // Navigate to the cart page (optional)
-      navigate(`/cart/${productId}`);
+      setCart((prevCart) => [...prevCart, response.data]);
+      navigate('/cart');
     } catch (error) {
-      console.error("Error adding product to cart:", error);
+      console.error('Error adding product to cart:', error);
     }
   };
-  
-  
-  const handleImageClick = (image) => {
-    setMainImage(image);
-  };
 
-  if (!product) return <Typography>Loading...</Typography>;
+  const handleImageClick = (image) => setMainImage(image);
+
+  if (!product) {
+    return <Typography>Loading...</Typography>;
+  }
+
+  const sizeDetails = product.type === 'top/bottom' ? [
+    { label: 'Top - Waist', value: `${product.topSizes.waist} inches` },
+    { label: 'Top - Arm Length', value: `${product.topSizes.armLength} inches` },
+    { label: 'Top - Hips', value: `${product.topSizes.hips} inches` },
+    { label: 'Top - Shoulder Width', value: `${product.topSizes.shoulderWidth} inches` },
+    { label: 'Top - Bust/Chest', value: `${product.topSizes.bustChest} inches` },
+    { label: 'Top - Neck Circumference', value: `${product.topSizes.neckCircumference} inches` },
+    { label: 'Bottom - Waist', value: `${product.bottomSizes.waist} inches` },
+    { label: 'Bottom - Hips', value: `${product.bottomSizes.hips} inches` },
+    { label: 'Bottom - Inseam', value: `${product.bottomSizes.inseam} inches` },
+    { label: 'Bottom - Thigh Leg Opening', value: `${product.bottomSizes.thighLegOpening} inches` },
+    { label: 'Bottom - Rise', value: `${product.bottomSizes.rise} inches` }
+  ] : [];
 
   return (
     <Layout>
-      <Box sx={{ flexGrow: 1, padding: 6 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12} md={6}>
-            <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2, backgroundColor: '#f9f9f9' }}>
-              <Box component="img" src={mainImage} alt="Main Product" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </Box>
+      <Swiper slidesPerView={slidesPerView} spaceBetween={10} pagination={{ clickable: true }} modules={[Pagination]} style={{ marginTop: '20px' }}>
+        {product.images.map((image, index) => (
+          <SwiperSlide key={index} onClick={() => handleImageClick(image)}>
+            <Box component="img" src={image} alt={`Thumbnail ${index + 1}`} sx={{ cursor: 'pointer' }} />
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
-            <Swiper slidesPerView={slidesPerView} spaceBetween={10} pagination={{ clickable: true }} className="mySwiper" modules={[Pagination]} style={{ marginTop: '20px', height: 100 }}>
-              {product.images.map((image, index) => (
-                <SwiperSlide key={index} onClick={() => handleImageClick(image)}>
-                  <Box component="img" src={image} alt={`Thumbnail ${index + 1}`} sx={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer', border: mainImage === image ? '2px solid #007bff' : '2px solid transparent' }} />
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </Grid>
+      <Grid container spacing={2}>
+        <Grid item xs={12} md={6}>
+          <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
+            <Typography variant="h2">{product.name}</Typography>
+            <Typography variant="h4">${product.price}</Typography>
+            <Button variant="contained" onClick={handleAddToCart}>Add to Cart</Button>
 
-          <Grid item xs={12} md={6}>
-            <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <Typography variant="h2">{product.name}</Typography>
-              <Typography variant="h4">${product.price}</Typography>
-              <Typography variant="overline" sx={{ cursor: 'pointer' }} onClick={() => product.owner ? navigate(`/profile/${product.owner._id}`) : null}>
-                {product.owner?.username || 'Unknown Owner'}
-              </Typography>
-              <Button variant="contained" onClick={handleAddToCart}>Add to Cart</Button>
+            <Button onClick={() => setSize(!size)} endIcon={<KeyboardArrowDown />}>Size Details</Button>
+            {size && (
+              <TableContainer component={Paper}>
+                <Table>
+                  <TableBody>
+                    {sizeDetails.map((detail, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{detail.label}</TableCell>
+                        <TableCell>{detail.value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            )}
 
-              <Button onClick={() => setSize(!size)} endIcon={<KeyboardArrowDown />}>Size Details</Button>
-              {size && (
-                <TableContainer component={Paper}>
-                  <Table>
-                    <TableBody>
-                      {product.sizeDetails.map((detail, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{detail.label}</TableCell>
-                          <TableCell>{detail.value}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              )}
-
-              <Button onClick={() => setShipping(!shipping)} endIcon={<KeyboardArrowDown />}>Shipping and Returns</Button>
-              {shipping && <Typography>Shipping and return policy details.</Typography>}
-
-              <Button onClick={() => setDescription(!description)} endIcon={<KeyboardArrowDown />}>Description</Button>
-              {description && <Typography>{product.description}</Typography>}
-            </Box>
-          </Grid>
+            <Button onClick={() => setDescription(!description)} endIcon={<KeyboardArrowDown />}>Description</Button>
+            {description && <Typography>{product.description}</Typography>}
+          </Box>
         </Grid>
-      </Box>
+      </Grid>
 
-      {/* Floating Chat Button */}
-      <div style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#007bff', color: 'white', padding: '10px 15px', borderRadius: '30px', cursor: 'pointer' }} onClick={() => setIsChatOpen(!isChatOpen)}>💬 Chat</div>
+      <div
+        style={{ position: 'fixed', bottom: '20px', right: '20px', backgroundColor: '#007bff', color: 'white', padding: '10px 15px', borderRadius: '30px', cursor: 'pointer' }}
+        onClick={() => setIsChatOpen(!isChatOpen)}>
+        💬 Chat
+      </div>
       {isChatOpen && <ProductChat productId={productId} ownerId={product.owner?._id} />}
     </Layout>
   );

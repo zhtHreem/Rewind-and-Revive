@@ -113,11 +113,11 @@ function Navbar() {
       <Box component="navbar" sx={{ position: "sticky", zIndex: 2, display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }} >
         <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
           <Typography variant="h4" className="logo">
-            <span style={{ fontWeight: "bold" }}> R</span>
+            
             <span>
-              <Box component="img" src={require("./recycle3.svg").default} alt="wardrobe" sx={{ width: 35, height: 30, color: "#EAC7C7" }} />
+            <Box component="img" src={require("./S.png")} alt="Logo" sx={{ width: 100, height: 100 }} />
             </span>
-            <span style={{ fontWeight: "bold" }} className="bold">R</span>
+            
           </Typography>
         </Stack>
 

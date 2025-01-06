@@ -1,5 +1,7 @@
 import User from "../models/user.js";
+import mongoose from "mongoose";
 //import { generateToken } from "../utils/jwtUtils.js";
+import Payment from "../models/payment.js";
 import { generateToken } from "../utils/jwtUtils.js";
 import { OAuth2Client } from 'google-auth-library';
 import { sendVerificationEmail } from "../utils/emailVerificationUtils.js";
@@ -221,47 +223,116 @@ const userBadges = [
 ];
 
 
-// Mock user stats
-const getUserStats = (userId) => ({
-  itemsSold: 52,
-  itemsBought: 15,
-  likesReceived: 110,
-  rating: 5.0,
-  totalSpent: 600,
-});
+// // Mock user stats
+// const getUserStats = (userId) => ({
+//   itemsSold: 102,
+//   itemsBought: 15,
+//   likesReceived: 110,
+//   rating: 5.0,
+//   totalSpent: 600,
+// });
+
+// Get user stats including payment data
+const getUserStats = async (userId) => {
+  try {
+  
+
+    // Fetch purchases and sales directly
+    const purchasesCount = await Payment.countDocuments({ productBuyers: userId });
+  //  console.log("purchaseCount",purchasesCount)
+    const salesCount = await Payment.countDocuments({ productOwner: userId });
+
+    // Extract values from aggregation results
+    const itemsBought =purchasesCount || 0;
+    const itemsSold = salesCount || 0;
+    const likesReceived = 0;
+    const rating =  0;
+
+    return {
+      itemsSold,
+      itemsBought ,
+      likesReceived,
+      rating
+    };
+  } catch (error) {
+    console.error('Error getting user stats:', error);
+    return null;
+  }
+};
 
 // Route to get badges for both Seller and Customer
-export const Userbadges = (req, res) => {
+export const Userbadges = async (req, res) => {
   const userId = req.user.id; // Assuming user info is in req.user
-  const userStats = getUserStats(userId);
-
+  const userStats =await getUserStats(userId);
+  const newlyUnlockedBadges = [];
   // Modify the seller badges based on stats
   const sellerUpdatedBadges = sellerBadges.map((badge) => {
-    if (badge.name === 'Starter Seller' && userStats.itemsSold >= 10) badge.isAchieved = true;
+     const wasAchieved = badge.isAchieved;
+    if (badge.name === 'Starter Seller' && userStats.itemsSold >= 1) badge.isAchieved = true;
     if (badge.name === 'Rising Star' && userStats.itemsSold >= 50) badge.isAchieved = true;
     if (badge.name === 'Market Leader' && userStats.itemsSold >= 100) badge.isAchieved = true;
     if (badge.name === 'Popularity Pro' && userStats.likesReceived >= 100) badge.isAchieved = true;
     if (badge.name === 'Top Seller' && userStats.likesReceived >= 500) badge.isAchieved = true;
     if (badge.name === 'Customer Choice' && userStats.rating === 5.0) badge.isAchieved = true;
+    //return badge;
+ 
+
+   // If badge wasn't achieved before but is now, emit socket event
+    if (!wasAchieved && badge.isAchieved) {
+      newlyUnlockedBadges.push(badge);
+      // Emit socket event for each newly unlocked badge
+       const notification = {
+        id: Date.now(),
+        title: 'Badge Unlocked!',
+        description: `Congratulations! You've earned the ${badge.name} badge - ${badge.Description}`,
+        time: 'just now',
+        isRead: false,
+        badgeData: badge // Include badge data
+      };
+            // Use req.io directly (it's already set up in your middleware)
+      req.io.emit('new_notification', notification);
+    }
     return badge;
   });
 
   // Modify the customer badges based on stats
   const customerUpdatedBadges = userBadges.map((badge) => {
+     const wasAchieved = badge.isAchieved;
     if (badge.name === 'First Purchase' && userStats.itemsBought >= 1) badge.isAchieved = true;
     if (badge.name === 'Frequent Buyer' && userStats.itemsBought >= 10) badge.isAchieved = true;
     if (badge.name === 'Loyal Shopper' && userStats.itemsBought >= 25) badge.isAchieved = true;
     if (badge.name === 'Big Spender' && userStats.itemsBought >= 50) badge.isAchieved = true;
     if (badge.name === 'Ultimate Collector' && userStats.itemsBought >= 100) badge.isAchieved = true;
     if (badge.name === 'Shopping Spree' && userStats.totalSpent >= 500) badge.isAchieved = true;
+
+    if (!wasAchieved && badge.isAchieved) {
+      newlyUnlockedBadges.push(badge);
+      
+      const testNotification = {
+        id: Date.now(),
+        title: 'Badge Unlocked!',
+        description: `Congratulations! You've earned the ${badge.name} badge - ${badge.Description}`,
+        time: 'just now',
+        isRead: false,
+      }     
+   
+
+    // Broadcast the notification to all connected clients
+            req.io.emit('new_notification', testNotification);
+     //   badgeData: badge
+     
+    }
     return badge;
   });
 
+   
 
   console.log('Seller Badges:', sellerUpdatedBadges);
+    console.log('user Badges:', customerUpdatedBadges );
   // Respond with both badge types
   res.json({
     sellerBadges: sellerUpdatedBadges,
     userBadges: customerUpdatedBadges,
+    newlyUnlocked: newlyUnlockedBadges
   });
 };

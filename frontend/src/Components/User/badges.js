@@ -3,8 +3,9 @@ import { Paper, Typography, Box, Tabs, Tab, Grid, Card, Badge,CardContent,Toolti
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import LockIcon from '@mui/icons-material/Lock';
 import axios from 'axios';
-
+import { useDispatch } from 'react-redux';
 const Badges = () => {
+  const dispatch = useDispatch();
   const [tabValue, setTabValue] = useState(0);
   const [showMore, setShowMore] = useState(false); // Control show more/less
     const [badgesData, setBadgesData] = useState({

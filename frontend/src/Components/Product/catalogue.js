@@ -5,7 +5,8 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
 import Layout from "../Layout/layout";
 import axios from 'axios';
-
+import SizeChartMUI from "./sizechart";
+import FilterDrawer from "./filter";
 // Size ranges based on standard measurements (in inches)
 const sizeRanges = {
   women: {
@@ -175,7 +176,7 @@ const CataloguePage = () => {
     const [filterOption, setFilterOption] = useState(false);
     const [sortBy, setSortBy] = useState('');
     const isMobile = useMediaQuery('(max-width:600px)');
-
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const defaultCategories = ['men', 'women', 'kids'];
     const productTypes = ['top', 'bottom', 'top/bottom', 'accessories'];
     const sizes = ['small', 'medium', 'large'];
@@ -216,7 +217,7 @@ const CataloguePage = () => {
             setSelectedTypes([]);
         } else if (filterToRemove.startsWith('Sizes:')) {
             setSelectedSizes([]);
-        } else if (filterToRemove.startsWith('Price Up to $')) {
+        } else if (filterToRemove.startsWith('Price Up to Rs.')) {
             setPriceRange('');
         }
     };
@@ -304,20 +305,27 @@ const getFilteredProducts = (products, filters) => {
 );
     return (
         <Layout>
-            <Box p={5}>
+            <Box p={5} >
                 {/* Mobile Filters Button */}
-                {isMobile && (
-                    <Button 
-                        variant="contained" 
-                        onClick={() => setFilterOption(!filterOption)} 
-                        sx={{ mb: 2 }} 
-                        endIcon={filterOption ? <ExpandMore /> : <KeyboardArrowDown />}
-                    >
-                        Filters
-                    </Button>
-                )}
+                               <FilterDrawer
+                    isOpen={isFilterOpen}
+                    onClose={setIsFilterOpen}
+                    categories={defaultCategories}
+                    sizes={sizes}
+                    productTypes={productTypes}
+                    priceRanges={[100, 200, 300]}
+                    category={category}
+                    selectedSizes={selectedSizes}
+                    selectedTypes={selectedTypes}
+                    priceRange={priceRange}
+                    setCategory={setCategory}
+                    setSelectedSizes={setSelectedSizes}
+                    setSelectedTypes={setSelectedTypes}
+                    setPriceRange={setPriceRange}
+                />
 
-                <Box sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row' }}>
+
+                <Box marginTop={4} sx={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row' }}>
                     {/* Filters Panel */}
                     {(isMobile && filterOption) || !isMobile ? (
                         <Box sx={{ width: isMobile ? '100%' : '13%', p: 2, border: !isMobile ? '1px solid #ddd' : 'none', mb: isMobile ? 2 : 0 }}>
@@ -354,6 +362,7 @@ const getFilteredProducts = (products, filters) => {
                                <Button variant="subtitle1" onClick={() => setShowSizeDropdown(!showSizeDropdown)} sx={{ color: "black", width: "100%", borderBottom: "1px outset black", borderLeft: "1px outset black", justifyContent: "space-between", textTransform: "none" }} endIcon={<KeyboardArrowDown />} >
                                     Size
                                 </Button>
+                                
                                 {showSizeDropdown && (
                                     <Box sx={{ pl: 2, mt: 1 }}>
                                         {sizes.map(size => (
@@ -428,19 +437,23 @@ const getFilteredProducts = (products, filters) => {
                     {/* Product Grid Section */}
                     <Box sx={{ width: isMobile ? '100%' : '75%', p: 2 }}>
                         {/* Sort and Count */}
-                        <Box display="flex" justifyContent="space-between" mb={2}>
-                            <Typography variant="body2">
-                                Showing {filteredProducts.length} of {products.length} items
-                            </Typography>
-                            <FormControl sx={{ minWidth: 150, maxWidth: 300 }}>
+                       <Box  display="flex"   flexDirection={isMobile ? 'column' : 'row'} alignItems={isMobile ? 'flex-start' : 'center'}   gap={isMobile ? 2 : 0}  mb={2}>
+                          <Typography      variant="body2"    sx={{   mb: isMobile ? 1 : 0, width: isMobile ? '100%' : 'auto'  }} >
+                                 Showing {filteredProducts.length} of {products.length} items
+                         </Typography>
+        
+                        <Box   display="flex"   alignItems="center"  gap={1}   ml={isMobile ? 0 : 'auto'}  width={isMobile ? '100%' : 'auto'} >
+                           <SizeChartMUI />
+                            <FormControl sx={{    minWidth: isMobile ? '50%' : 200,  maxWidth: 300   }} >
                                 <InputLabel>Sort By</InputLabel>
-                                <Select  value={sortBy}     onChange={(e) => setSortBy(e.target.value)} label="Sort By">
-                                    <MenuItem value="newest">Newest First</MenuItem>
-                                    <MenuItem value="price-high">Price: High to Low</MenuItem>
-                                    <MenuItem value="price-low">Price: Low to High</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Box>
+                                    <Select  value={sortBy}  onChange={(e) => setSortBy(e.target.value)}   label="Sort By" >
+                                        <MenuItem value="newest">Newest First</MenuItem>
+                                      <MenuItem value="price-high">Price: High to Low</MenuItem>
+                                       <MenuItem value="price-low">Price: Low to High</MenuItem>
+                                    </Select>
+                           </FormControl>
+                         </Box>
+                       </Box>
 
                         {/* Applied Filters */}
                         <Box sx={{ mb: 2 }}>

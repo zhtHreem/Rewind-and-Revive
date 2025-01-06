@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import io from 'socket.io-client';
+//import io from 'socket.io-client';
 import { Grid, Box, Typography, Button, Modal, TextField, Paper } from '@mui/material';
 import Layout from '../Layout/layout';
 
-const socket = io('http://localhost:5000');
+//const socket = io('http://localhost:5000');
 
 const BiddingProduct = () => {
   const { id } = useParams();
@@ -38,13 +38,13 @@ const BiddingProduct = () => {
     fetchBidders();
 
     // Listen for bid updates
-    socket.on(`bidUpdate:${id}`, (newBid) => {
-      setBidders((prevBids) => [newBid.bid, ...prevBids].sort((a, b) => b.bidAmount - a.bidAmount));
-    });
+    // socket.on(`bidUpdate:${id}`, (newBid) => {
+    //   setBidders((prevBids) => [newBid.bid, ...prevBids].sort((a, b) => b.bidAmount - a.bidAmount));
+    // });
 
-    return () => {
-      socket.off('newBid');
-    };
+    // return () => {
+    //   socket.off('newBid');
+    // };
   }, [id]);
 
   const handleOpenModal = async () => {

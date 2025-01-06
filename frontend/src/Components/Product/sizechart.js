@@ -1,27 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  IconButton,
-  FormControl,
-  Select,
-  MenuItem,
-  InputLabel,
-  Box,
-  Typography,
-  useTheme,
-  useMediaQuery
-} from '@mui/material';
+import {  Button,  Dialog,  DialogTitle, DialogContent,  DialogActions,Table,TableBody, TableCell,TableContainer,TableHead,TableRow, Paper, IconButton, FormControl,  Select,  MenuItem,  InputLabel, Box,  Typography,  useTheme, useMediaQuery} from '@mui/material';
 import TableChartIcon from '@mui/icons-material/TableChart';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -209,7 +187,7 @@ const SizeChartMUI = () => {
         sx={{ 
           minWidth: isMobile ? 'auto' : '120px',
           ml: isMobile ? 1 : 2,
-          height: isMobile ? '40px' : '56px', // Match height with Sort By dropdown
+          height: isMobile ? '40px' : '56px', 
           '& .MuiButton-startIcon': {
             mr: isMobile ? 0 : 1
           }
@@ -232,11 +210,7 @@ const SizeChartMUI = () => {
           <Box p={2} sx={{ mb: 3, display: 'flex', gap: 2 }}>
             <FormControl sx={{ minWidth: 120 }}>
               <InputLabel>Category</InputLabel>
-              <Select
-                value={category}
-                label="Category"
-                onChange={(e) => setCategory(e.target.value)}
-              >
+              <Select value={category}  label="Category" onChange={(e) => setCategory(e.target.value)} >
                 <MenuItem value="women">Women</MenuItem>
                 <MenuItem value="men">Men</MenuItem>
                 <MenuItem value="kids">Kids</MenuItem>
@@ -245,11 +219,7 @@ const SizeChartMUI = () => {
 
             <FormControl sx={{ minWidth: 120 }}>
               <InputLabel>Type</InputLabel>
-              <Select
-                value={type}
-                label="Type"
-                onChange={(e) => setType(e.target.value)}
-              >
+              <Select value={type}  label="Type" onChange={(e) => setType(e.target.value)} >
                 <MenuItem value="top">Top</MenuItem>
                 <MenuItem value="bottom">Bottom</MenuItem>
               </Select>

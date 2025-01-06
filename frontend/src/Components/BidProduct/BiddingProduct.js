@@ -10,7 +10,10 @@ const BiddingProduct = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [bidders, setBidders] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isBiddingOpen, setIsBiddingOpen] = useState(false);
   const [isBiddingClosed, setIsBiddingClosed] = useState(false);
+
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -27,6 +30,9 @@ const BiddingProduct = () => {
       try {
         const response = await fetch(`http://localhost:5000/api/bid/${id}`);
         const data = await response.json();
+        console.log('API response:', response.status, response.statusText);
+        console.log('Bidders data:', data);
+
         setBidders(data);
       } catch (error) {
         console.error('Error fetching bidders:', error);
@@ -50,6 +56,7 @@ const BiddingProduct = () => {
       const current = new Date();
       const start = new Date(product.bidStartTime);
       const end = new Date(product.bidEndTime);
+      setIsBiddingOpen(current >= start && current <= end);
       setIsBiddingClosed(current > end);
     }
   }, [currentTime, product]);
@@ -100,14 +107,29 @@ const BiddingProduct = () => {
   }
 
   const timeRemaining = () => {
+    const start = new Date(product.bidStartTime);
     const end = new Date(product.bidEndTime);
-    const diff = end - currentTime;
-    if (diff <= 0) return 'Bidding has ended';
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-    return `${hours}h ${minutes}m ${seconds}s remaining`;
+    const current = new Date();
+  
+    if (current < start) {
+      const diff = start - current;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      return `Bidding starts in ${hours}h ${minutes}m ${seconds}s`;
+    }
+  
+    if (current >= start && current <= end) {
+      const diff = end - current;
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      return `${hours}h ${minutes}m ${seconds}s remaining`;
+    }
+  
+    return 'Bidding has ended';
   };
+  
 
   return (
     <Layout>
@@ -183,34 +205,40 @@ const BiddingProduct = () => {
               </Modal>
 
               <TextField
-                label="Place your bid"
-                variant="outlined"
-                fullWidth
-                value={bidAmount}
-                onChange={(e) => setBidAmount(e.target.value)}
-                disabled={isBiddingClosed}
-              />
-              <Button
-                variant="contained"
-                size="medium"
-                sx={{ backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}
-                onClick={handlePlaceBid}
-                disabled={isBiddingClosed}
-              >
-                Place Your Bid
-              </Button>
+                  label="Place your bid"
+                 variant="outlined"
+                 fullWidth
+                 value={bidAmount}
+                 onChange={(e) => setBidAmount(e.target.value)}
+                  disabled={!isBiddingOpen || isBiddingClosed}
+               />
+                 <Button
+                  variant="contained"
+                  size="medium"
+                  sx={{ backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}
+                  onClick={handlePlaceBid}
+                 disabled={!isBiddingOpen || isBiddingClosed}
+                  >
+                   Place Your Bid
+                </Button>
+
             </Box>
             <Box sx={{ padding: 2, border: '1px solid #ccc', marginTop: 2, textAlign: 'center' }}>
               <Typography variant="h6">Starting Price: ${product.startingPrice}</Typography>
               <Typography variant="h6">Bidding Starts at: {product.bidStartTime}</Typography>
               <Typography variant="h6">Bidding Ends at: {product.bidEndTime}</Typography>
+                {!isBiddingOpen && !isBiddingClosed && (
+                   <Typography variant="h6" color="warning">
+                    Bidding has not started yet
+                  </Typography>
+                )}
+              {isBiddingOpen && <Typography>{timeRemaining()}</Typography>}
               {isBiddingClosed && (
-                <Typography variant="h6" color="error" sx={{ marginTop: 2 }}>
-                  Bidding has closed
-                </Typography>
-              )}
-              {!isBiddingClosed && <Typography>{timeRemaining()}</Typography>}
-            </Box>
+                 <Typography variant="h6" color="error" sx={{ marginTop: 2 }}>
+                      Bidding has closed
+                    </Typography>
+                 )}
+              </Box>
           </Grid>
         </Grid>
       </Box>

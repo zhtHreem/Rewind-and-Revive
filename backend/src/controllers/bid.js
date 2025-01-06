@@ -25,7 +25,6 @@ export const getBidsByProduct = async (req, res) => {
     try {
       const { productId } = req.params;
       const bids = await Bid.find({ productId }).sort({ bidAmount: -1 }); // Sort by bidAmount descending
-      console.log("bids",bids);
       res.status(200).json(bids);
     } catch (error) {
       console.error(error);

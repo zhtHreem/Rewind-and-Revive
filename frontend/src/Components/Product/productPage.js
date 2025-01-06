@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate ,useParams} from 'react-router-dom';
+
 import { Grid, Box, Typography, Button } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
@@ -17,18 +18,24 @@ const ProductPage = () => {
   const [description, setDescription] = useState(false);
   const [size, setSize] = useState(false);
   const [shipping, setShipping] = useState(false);
-  const [cart, setCart] = useState([]);
+  const [cart, setCart] = useState(() => {
+    const savedCart = localStorage.getItem("cart");
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const productId = "67720e9813993fae4cbcfadd";
+  const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
+  const { productId }= useParams();
 
   useEffect(() => {
+
     const fetchProduct = async () => {
       try {
+
         const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
         setProduct(response.data);
-        if (response.data.images?.length > 0) {
+  
+        if (response.data.images && response.data.images.length > 0) {
           setMainImage(response.data.images[0]);
         }
       } catch (error) {
@@ -48,17 +55,49 @@ const ProductPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const handleAddToCart = async () => {
+  useEffect(() => {
+    const storedCart = JSON.parse(localStorage.getItem("cart")) || [];
+    setCart(storedCart);
+  }, []);
+  
+  const handleAddToCart = async (product) => {
     try {
+      // Fetch product data from API using the correct product ID
       const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
-      setCart((prevCart) => [...prevCart, response.data]);
-      navigate('/cart');
+      const productData = response.data;
+      
+      // Update the cart state
+      setCart((prevCart) => {
+        // Check if the product already exists in the cart by comparing product.id
+        const isProductInCart = prevCart.find((item) => item.id === productId);
+        if (isProductInCart) {
+          console.log('Product already in cart:', productData);
+          return prevCart; // Avoid adding duplicates
+        }
+        
+        // Add product to cart with initial quantity
+        const updatedCart = [...prevCart, { id: productId, name: productData.name, price: productData.price, quantity: 1 }];
+        
+        // Log cart after update
+        console.log('Cart updated:', updatedCart);
+        
+        // Save updated cart to localStorage
+        localStorage.setItem('cart', JSON.stringify(updatedCart));
+        
+        return updatedCart;
+      });
+
+      // Navigate to the cart page (optional)
+      navigate(`/cart/${productId}`);
     } catch (error) {
-      console.error('Error adding product to cart:', error);
+      console.error("Error adding product to cart:", error);
     }
   };
-
-  const handleImageClick = (image) => setMainImage(image);
+  
+  
+  const handleImageClick = (image) => {
+    setMainImage(image);
+  };
 
   if (!product) return <Typography>Loading...</Typography>;
 

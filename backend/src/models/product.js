@@ -18,6 +18,9 @@ const ProductSchema = new mongoose.Schema({
   description: { 
     type: String 
   },
+  category:{
+    type: String,
+  },
   type: { 
     type: String, 
     enum: ['top', 'bottom', 'top/bottom', 'accessories'], 

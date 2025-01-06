@@ -12,7 +12,7 @@ export const createProduct = async (req, res) => {
         message: 'Invalid price. Must be a positive number.'
       });
     }
-
+    
     const categories = req.body.categories  ? JSON.parse(req.body.categories) : [];
     const materials = req.body.materials  ? JSON.parse(req.body.materials) : [];
 
@@ -75,6 +75,7 @@ export const createProduct = async (req, res) => {
       name: req.body.name,
       price: parseFloat(req.body.price),
       color: req.body.color,
+      category:req.body.category,
       description: req.body.description || '',
       type: req.body.type,
       categories,
@@ -99,6 +100,18 @@ export const createProduct = async (req, res) => {
 };
 
 
+
+
+
+// Endpoint to fetch products
+export const getProductCatalogueList = async (req, res) => {
+  try {
+    const products = await Product.find(); // You can add filters based on query params
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
 
 
 

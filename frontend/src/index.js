@@ -45,7 +45,7 @@ const router = createBrowserRouter([
     element: <NewProduct/>,
   },
   {
-    path: "/productpage",
+    path: "/product/:productId",
     element: <ProductPage />,
   },
   {
@@ -84,15 +84,15 @@ const router = createBrowserRouter([
     element: <ContactUs />, // ContactUs route
   },
   {
-    path: "/cart",
+    path: "/cart/:productId",
     element: <Cart />, // ShoppingCart route
   },
   {
-    path: "/payment",
+    path: "/payment/:productId",
     element: <Payment />, // Payment route
   },
   {
-    path: "/confirmation",
+    path: "/confirmation/:productId",
     element: <Confirmation />,
   },
   {

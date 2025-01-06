@@ -11,9 +11,7 @@ export const addBid = async (req, res) => {
     
         const newBid = new Bid({ productId, name, bidAmount });
         await newBid.save();
-    
-        // Emit event to notify clients
-       io.emit(`bidUpdate:${productId}`, { bid: newBid });
+  
     
         res.status(201).json({ message: 'Bid placed successfully', bid: newBid });
     } catch (error) {

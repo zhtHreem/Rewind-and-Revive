@@ -110,7 +110,7 @@ function Navbar() {
 
   return (
     <>
-      <Box component="navbar" sx={{ position: "sticky", zIndex: 2, display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }} >
+      <Box component="navbar" marginBottom={10} sx={{ position: "fixed", zIndex: 2,width:"100%",backgroundColor:"white", display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }} >
         <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
           <Typography variant="h4" className="logo">
             <span>
@@ -134,7 +134,7 @@ function Navbar() {
           </Link>
         </Stack>
 
-        <Stack direction="row" alignItems="center" sx={{position:"relative"}}spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 4 }}>
+        <Stack direction="row" alignItems="center" sx={{position:"relative"}} spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 15 }}>
           <IconButton onClick={handleCartOpen}>
             {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
           </IconButton>
@@ -191,6 +191,7 @@ function Navbar() {
         </Drawer>
       </Box>
       {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />}
+      <Box sx={{ height: "64px" }} />
     </>
   );
 }

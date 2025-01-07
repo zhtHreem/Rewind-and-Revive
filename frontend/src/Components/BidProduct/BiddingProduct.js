@@ -224,9 +224,29 @@ const BiddingProduct = () => {
 
             </Box>
             <Box sx={{ padding: 2, border: '1px solid #ccc', marginTop: 2, textAlign: 'center' }}>
-              <Typography variant="h6">Starting Price: ${product.startingPrice}</Typography>
-              <Typography variant="h6">Bidding Starts at: {product.bidStartTime}</Typography>
-              <Typography variant="h6">Bidding Ends at: {product.bidEndTime}</Typography>
+            <Typography variant="h6">Starting Price: ${product.startingPrice}</Typography>
+            <Typography variant="h6">
+              Bidding Starts at: {new Date(product.bidStartTime).toLocaleString("en-US", {
+              timeZone: "Asia/Karachi", // Replace with your time zone
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              })}
+           </Typography>
+           <Typography variant="h6">
+             Bidding Ends at: {new Date(product.bidEndTime).toLocaleString("en-US", {
+             timeZone: "Asia/Karachi", // Replace with your time zone
+             year: "numeric",
+             month: "2-digit",
+             day: "2-digit",
+             hour: "2-digit",
+             minute: "2-digit",
+             second: "2-digit",
+             })}
+           </Typography>
                 {!isBiddingOpen && !isBiddingClosed && (
                    <Typography variant="h6" color="warning">
                     Bidding has not started yet

@@ -12,7 +12,7 @@ const BiddingProduct = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isBiddingOpen, setIsBiddingOpen] = useState(false);
   const [isBiddingClosed, setIsBiddingClosed] = useState(false);
-
+  const [error, setError] = useState('');
 
 
   useEffect(() => {
@@ -76,6 +76,10 @@ const BiddingProduct = () => {
 
   const handlePlaceBid = async () => {
     if (bidAmount) {
+        if (Number(bidAmount) <= product.startingPrice) {
+          setError(`Bid amount must be greater than Rs.${product.startingPrice}`);
+          return;
+        }
       try {
         const response = await fetch('http://localhost:5000/api/bid', {
           method: 'POST',
@@ -209,8 +213,13 @@ const BiddingProduct = () => {
                  variant="outlined"
                  fullWidth
                  value={bidAmount}
-                 onChange={(e) => setBidAmount(e.target.value)}
-                  disabled={!isBiddingOpen || isBiddingClosed}
+                 onChange={(e) => {
+                  setBidAmount(e.target.value);
+                  setError(''); // Clear error while typing
+                }}
+                disabled={!isBiddingOpen || isBiddingClosed}
+                error={!!error}
+                helperText={error}
                />
                  <Button
                   variant="contained"

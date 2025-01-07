@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  TextareaAutosize,
-} from "@mui/material";
+import { Box, Button, TextField, Typography, TextareaAutosize,} from "@mui/material";
+import Layout from '../Layout/layout';
 
 const CreateProductForm = () => {
   const [formData, setFormData] = useState({
@@ -49,6 +44,7 @@ const CreateProductForm = () => {
   };
 
   return (
+    <Layout>
     <Box
       component="form"
       onSubmit={handleSubmit}
@@ -58,6 +54,8 @@ const CreateProductForm = () => {
         display: "flex",
         flexDirection: "column",
         gap: 3,
+        marginTop: 5,
+        marginBottom: 5,
         padding: 3,
         boxShadow: 3,
         borderRadius: 2,
@@ -143,6 +141,7 @@ const CreateProductForm = () => {
         Create Product
       </Button>
     </Box>
+    </Layout>
   );
 };
 

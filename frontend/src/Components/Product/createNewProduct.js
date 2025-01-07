@@ -6,7 +6,8 @@ import Swal from 'sweetalert2';
 import axios from 'axios';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Layout from "../Layout/layout";
-
+import LoadingOverlay from "../Utils/loading";
+import { useNavigate } from "react-router-dom";
   const category = {
     "top": {
       categories: ["Shirt", "Blouse", "Sweater", "Jacket", "Cardigan", "Tank Top"],
@@ -32,6 +33,9 @@ import Layout from "../Layout/layout";
    
 
 function NewProduct({ setAddProduct =true }){
+
+        const navigate = useNavigate(); 
+        const [isLoading, setIsLoading] = useState(false);
         const [images, setImages] = useState([]);
         const [imageFiles, setImageFiles] = useState([]);
         const[color,setColor]=useState("");
@@ -86,9 +90,11 @@ function NewProduct({ setAddProduct =true }){
 
         const handleSubmit = async (e) => {
         e.preventDefault();
-
+        setIsLoading(true); // Show loading at start
         // Validate required fields
         if (!name || !price || !color || !selectedOption ||!selectedCategory) {
+                    setIsLoading(false); // Hide loading if validation fails
+
             Swal.fire({
                 icon: 'error',
                 title: 'Incomplete Information',
@@ -144,12 +150,20 @@ function NewProduct({ setAddProduct =true }){
             });
 
             // Success handling
+             setIsLoading(false); // Hide loading on success
             Swal.fire({
                 icon: 'success',
                 title: 'Product Added',
-                text: 'Your product has been successfully added!'
+                timer: 2000,
+                text: 'Your product has been successfully added!',
+                
             });
-
+            
+            // Redirect to product page
+            console.log('Product added:', response.data);
+            setTimeout(() => {
+               navigate(`/product/${response.data.product._id}`);
+              }, 2000); 
             // Reset form or close dialog
             resetForm();
         } catch (error) {
@@ -250,7 +264,7 @@ const handleMaterialChange = (event) => {
          
          <Box   p={6} sx={{backgroundColor: 'rgba(0, 0, 0, 0.5)',}}>
             <Paper sx={{p:{xs:3,sm:3},border:"1px solid black"}} elevation={24}>
-
+                <LoadingOverlay show={isLoading} />
                         <form onSubmit={handleSubmit}>
 
                 

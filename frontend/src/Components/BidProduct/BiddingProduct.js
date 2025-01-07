@@ -224,7 +224,7 @@ const BiddingProduct = () => {
 
             </Box>
             <Box sx={{ padding: 2, border: '1px solid #ccc', marginTop: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Starting Price: ${product.startingPrice}</Typography>
+            <Typography variant="h6">Starting Price: Rs.{product.startingPrice}</Typography>
             <Typography variant="h6">
               Bidding Starts at: {new Date(product.bidStartTime).toLocaleString("en-US", {
               timeZone: "Asia/Karachi", // Replace with your time zone

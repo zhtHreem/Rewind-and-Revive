@@ -22,7 +22,7 @@ const ProductCard = ({ product }) => {
           {product.description}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          Starting Price: ${product.startingPrice}
+          Starting Price: Rs.{product.startingPrice}
         </Typography>
         <Button
           variant="contained"

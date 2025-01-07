@@ -1,52 +1,65 @@
-import React from 'react';
-import { Container, Grid, Paper, Typography, Avatar, Tabs, Tab, Box, Stack, IconButton } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Container, Grid, Paper, Typography, Avatar, Tabs, Tab, Box } from '@mui/material';
 import Badges from './badges';
 import Layout from '../Layout/layout';
-import Dashboard from './Dashboard'; // Import Dashboard component
+import Dashboard from './Dashboard';
+import { useParams } from 'react-router-dom';
+
 
 const UserProfilePage = () => {
-  const [tabValue, setTabValue] = React.useState(0);
+  const { id } = useParams();
+  const [tabValue, setTabValue] = useState(0);
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        console.log("Frontend Token:", token);
+    
+        if (!token) {
+          alert("Token is missing!");
+          setLoading(false);  // ✅ Stop loading when token is missing
+          return;
+        }
+    
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        const userId = id || decodedToken.id;
+    
+        const response = await axios.get(`http://localhost:5000/api/user/profile/${userId}`, {
+          headers: { Authorization: token } 
+      });
+      
+        console.log("Frontend API Response:", response.data);
+        setUserData(response.data);
+        setLoading(false);  // ✅ Stop loading once data is fetched successfully
+      } catch (error) {
+        console.error("❌ Frontend Error Fetching User Data:", error);
+        alert("Failed to fetch user data");
+        setLoading(false);  // ✅ Stop loading on error too
+      }
+    };
+    
+    fetchUserData();
+}, [id]);
+
+
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
 
-  // Example stats data
-  const stats = {
-    productsSold: 75,
-    totalListed: 100,
-    itemsBought: 20,
-    totalSpent: 950,
-    totalEarned: 1350,
-    likesReceived: 520,
-  };
+  if (loading) {
+    return <Typography>Loading...</Typography>;
+  }
 
-  // Reviews data for the ratings bar graph
-  const reviewsData = {
-    fiveStar: 320,
-    fourStar: 150,
-    threeStar: 50,
-    twoStar: 30,
-    oneStar: 20,
-  };
+  if (!userData) {
+    return <Typography>Error loading user data.</Typography>;
+  }
 
-  // Monthly sales data
-  const monthlySales = [
-    { month: 'January', value: 50 },
-    { month: 'February', value: 75 },
-    { month: 'March', value: 60 },
-    { month: 'April', value: 80 },
-    { month: 'May', value: 90 },
-    { month: 'June', value: 100 },
-    { month: 'July', value: 85 },
-    { month: 'August', value: 70 },
-    { month: 'September', value: 95 },
-    { month: 'October', value: 110 },
-    { month: 'November', value: 130 },
-    { month: 'December', value: 120 },
-  ];
-
-  const topSellerRank = 10; // Example rank: Top 10%
+  const { sellerBadges, userBadges } = userData;
 
   return (
     <>
@@ -58,17 +71,16 @@ const UserProfilePage = () => {
               <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
                 <Avatar
                   alt="Profile Image"
-                  src={require("./images/user.png")}
+                  src={require('./images/user.png')}
                   sx={{ width: 150, height: 150, margin: 'auto' }}
                 />
                 <Typography variant="h6" sx={{ mt: 2 }}>
-                  User
+                  {userData.username}
                 </Typography>
-             
               </Paper>
               <Paper elevation={3} sx={{ my: 2, padding: 2, textAlign: 'center' }}>
                 <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                  <Badges />
+                  <Badges badges={sellerBadges.concat(userBadges)} />
                 </Box>
               </Paper>
             </Grid>
@@ -76,9 +88,9 @@ const UserProfilePage = () => {
             {/* Right Block */}
             <Grid item xs={12} md={8}>
               <Paper elevation={3} sx={{ padding: 2 }}>
-                <Typography variant="h4">User Name</Typography>
+                <Typography variant="h4">{userData.username}</Typography>
                 <Typography variant="subtitle1" color="textSecondary">
-                  User's info goes here. This section can include details such as bio, location, and other relevant information.
+                  Email: {userData.email}
                 </Typography>
                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="user profile tabs" sx={{ mt: 2 }}>
                   <Tab label="Info" />
@@ -87,14 +99,7 @@ const UserProfilePage = () => {
                 </Tabs>
                 <Box sx={{ padding: 2 }}>
                   {tabValue === 0 && <Typography>Info Tab Content</Typography>}
-                  {tabValue === 1 && (
-                    <Dashboard 
-                      stats={stats} 
-                      reviewsData={reviewsData} 
-                      monthlySales={monthlySales}
-                      topSellerRank={topSellerRank}
-                    />
-                  )}
+                  {tabValue === 1 && <Dashboard stats={userData.stats} />}
                   {tabValue === 2 && <Typography>Products Tab Content</Typography>}
                 </Box>
               </Paper>

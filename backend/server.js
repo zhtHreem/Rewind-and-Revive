@@ -24,52 +24,18 @@ const io = new Server(server, {
   }
 });
 
-// **Socket.IO Integration in server.js**
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log('A user connected');
 
-  // Join product-specific chat room
-  socket.on("joinChat", async ({ productId }) => {
-    const roomName = `product-${productId}`;
-    socket.join(roomName);
-    console.log(`User joined room: ${roomName}`);
-
-    try {
-      const previousMessages = await Chat.find({ product: productId })
-        .populate('sender', 'username')
-        .populate('receiver', 'username')
-        .sort({ timestamp: 1 });
-      socket.emit("previousMessages", previousMessages);
-    } catch (error) {
-      console.error("Error fetching previous messages:", error);
-      socket.emit("error", { message: "Failed to load previous messages." });
-    }
+  // Handle incoming chat messages
+  socket.on('sendMessage', (message) => {
+      // Broadcast message to all connected clients including the sender
+      io.emit('receiveMessage', message);
+      console.log('Message sent:', message);
   });
 
-  // Handle sending a message
-  socket.on("sendMessage", async (data) => {
-    const { sender, receiver, product, message } = data;
-
-    if (!sender || !receiver || !product || !message) {
-      socket.emit("error", { message: "Invalid message data." });
-      return;
-    }
-
-    try {
-      const newMessage = await Chat.create({ sender, receiver, product, message });
-      const roomName = `product-${product}`;
-      io.to(roomName).emit("newMessage", newMessage);
-    } catch (error) {
-      socket.emit("error", { message: "Failed to send message." });
-    }
-  });
-
-
-
-  
-  // Handle user disconnection
   socket.on('disconnect', () => {
-    console.log('User disconnected:', socket.id);
+      console.log('User disconnected');
   });
 });
 

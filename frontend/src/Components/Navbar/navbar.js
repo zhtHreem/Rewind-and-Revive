@@ -17,10 +17,12 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AddCart from "../ShoppingCart/AddCart";
 import AddIcon from '@mui/icons-material/Add';
+  // Assuming the user data is stored in the login context
 
 
  
 function Navbar() {
+  const { user } = useLogin();
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -143,9 +145,34 @@ function Navbar() {
           </IconButton>
           {!login && (
             <>
-            <IconButton onClick={() => navigate("/profile")}>
-              <PersonIcon />
-            </IconButton>
+            <IconButton onClick={() => {
+  const token = localStorage.getItem('token');
+  let userId;
+  
+  if (user?.id) {
+    userId = user.id;
+  } else if (token) {
+    try {
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); 
+      userId = decodedToken.id;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      alert("Invalid token");
+    }
+  } 
+  
+  if (userId) {
+    navigate(`/profile/${userId}`);
+  } else {
+    console.error("User ID is missing.");
+    alert("User ID is not available");
+  }
+}}>
+  <PersonIcon />
+</IconButton>
+
+
+
 
             <IconButton onClick={(e) => { e.stopPropagation();   handleNotificationsToggle();  }} >
               {unreadCount > 0 ? (

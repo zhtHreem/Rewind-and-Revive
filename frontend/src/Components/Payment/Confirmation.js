@@ -20,6 +20,7 @@ import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded
 import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import SimCardRoundedIcon from '@mui/icons-material/SimCardRounded';
 import WarningRoundedIcon from '@mui/icons-material/WarningRounded';
+import Layout from '../Layout/layout';
 
 import { styled } from '@mui/system';
 
@@ -121,6 +122,7 @@ export default function PaymentForm() {
 
   return (
     <>
+    <Layout>
       <Box
         sx={{
           marginTop: '40px',
@@ -320,6 +322,7 @@ export default function PaymentForm() {
           </Stack>
         </Box>
       </Box>
+      </Layout>
     </>
   );
 }

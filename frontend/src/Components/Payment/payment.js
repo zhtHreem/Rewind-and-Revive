@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Button, Grid, Typography, Divider } from "@mui/material";
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from "axios";
+import Layout from '../Layout/layout';
 import "./payment.css";
 
 const Payment = () => {
@@ -45,6 +46,7 @@ const Payment = () => {
     cart.reduce((total, product) => total + product.price * product.quantity, 0);
 
   return (
+    <Layout>
     <Box className="payment-container">
       <Typography variant="h4" className="payment-title">
         Payment Summary
@@ -94,6 +96,7 @@ const Payment = () => {
         </Button>
       </Box>
     </Box>
+    </Layout>
   );
 };
 

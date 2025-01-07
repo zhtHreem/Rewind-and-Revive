@@ -23,7 +23,7 @@ export const addBid = async (req, res) => {
 // Get all bids for a product
 export const getBidsByProduct = async (req, res) => {
     try {
-      const { productId } = req.params;
+      const productId  = req.params.id;
       const bids = await Bid.find({ productId }).sort({ bidAmount: -1 }); // Sort by bidAmount descending
       res.status(200).json(bids);
     } catch (error) {

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 import { Box, Button, TextField, Typography, TextareaAutosize,} from "@mui/material";
 import Layout from '../Layout/layout';
 
@@ -12,6 +13,8 @@ const CreateProductForm = () => {
     bidEndTime: "",
     image: null,
   });
+
+   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -37,6 +40,7 @@ const CreateProductForm = () => {
         },
       });
       alert("Product created successfully!");
+      navigate("/bidProduct");
     } catch (error) {
       console.error("Error creating product:", error);
       alert("Failed to create product.");

@@ -155,9 +155,10 @@ function Navbar() {
         </Stack>
 
         <Stack direction="row" alignItems="center" sx={{position:"relative"}} spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 15 }}>
-          <IconButton onClick={handleCartOpen}>
-            {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
-          </IconButton>
+        <IconButton onClick={() => setShoppingCart(!shoppingCart)}>
+              {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
+        </IconButton>
+
            <IconButton onClick={handleAddClick}  aria-controls={open ? 'add-product-menu' : undefined}  aria-haspopup="true"  aria-expanded={open ? 'true' : undefined}>
         <AddIcon />
       </IconButton>

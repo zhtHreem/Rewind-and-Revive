@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleNotifications,addNotification,  closeNotifications,markNotificationAsRead,markAllNotificationsAsRead} from '../../redux/slices/notificationsSlice.js';
 
 
-import { Stack, Link, Box, IconButton, Typography, Button,Badge, Drawer, Divider,Paper } from "@mui/material";
+import { Stack, Link, Box, IconButton, Typography, Button,Badge, Drawer, Divider,Paper ,Menu,ListItemIcon,ListItemText,MenuItem} from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
@@ -19,6 +19,8 @@ import AddCart from "../ShoppingCart/AddCart";
 import AddIcon from '@mui/icons-material/Add';
   // Assuming the user data is stored in the login context
 
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import GavelIcon from '@mui/icons-material/Gavel';
 
  
 function Navbar() {
@@ -31,7 +33,26 @@ function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { setLoginOpen } = useLogin();
   const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
+  const handleAddClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSimpleProduct = () => {
+    navigate("/createproduct");
+    handleClose();
+  };
+
+  const handleBiddingProduct = () => {
+    navigate("/create");
+    handleClose();
+  };
  useEffect(() => {
     // Create socket connection
     const socket = io('http://localhost:5000'); 
@@ -82,7 +103,7 @@ function Navbar() {
 
 
     const NotificationsDropdown = () => (
-    <Paper sx={{  position: 'absolute',boxShadow: 3,borderRadius: 2,  top: '100%',right: 60, width: 300,   maxHeight: '75vh', overflow: 'auto',zIndex: 10,   p: 2 }}>
+    <Paper sx={{  position: 'absolute',boxShadow: 3,borderRadius: 2,  top: '100%',right: 200, width: 300,   maxHeight: '75vh', overflow: 'auto',zIndex: 10,   p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ mb: 2 }}>  Notifications ({unreadCount} unread) </Typography>
         <Button   size="small"  onClick={() => dispatch(markAllNotificationsAsRead())} > Mark All as Read </Button>
@@ -112,7 +133,7 @@ function Navbar() {
 
   return (
     <>
-      <Box component="navbar" sx={{ position: "sticky", zIndex: 2, display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }} >
+      <Box component="navbar" marginBottom={10} sx={{ position: "fixed", zIndex: 2,width:"100%",backgroundColor:"white", display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }} >
         <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
           <Typography variant="h4" className="logo">
             <span>
@@ -136,13 +157,51 @@ function Navbar() {
           </Link>
         </Stack>
 
-        <Stack direction="row" alignItems="center" sx={{position:"relative"}}spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 4 }}>
-          <IconButton onClick={handleCartOpen}>
-            {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
-          </IconButton>
-          <IconButton onClick={() => navigate("/createproduct")}>
-             <AddIcon/>
-          </IconButton>
+        <Stack direction="row" alignItems="center" sx={{position:"relative"}} spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 15 }}>
+        <IconButton onClick={() => setShoppingCart(!shoppingCart)}>
+              {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
+        </IconButton>
+
+           <IconButton onClick={handleAddClick}  aria-controls={open ? 'add-product-menu' : undefined}  aria-haspopup="true"  aria-expanded={open ? 'true' : undefined}>
+        <AddIcon />
+      </IconButton>
+
+      <Menu id="add-product-menu" anchorEl={anchorEl} open={open}  onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'add-product-button',
+        }}
+        PaperProps={{
+          elevation: 3,
+          sx: {
+            minWidth: '200px',
+            mt: 1,
+          }
+        }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+        slotProps={{
+          paper: {
+            sx: {
+              '& .MuiList-root': {
+                padding: 0,
+              },
+            },
+          },
+        }}
+      >
+        <MenuItem onClick={handleSimpleProduct}>
+          <ListItemIcon>
+            <ShoppingBagIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Create Simple Product</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleBiddingProduct}>
+          <ListItemIcon>
+            <GavelIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Create Bidding Product</ListItemText>
+        </MenuItem>
+      </Menu>
           {!login && (
             <>
             <IconButton onClick={() => {
@@ -218,6 +277,7 @@ function Navbar() {
         </Drawer>
       </Box>
       {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />}
+      <Box sx={{ height: "64px" }} />
     </>
   );
 }

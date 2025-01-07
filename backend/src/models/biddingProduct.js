@@ -15,10 +15,12 @@ const BidSchema = new mongoose.Schema({
     type: String 
   },
   bidStartTime: { 
-    type: Date 
+    type: Date,
+    default: () => new Date(new Date().toLocaleString("en-US", { timeZone: "Karachi" })),
   },
   bidEndTime: { 
-    type: Date 
+    type: Date,
+    default: () => new Date(new Date().toLocaleString("en-US", { timeZone: "Karachi" })),
   },
   images: [{ 
     type: String 

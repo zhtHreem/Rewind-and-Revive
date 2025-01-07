@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate ,useParams} from 'react-router-dom';
 
 import { Grid, Box, Typography, Button } from '@mui/material';
-import { Table, TableBody, TableCell, TableContainer, TableRow, Paper } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableRow, Paper,  Modal } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
+import AddCart from "../ShoppingCart/AddCart";
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat'; // Chat component import
 
@@ -26,7 +27,9 @@ const ProductPage = () => {
   });
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
+  const [shoppingCart, setShoppingCart] = useState(false);
   const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
+  
   const { productId }= useParams();
 
   useEffect(() => {
@@ -98,12 +101,15 @@ const ProductPage = () => {
       });
 
       // Navigate to the cart page (optional)
-      navigate(`/cart/${productId}`);
+      setShoppingCart(true);
     } catch (error) {
       console.error("Error adding product to cart:", error);
     }
   };
   
+  const handleCartOpenClose = () => {
+    setShoppingCart((prev) => !prev);
+  };
   
   const handleImageClick = (image) => {
     setMainImage(image);
@@ -173,7 +179,7 @@ const ProductPage = () => {
                   variant="contained"
                   onClick={handleAddToCart}
                   size="large"
-                  sx={{ width: '100%', backgroundColor: 'black', '&:hover': { backgroundColor: '#85586F' } }}
+                  sx={{ width: '100%', backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}
                 >
                   Add to Cart
                 </Button>
@@ -251,6 +257,9 @@ const ProductPage = () => {
           <ProductChat productId={productId} ownerId={product.owner._id} />
         </div>
       )}
+       <Modal open={shoppingCart} onClose={handleCartOpenClose}>
+          <AddCart />
+      </Modal>
     </Layout>
   );
 };

@@ -24,6 +24,20 @@ const io = new Server(server, {
   }
 });
 
+io.on('connection', (socket) => {
+  console.log('A user connected');
+
+  // Handle incoming chat messages
+  socket.on('sendMessage', (message) => {
+      // Broadcast message to all connected clients including the sender
+      io.emit('receiveMessage', message);
+      console.log('Message sent:', message);
+  });
+
+  socket.on('disconnect', () => {
+      console.log('User disconnected');
+  });
+});
 
 // Socket.IO connection handler
 io.on('connection', (socket) => {

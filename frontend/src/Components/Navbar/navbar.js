@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleNotifications,addNotification,  closeNotifications,markNotificationAsRead,markAllNotificationsAsRead} from '../../redux/slices/notificationsSlice.js';
 
 
-import { Stack, Link, Box, IconButton, Typography, Button,Badge, Drawer, Divider,Paper } from "@mui/material";
+import { Stack, Link, Box, IconButton, Typography, Button,Badge, Drawer, Divider,Paper ,Menu,ListItemIcon,ListItemText,MenuItem} from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
@@ -17,7 +17,8 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AddCart from "../ShoppingCart/AddCart";
 import AddIcon from '@mui/icons-material/Add';
-
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
+import GavelIcon from '@mui/icons-material/Gavel';
 
  
 function Navbar() {
@@ -29,7 +30,26 @@ function Navbar() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { setLoginOpen } = useLogin();
   const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const open = Boolean(anchorEl);
 
+  const handleAddClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleSimpleProduct = () => {
+    navigate("/createproduct");
+    handleClose();
+  };
+
+  const handleBiddingProduct = () => {
+    navigate("/create");
+    handleClose();
+  };
  useEffect(() => {
     // Create socket connection
     const socket = io('http://localhost:5000'); 
@@ -138,9 +158,46 @@ function Navbar() {
           <IconButton onClick={handleCartOpen}>
             {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
           </IconButton>
-          <IconButton onClick={() => navigate("/createproduct")}>
-             <AddIcon/>
-          </IconButton>
+           <IconButton onClick={handleAddClick}  aria-controls={open ? 'add-product-menu' : undefined}  aria-haspopup="true"  aria-expanded={open ? 'true' : undefined}>
+        <AddIcon />
+      </IconButton>
+
+      <Menu id="add-product-menu" anchorEl={anchorEl} open={open}  onClose={handleClose}
+        MenuListProps={{
+          'aria-labelledby': 'add-product-button',
+        }}
+        PaperProps={{
+          elevation: 3,
+          sx: {
+            minWidth: '200px',
+            mt: 1,
+          }
+        }}
+        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+        anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+        slotProps={{
+          paper: {
+            sx: {
+              '& .MuiList-root': {
+                padding: 0,
+              },
+            },
+          },
+        }}
+      >
+        <MenuItem onClick={handleSimpleProduct}>
+          <ListItemIcon>
+            <ShoppingBagIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Create Simple Product</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={handleBiddingProduct}>
+          <ListItemIcon>
+            <GavelIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Create Bidding Product</ListItemText>
+        </MenuItem>
+      </Menu>
           {!login && (
             <>
             <IconButton onClick={() => navigate("/profile")}>

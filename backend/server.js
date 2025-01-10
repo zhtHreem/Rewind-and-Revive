@@ -55,84 +55,84 @@ app.use((err, req, res, next) => {
 
  const httpServer = createServer(app);
 
-// // Attach Socket.IO to the server
-// const io = new Server(httpServer, {
-//   cors: {
-//     origin: process.env.REACT_APP_API_URL, 
-//     methods: ["GET", "POST"],
-//   },
-//   transports: ['websocket', 'polling'], 
-//    withCredentials: true, 
-// });
+// Attach Socket.IO to the server
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.REACT_APP_API_URL, 
+    methods: ["GET", "POST"],
+  },
+  transports: ['websocket', 'polling'], 
+   withCredentials: true, 
+});
 
 
 
-// io.on('connection', (socket) => {
-//   console.log('A user connected');
+io.on('connection', (socket) => {
+  console.log('A user connected');
 
-//   // Handle incoming chat messages
-//   socket.on('sendMessage', (message) => {
-//       // Broadcast message to all connected clients including the sender
-//       io.emit('receiveMessage', message);
-//       console.log('Message sent:', message);
-//   });
-
-
-
-//   // Example of sending a test notification
-//   socket.on('request_test_notification', () => {
-//     // This is a sample notification structure matching your Redux slice
-//     const testNotification = {
-//       id: Date.now(), // unique id
-//     //  icon: 'CheckCircleOutlineIcon', // you might want to pass icon name or component
-//       title: 'Test Notification',
-//       description: 'This is a test notification from the backend',
-//       time: new Date().toLocaleTimeString(),
-//       isRead: false
-//     };
+  // Handle incoming chat messages
+  socket.on('sendMessage', (message) => {
+      // Broadcast message to all connected clients including the sender
+      io.emit('receiveMessage', message);
+      console.log('Message sent:', message);
+  });
 
 
 
-
-//     // Broadcast the notification to all connected clients
-//     io.emit('new_notification', testNotification);
-//     console.log('Test notification sent'); // Add this for debugging
-
-//   });
+  // Example of sending a test notification
+  socket.on('request_test_notification', () => {
+    // This is a sample notification structure matching your Redux slice
+    const testNotification = {
+      id: Date.now(), // unique id
+    //  icon: 'CheckCircleOutlineIcon', // you might want to pass icon name or component
+      title: 'Test Notification',
+      description: 'This is a test notification from the backend',
+      time: new Date().toLocaleTimeString(),
+      isRead: false
+    };
 
 
 
 
+    // Broadcast the notification to all connected clients
+    io.emit('new_notification', testNotification);
+    console.log('Test notification sent'); // Add this for debugging
 
-//    // Handle badge notifications
-//   socket.on('badge_unlocked', async (data) => {
-//     try {
-//       const notification = await createNotification({
-//         userId: data.userId,
-//         title: 'Badge Unlocked!',
-//         description: `Congratulations! You've earned the ${data.badge.name} badge`,
-//         type: 'badge',
-//         badgeData: data.badge
-//       });
+  });
+
+
+
+
+
+   // Handle badge notifications
+  socket.on('badge_unlocked', async (data) => {
+    try {
+      const notification = await createNotification({
+        userId: data.userId,
+        title: 'Badge Unlocked!',
+        description: `Congratulations! You've earned the ${data.badge.name} badge`,
+        type: 'badge',
+        badgeData: data.badge
+      });
       
-//       // Emit to specific user's room
-//       socket.emit('new_notification', notification);
-//     } catch (error) {
-//       console.error('Error creating badge notification:', error);
-//     }
-//   });
-//   socket.on('disconnect', () => {
-//     console.log('User disconnected');
-//   });
-// });
+      // Emit to specific user's room
+      socket.emit('new_notification', notification);
+    } catch (error) {
+      console.error('Error creating badge notification:', error);
+    }
+  });
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
 
 
 
 
-// app.use((req, res, next) => {
-//   req.io = io;
-//   next();
-// });
+app.use((req, res, next) => {
+  req.io = io;
+  next();
+});
 
 
 
@@ -151,10 +151,6 @@ app.use((err, req, res, next) => {
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-app.use((err, req, res, next) => {
-  console.error('Error middleware:', err.stack);
-  res.status(500).json({ error: err.message || 'Something went wrong!' });
-});
 
 // Start server
 const PORT = process.env.PORT || 5000;

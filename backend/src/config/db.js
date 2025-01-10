@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 const connectDB = async ()=>{
  try{                                        
-    const mongoURI=process.env.MONGO_URI ||'mongodb+srv://admin:123@eventify.dkeujvr.mongodb.net/RewindAndRevive?retryWrites=true&w=majority&appName=eventify';
+    const mongoURI=process.env.MONGO_URI ;
     
     await mongoose.connect(mongoURI);
     console.log('MongoDB connected...');

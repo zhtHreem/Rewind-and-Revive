@@ -28,7 +28,7 @@ const UserProfilePage = () => {
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
         const userId = id || decodedToken.id;
     
-        const response = await axios.get(`http://localhost:5000/api/user/profile/${userId}`, {
+        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/user/profile/${userId}`, {
           headers: { Authorization: token } 
       });
       

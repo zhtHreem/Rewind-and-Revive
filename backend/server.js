@@ -147,11 +147,14 @@ app.use((err, req, res, next) => {
 });
 
 app.get('/', (req, res) => res.send('Hello World!'));
+// Health check route
+app.get('/', (req, res) => res.send('Hello World!'));
 
-// Start the server
+// Start server
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-// Export io for potential use in other files
-export default { io, httpServer };
+
+// Export for serverless environments
+export default httpServer;

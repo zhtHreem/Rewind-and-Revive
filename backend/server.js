@@ -15,12 +15,16 @@ import biddingRoute from './src/routes/bid.js'
 import paymentRoute from './src/routes/payment.js'
 import Chat from './src/models/chat.js';
 import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
+import { createServer } from 'http'; // Import to create HTTP server
 
 const app = express();
-const server = http.createServer(app);
+//const server = http.createServer(app);
+
+
+const httpServer = createServer(app);
 
 // Attach Socket.IO to the server
-const io = new Server(server, {
+const io = new Server(httpServer, {
   cors: {
     origin: process.env.REACT_APP_API_URL, 
     methods: ["GET", "POST"],
@@ -28,6 +32,7 @@ const io = new Server(server, {
   transports: ['websocket', 'polling'], 
    withCredentials: true, 
 });
+
 
 
 io.on('connection', (socket) => {
@@ -104,7 +109,7 @@ app.use((req, res, next) => {
   next();
 });
 
-const port = process.env.PORT || 5000;
+
 
 connectDB();
 console.log("api",process.env.REACT_APP_API_URL);
@@ -143,11 +148,10 @@ app.use((err, req, res, next) => {
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-// Replace app.listen with server.listen
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  console.log(`Socket.IO server is running`);
+// Start the server
+const PORT = process.env.PORT || 5000;
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-
 // Export io for potential use in other files
-export default { io, server };
+export default { io, httpServer };

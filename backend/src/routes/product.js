@@ -4,7 +4,7 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 import multer from 'multer'; // For ES Modules (if you're using them)
-const upload = multer({ dest: '/temp' });
+const upload = multer({ dest: '/tmp' });
 
 
 

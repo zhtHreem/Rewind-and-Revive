@@ -1,7 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data'; // Ensure this is imported
 import fs from 'fs'; // Import fs for file reading
-import Product from '../models/Product.js';
+import Product from '../models/product.js';
 
 export const createProduct = async (req, res) => {
   try {

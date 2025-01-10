@@ -5,7 +5,6 @@ import Bidding from './Components/Bidding/Bidding';
 import Layout from './Components/Layout/layout';
 import LimitedTimeDeals from './Components/LimitedTimeDeals/limitedtimedeals';
 import PopularFabricsSection from './Components/MostPopularItem/mostPopular';
-import Chatbot from './Components/Chatbot/Chatbot';  // Import Chatbot component
 import robotIcon from './assets/robot-svgrepo-com.svg'; // Import robot SVG
 
 function App() {
@@ -33,8 +32,7 @@ function App() {
           </div>
         </div>
 
-        {/* Chatbot Component */}
-        {isChatbotOpen && <Chatbot toggleChatWindow={toggleChatWindow} />}
+ 
       </Layout>
     </div>
   );

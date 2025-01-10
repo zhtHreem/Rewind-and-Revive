@@ -18,8 +18,40 @@ import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
 import { createServer } from 'http'; // Import to create HTTP server
 
 const app = express();
-//const server = http.createServer(app);
 
+connectDB();
+
+console.log("api",process.env.REACT_APP_API_URL);
+
+app.use(cors({
+  origin: [
+    process.env.REACT_APP_API_URL,  // Development URL
+  ],
+  methods: ["POST", "GET", "PUT", "DELETE"],
+  credentials: true
+}));
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin','*' );  // Change '*' to the allowed origins
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).end();
+});
+
+
+app.use(express.json());
+//app.use(express.urlencoded({ extended: true }));
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'production' ? {} : err.message,
+  });
+});
+
+// Crea
 
 const httpServer = createServer(app);
 
@@ -45,14 +77,7 @@ io.on('connection', (socket) => {
       console.log('Message sent:', message);
   });
 
-  socket.on('disconnect', () => {
-      console.log('User disconnected');
-  });
-});
 
-// Socket.IO connection handler
-io.on('connection', (socket) => {
-  console.log('A user connected');
 
   // Example of sending a test notification
   socket.on('request_test_notification', () => {
@@ -111,28 +136,6 @@ app.use((req, res, next) => {
 
 
 
-connectDB();
-console.log("api",process.env.REACT_APP_API_URL);
-app.use(cors({
-  origin: [
-    process.env.REACT_APP_API_URL,  // Development URL
-  ],
-  methods: ["POST", "GET", "PUT", "DELETE"],
-  credentials: true
-}));
-
-// Handle preflight requests
-app.options('*', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin','*' );  // Change '*' to the allowed origins
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.status(200).end();
-});
-
-
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-dotenv.config();
 
 app.use('/api/user', userRoute);
 app.use('/api/product', productRoute);

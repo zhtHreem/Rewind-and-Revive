@@ -34,7 +34,7 @@ const CreateProductForm = () => {
     });
 
     try {
-      await axios.post("http://localhost:5000/api/biddingProduct/create", data, {
+      await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/create`, data, {
         headers: {
           "Content-Type": "multipart/form-data",
         },

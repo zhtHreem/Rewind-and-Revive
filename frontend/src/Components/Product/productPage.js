@@ -37,7 +37,7 @@ const ProductPage = () => {
     const fetchProduct = async () => {
       try {
 
-        const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
+        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/${productId}`);
         setProduct(response.data);
   
         if (response.data.images && response.data.images.length > 0) {
@@ -76,7 +76,7 @@ const ProductPage = () => {
   const handleAddToCart = async (product) => {
     try {
       // Fetch product data from API using the correct product ID
-      const response = await axios.get(`http://localhost:5000/api/product/${productId}`);
+      const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/${productId}`);
       const productData = response.data;
       
       // Update the cart state

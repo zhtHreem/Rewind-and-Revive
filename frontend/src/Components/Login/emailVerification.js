@@ -41,7 +41,7 @@ function EmailVerification() {
                 }
 
                 // Connect to your actual API endpoint
-                const response = await axios.post('http://localhost:5000/api/user/verify-email', { token });
+                const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/verify-email`, { token });
                 console.log("API Response:", response.data); // Debug log
 
                 // Check if the response indicates already verified

@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config(); 
 import connectDB from './src/config/db.js';
 import cors from 'cors';
 import path from 'path';
@@ -17,12 +18,17 @@ import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
 
 const app = express();
 const server = http.createServer(app);
+
+// Attach Socket.IO to the server
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // Your frontend URL
-    methods: ["GET", "POST"]
-  }
+    origin: process.env.REACT_APP_API_URL, 
+    methods: ["GET", "POST"],
+  },
+  transports: ['websocket', 'polling'], 
+   withCredentials: true, 
 });
+
 
 io.on('connection', (socket) => {
   console.log('A user connected');
@@ -101,7 +107,24 @@ app.use((req, res, next) => {
 const port = process.env.PORT || 5000;
 
 connectDB();
-app.use(cors());
+console.log("api",process.env.REACT_APP_API_URL);
+app.use(cors({
+  origin: [
+    process.env.REACT_APP_API_URL,  // Development URL
+  ],
+  methods: ["POST", "GET", "PUT", "DELETE"],
+  credentials: true
+}));
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin','*' );  // Change '*' to the allowed origins
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).end();
+});
+
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 dotenv.config();

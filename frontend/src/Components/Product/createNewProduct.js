@@ -142,7 +142,7 @@ function NewProduct({ setAddProduct =true }){
 
         try {
  
-            const response = await axios.post('http://localhost:5000/api/product/create', formData, {
+            const response = await axios.post( `${process.env.REACT_APP_LOCAL_URL}/api/product/create`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': localStorage.getItem('token') 

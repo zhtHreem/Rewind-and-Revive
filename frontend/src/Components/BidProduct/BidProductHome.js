@@ -50,7 +50,7 @@ const BidProductHome = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/biddingProduct/get'); // Adjust URL as needed
+        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/get`); // Adjust URL as needed
         setProducts(response.data);
         setLoading(false);
       } catch (error) {

@@ -18,7 +18,7 @@ const BiddingProduct = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/biddingProduct/${id}`);
+        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/${id}`);
         const data = await response.json();
         setProduct(data);
       } catch (error) {
@@ -28,7 +28,7 @@ const BiddingProduct = () => {
 
     const fetchBidders = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/bid/${id}`);
+        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid/${id}`);
         const data = await response.json();
         console.log('API response:', response.status, response.statusText);
         console.log('Bidders data:', data);
@@ -63,7 +63,7 @@ const BiddingProduct = () => {
 
   const handleOpenModal = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/bid/${id}`);
+      const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid/${id}`);
       const data = await response.json();
       setBidders(data);
       setIsModalOpen(true);
@@ -81,7 +81,7 @@ const BiddingProduct = () => {
           return;
         }
       try {
-        const response = await fetch('http://localhost:5000/api/bid', {
+        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

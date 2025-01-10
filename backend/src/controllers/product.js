@@ -106,7 +106,9 @@ export const createProduct = async (req, res) => {
 // Endpoint to fetch products
 export const getProductCatalogueList = async (req, res) => {
   try {
+    console.log('hi')
     const products = await Product.find(); // You can add filters based on query params
+    console.log("s",products)
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });

@@ -53,7 +53,7 @@ app.use((err, req, res, next) => {
 
 // Crea
 
-// const httpServer = createServer(app);
+ const httpServer = createServer(app);
 
 // // Attach Socket.IO to the server
 // const io = new Server(httpServer, {
@@ -150,8 +150,7 @@ app.use((err, req, res, next) => {
 });
 
 app.get('/', (req, res) => res.send('Hello World!'));
-// Health check route
-app.get('/', (req, res) => res.send('Hello World!'));
+
 
 // Start server
 const PORT = process.env.PORT || 5000;

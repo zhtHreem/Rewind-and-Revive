@@ -151,6 +151,10 @@ app.use((err, req, res, next) => {
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
+app.use((err, req, res, next) => {
+  console.error('Error middleware:', err.stack);
+  res.status(500).json({ error: err.message || 'Something went wrong!' });
+});
 
 // Start server
 const PORT = process.env.PORT || 5000;
@@ -159,4 +163,4 @@ httpServer.listen(PORT, () => {
 });
 
 // Export for serverless environments
-export default httpServer;
+export default app;

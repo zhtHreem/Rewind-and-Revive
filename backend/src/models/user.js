@@ -9,6 +9,23 @@ const badgeSchema = new mongoose.Schema({
   isAchieved: { type: Boolean, default: false }
 });
 
+const statsSchema = new mongoose.Schema({
+  productsSold: { type: Number, default: 0 },
+  totalListed: { type: Number, default: 0 },
+  itemsBought: { type: Number, default: 0 },
+  totalSpent: { type: Number, default: 0 },
+  totalEarned: { type: Number, default: 0 },
+  likesReceived: { type: Number, default: 0 }
+});
+
+
+const reviewsSchema = new mongoose.Schema({
+  fiveStar: { type: Number, default: 0 },
+  fourStar: { type: Number, default: 0 },
+  threeStar: { type: Number, default: 0 },
+  twoStar: { type: Number, default: 0 },
+  oneStar: { type: Number, default: 0 }
+});
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -25,6 +42,10 @@ const userSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user', // Default to 'user' for regular users
   },
+
+  stats: { type: statsSchema, default: {} },
+  reviewsData: { type: reviewsSchema, default: {} },
+
     // Add badge arrays with their default values
   sellerBadges: {
     type: [badgeSchema],

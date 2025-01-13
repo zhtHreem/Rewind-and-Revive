@@ -1,14 +1,12 @@
 import React, { useMemo } from 'react';
 import { Box, Grid, Paper, Typography, LinearProgress, Divider } from '@mui/material';
-import CountUp from 'react-countup'; // For animated number display
-import { Line, Doughnut } from 'react-chartjs-2'; // Import Line and Doughnut Chart components from react-chartjs-2
-import { Chart, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js'; // Ensure proper registration of chart elements
+import CountUp from 'react-countup';
+import { Line, Doughnut } from 'react-chartjs-2';
+import { Chart, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 import './Dashboard.css';
 
-// Register necessary chart components to prevent re-rendering issues
 Chart.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-// Rating bar component with linear progress
 const RatingBar = ({ label, value, total }) => {
   const percentage = (value / total) * 100;
   return (
@@ -31,62 +29,84 @@ const RatingBar = ({ label, value, total }) => {
   );
 };
 
-// Use memoization to avoid unnecessary re-renders of charts
-const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {}, topSellerRank = 0 }) => {
-  const {
-    productsSold = 0,
-    totalListed = 0,
-    itemsBought = 0,
-    totalSpent = 0,
-    totalEarned = 0,
-    likesReceived = 0,
-  } = stats;
+const Dashboard = React.memo(() => {
+  // Hardcoded data for demonstration purposes
+  const stats = {
+    productsSold: 150,
+    totalListed: 200,
+    itemsBought: 75,
+    totalSpent: 5000,
+    totalEarned: 10000,
+    likesReceived: 350,
+  };
 
-  const totalReviews = Object.values(reviewsData).reduce((acc, val) => acc + val, 0); // Sum of all star reviews
+  const monthlySales = [
+    { month: 'Jan', value: 200 },
+    { month: 'Feb', value: 150 },
+    { month: 'Mar', value: 300 },
+    { month: 'Apr', value: 250 },
+    { month: 'May', value: 320 },
+    { month: 'Jun', value: 400 },
+  ];
+
+  const reviewsData = {
+    fiveStar: 80,
+    fourStar: 50,
+    threeStar: 30,
+    twoStar: 20,
+    oneStar: 10,
+  };
+
+  const topSellerRank = 5;
+
+  const totalReviews = Object.values(reviewsData).reduce((acc, val) => acc + val, 0);
   const averageRating = (
-    (5 * reviewsData.fiveStar + 
-    4 * reviewsData.fourStar + 
-    3 * reviewsData.threeStar + 
-    2 * reviewsData.twoStar + 
-    1 * reviewsData.oneStar) / totalReviews
-  ).toFixed(1); // Calculate weighted average rating
+    (5 * reviewsData.fiveStar +
+      4 * reviewsData.fourStar +
+      3 * reviewsData.threeStar +
+      2 * reviewsData.twoStar +
+      1 * reviewsData.oneStar) / totalReviews
+  ).toFixed(1);
 
-  // Memoize salesData to prevent unnecessary recalculations
-  const salesData = useMemo(() => ({
-    labels: monthlySales.map((sale) => sale.month), // Assuming 'monthlySales' contains month and sales value
-    datasets: [
-      {
-        label: 'Monthly Sales',
-        data: monthlySales.map((sale) => sale.value),
-        borderColor: '#42a5f5',
-        fill: false,
-        tension: 0.4,
-      },
-    ],
-  }), [monthlySales]);
+  const salesData = useMemo(
+    () => ({
+      labels: monthlySales.map((sale) => sale.month),
+      datasets: [
+        {
+          label: 'Monthly Sales',
+          data: monthlySales.map((sale) => sale.value),
+          borderColor: '#42a5f5',
+          fill: false,
+          tension: 0.4,
+        },
+      ],
+    }),
+    [monthlySales]
+  );
 
-  // Memoize donut chart data for products sold vs remaining inventory
-  const donutData = useMemo(() => ({
-    labels: ['Sold', 'Remaining'],
-    datasets: [
-      {
-        data: [productsSold, totalListed - productsSold],
-        backgroundColor: ['#66bb6a', '#ef5350'],
-        hoverBackgroundColor: ['#81c784', '#e57373'],
-      },
-    ],
-  }), [productsSold, totalListed]);
+  const donutData = useMemo(
+    () => ({
+      labels: ['Sold', 'Remaining'],
+      datasets: [
+        {
+          data: [stats.productsSold, stats.totalListed - stats.productsSold],
+          backgroundColor: ['#66bb6a', '#ef5350'],
+          hoverBackgroundColor: ['#81c784', '#e57373'],
+        },
+      ],
+    }),
+    [stats.productsSold, stats.totalListed]
+  );
 
   return (
     <Box className="dashboard-container">
       <Grid container spacing={3}>
-
         {/* Likes Count */}
         <Grid item xs={12} sm={4} md={4}>
-          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center'}}>
+          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6" sx={{ mb: 2 }}>Likes Received</Typography>
             <Typography variant="h4" className="dashboard-value">
-              <CountUp end={likesReceived} duration={2.5} /> {/* CountUp for likes */}
+              <CountUp end={stats.likesReceived} duration={2.5} />
             </Typography>
           </Paper>
         </Grid>
@@ -95,17 +115,13 @@ const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {},
         <Grid item xs={12} sm={4} md={4}>
           <Paper className="dashboard-paper equal-height" sx={{ padding: 3 }}>
             <Typography variant="h6">Audience Rating Summary</Typography>
-            {/* Display the average rating and total reviews count */}
             <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
               <Box>
                 <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{averageRating}</Typography>
-                <Typography variant="body2" color="textSecondary" >★ {totalReviews} ratings</Typography>
+                <Typography variant="body2" color="textSecondary">★ {totalReviews} ratings</Typography>
               </Box>
             </Box>
-
-            <Divider sx={{ my: 1}} />
-
-            {/* Rating Bars */}
+            <Divider sx={{ my: 1 }} />
             <Box>
               <RatingBar label="5" value={reviewsData.fiveStar} total={totalReviews} />
               <RatingBar label="4" value={reviewsData.fourStar} total={totalReviews} />
@@ -121,29 +137,27 @@ const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {},
           <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Top Seller Position</Typography>
             <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
-              {`Top ${topSellerRank}%`}
+              Top {topSellerRank}%
             </Typography>
           </Paper>
         </Grid>
 
         {/* Monthly Sales Line Graph */}
-        <Grid item xs={12} sm={12} md={12}>
+        <Grid item xs={12}>
           <Paper className="dashboard-paper" sx={{ padding: 3 }}>
             <Typography variant="h6">Monthly Sales Trend</Typography>
-            <Line data={salesData} /> {/* Line graph for monthly sales */}
+            <Line data={salesData} />
           </Paper>
         </Grid>
 
         {/* Products Sold Donut Chart */}
         <Grid item xs={12} sm={6} md={3}>
           <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ marginBottom: '10px' }}>Sold vs Inventory</Typography>
-            <Doughnut data={donutData} /> {/* Donut chart for sold vs remaining inventory */}
+            <Typography variant="h6">Sold vs Inventory</Typography>
+            <Doughnut data={donutData} />
             <Box sx={{ mt: 2 }}>
-              <Typography variant="body2" sx={{ display: 'inline-block', width: '100%', whiteSpace: 'nowrap' }}>
-              </Typography>
-              <Typography variant="body2" sx={{ marginTop: '2px', display: 'inline-block', width: '100%' }}>
-                {productsSold} sold out of {totalListed} listed
+              <Typography variant="body2">
+                {stats.productsSold} sold out of {stats.totalListed} listed
               </Typography>
             </Box>
           </Paper>
@@ -154,7 +168,7 @@ const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {},
           <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Items Bought</Typography>
             <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
-              {itemsBought}
+              {stats.itemsBought}
             </Typography>
           </Paper>
         </Grid>
@@ -164,7 +178,7 @@ const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {},
           <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Earned</Typography>
             <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
-              ${totalEarned}
+              ${stats.totalEarned}
             </Typography>
           </Paper>
         </Grid>
@@ -174,11 +188,10 @@ const Dashboard = React.memo(({ stats = {}, monthlySales = [], reviewsData = {},
           <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Spent</Typography>
             <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
-              ${totalSpent}
+              ${stats.totalSpent}
             </Typography>
           </Paper>
         </Grid>
-
       </Grid>
     </Box>
   );

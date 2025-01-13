@@ -1,12 +1,16 @@
 
 import mongoose from 'mongoose';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const connectDB = async ()=>{
  try{                                        
-    const mongoURI=process.env.MONGO_URI ||'mongodb+srv://admin:123@eventify.dkeujvr.mongodb.net/RewindAndRevive?retryWrites=true&w=majority&appName=eventify';
-    
+    const mongoURI=process.env.MONGO_URI ;
+    console.log('Deployed MONGO_URI:', process.env.MONGO_URI);
+    console.log('MONGO_URI:',mongoURI);
+
+
     await mongoose.connect(mongoURI);
-    console.log('MongoDB connected...');
+    console.log('MongoDB connected...', mongoURI);
 } catch (error) {
      console.error('Error connecting to MongoDB:', error.message);
      process.exit(1); 

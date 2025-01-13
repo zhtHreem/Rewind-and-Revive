@@ -26,7 +26,7 @@ const Badges = () => {
    useEffect(() => {
     const fetchBadges = async () => {
       try {
-        const response =await axios.get(`http://localhost:5000/api/user/badges`,{headers: {
+        const response =await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/user/badges`,{headers: {
                     'Content-Type': 'application/json',
                     'Authorization': localStorage.getItem('token') 
                 }});

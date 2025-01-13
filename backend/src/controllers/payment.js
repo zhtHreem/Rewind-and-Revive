@@ -1,5 +1,5 @@
 import Payment from "../models/payment.js";
-import Product from '../models/Product.js';
+import Product from '../models/product.js';
 
 export const addPayment = async (req, res) => {
   try {

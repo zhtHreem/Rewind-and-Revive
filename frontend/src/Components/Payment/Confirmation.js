@@ -90,7 +90,7 @@ export default function PaymentForm() {
     };
 
     try {
-      const response = await axios.post('http://localhost:5000/api/payment/add', formData, {
+      const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/payment/add`, formData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: localStorage.getItem('token'),

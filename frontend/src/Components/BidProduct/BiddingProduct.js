@@ -12,13 +12,13 @@ const BiddingProduct = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isBiddingOpen, setIsBiddingOpen] = useState(false);
   const [isBiddingClosed, setIsBiddingClosed] = useState(false);
-
+  const [error, setError] = useState('');
 
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/biddingProduct/${id}`);
+        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/${id}`);
         const data = await response.json();
         setProduct(data);
       } catch (error) {
@@ -28,7 +28,7 @@ const BiddingProduct = () => {
 
     const fetchBidders = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/bid/${id}`);
+        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid/${id}`);
         const data = await response.json();
         console.log('API response:', response.status, response.statusText);
         console.log('Bidders data:', data);
@@ -63,7 +63,7 @@ const BiddingProduct = () => {
 
   const handleOpenModal = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/bid/${id}`);
+      const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid/${id}`);
       const data = await response.json();
       setBidders(data);
       setIsModalOpen(true);
@@ -76,8 +76,12 @@ const BiddingProduct = () => {
 
   const handlePlaceBid = async () => {
     if (bidAmount) {
+        if (Number(bidAmount) <= product.startingPrice) {
+          setError(`Bid amount must be greater than Rs.${product.startingPrice}`);
+          return;
+        }
       try {
-        const response = await fetch('http://localhost:5000/api/bid', {
+        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -209,8 +213,13 @@ const BiddingProduct = () => {
                  variant="outlined"
                  fullWidth
                  value={bidAmount}
-                 onChange={(e) => setBidAmount(e.target.value)}
-                  disabled={!isBiddingOpen || isBiddingClosed}
+                 onChange={(e) => {
+                  setBidAmount(e.target.value);
+                  setError(''); // Clear error while typing
+                }}
+                disabled={!isBiddingOpen || isBiddingClosed}
+                error={!!error}
+                helperText={error}
                />
                  <Button
                   variant="contained"
@@ -224,7 +233,7 @@ const BiddingProduct = () => {
 
             </Box>
             <Box sx={{ padding: 2, border: '1px solid #ccc', marginTop: 2, textAlign: 'center' }}>
-            <Typography variant="h6">Starting Price: ${product.startingPrice}</Typography>
+            <Typography variant="h6">Starting Price: Rs.{product.startingPrice}</Typography>
             <Typography variant="h6">
               Bidding Starts at: {new Date(product.bidStartTime).toLocaleString("en-US", {
               timeZone: "Asia/Karachi", // Replace with your time zone

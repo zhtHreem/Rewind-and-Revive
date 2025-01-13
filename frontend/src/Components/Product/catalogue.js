@@ -182,7 +182,8 @@ const CataloguePage = () => {
     const sizes = ['small', 'medium', 'large'];
 
     useEffect(() => {
-        axios.get('http://localhost:5000/api/product/catalogue')
+      console.log("Fetching products...",process.env.REACT_APP_LOCAL_URL);
+        axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`)
             .then(response => {
                 const processedProducts = response.data.map(product => ({
                     ...product,

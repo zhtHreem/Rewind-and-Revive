@@ -1,4 +1,3 @@
-import io from '../../server.js';
 import Bid from "../models/bid.js";
 
 // Add a new bid

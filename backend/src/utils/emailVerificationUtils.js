@@ -1,7 +1,8 @@
 import nodemailer from 'nodemailer';
 import { generateToken, verifyToken } from './jwtUtils.js';
 import User from '../models/user.js';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const emailPass = process.env.EMAIL_PASS;
 
 // Create a transporter using SMTP
@@ -17,7 +18,8 @@ const transporter = nodemailer.createTransport({
   logger: true,
   debug: true,
 });
-
+console.log('Email Pass',process.env.EMAIL_PASS);
+console.log('Email user',process.env.EMAIL_USER);
 // Generate email verification token
 export const generateVerificationToken = (user) => {
   return generateToken(
@@ -33,10 +35,8 @@ export const generateVerificationToken = (user) => {
 // Send verification email
 export const sendVerificationEmail = async (user) => {
   const verificationToken = generateVerificationToken(user);
-  const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-  
-  console.log('Email User:', process.env.EMAIL_USER);
-  console.log('Email Pass Length:', emailPass.length);
+  const verificationUrl = `${process.env.REACT_APP_API_URL}/verify-email?token=${verificationToken}`;
+
 
   const mailOptions = {
     from: `Rewind and Revive <${process.env.EMAIL_FROM}>`,

@@ -59,7 +59,7 @@ function Login({ setLogin }) {
     const handleLogin = async () => { 
         const loginData = { email: loginEmail, password: loginPassword }; 
         try { 
-            const response = await axios.post("http://localhost:5000/api/user/login", loginData); 
+            const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/login`, loginData); 
             console.log("s",response)
             localStorage.setItem('token', response.data.token);
             setSnackbarMessage('Login successful!'); 
@@ -76,7 +76,7 @@ function Login({ setLogin }) {
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
             // Send the Google token to your backend for verification and login
-            const response = await axios.post("http://localhost:5000/api/user/google-login", {
+            const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/google-login`, {
                 token: credentialResponse.credential
             });
                console.log("kkk",response.data)
@@ -102,7 +102,7 @@ function Login({ setLogin }) {
         } 
         const signupData = { username: signupUsername, email: signupEmail, password: signupPassword }; 
         try { 
-            const response = await axios.post("http://localhost:5000/api/user/register", signupData, { headers: { 'Content-Type': 'application/json' } }); 
+            const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/register`, signupData, { headers: { 'Content-Type': 'application/json' } }); 
             setSnackbarMessage(response.message,'Signup successful!'); 
             setSnackbarSeverity('success'); 
             setOpenSnackbar(true); 

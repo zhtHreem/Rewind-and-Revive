@@ -29,7 +29,7 @@ const Payment = () => {
             }
 
             // Use the correct product ID from cart item
-            const response = await axios.get(`http://localhost:5000/api/product/${item.id}`);
+            const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/${item.id}`);
             return { ...item, ...response.data };
           })
         );

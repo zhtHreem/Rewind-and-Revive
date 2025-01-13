@@ -4,7 +4,7 @@ import axios from "axios";
 import {jwtDecode} from "jwt-decode";
 import "./ProductChat.css"; // Updated CSS
 
-const socket = io("http://localhost:5000");
+const socket = io(`${process.env.REACT_APP_LOCAL_URL}`);
 
 const ProductChat = ({ productId, ownerId }) => {
   const [messages, setMessages] = useState([]);
@@ -38,7 +38,7 @@ const ProductChat = ({ productId, ownerId }) => {
       try {
         setIsLoading(true);
         const response = await axios.get(
-          `http://localhost:5000/api/chats/${productId}`,
+          `${process.env.REACT_APP_LOCAL_URL}/api/chats/${productId}`,
           { headers: { Authorization: token } }
         );
         
@@ -77,7 +77,7 @@ const ProductChat = ({ productId, ownerId }) => {
     }
   
     try {
-      await axios.post("http://localhost:5000/api/chats", payload, {
+      await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/chats`, payload, {
         headers: { Authorization: token },
       });
       setNewMessage("");

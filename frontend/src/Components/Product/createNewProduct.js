@@ -142,7 +142,7 @@ function NewProduct({ setAddProduct =true }){
 
         try {
  
-            const response = await axios.post('http://localhost:5000/api/product/create', formData, {
+            const response = await axios.post( `${process.env.REACT_APP_LOCAL_URL}/api/product/create`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': localStorage.getItem('token') 
@@ -295,7 +295,7 @@ const handleMaterialChange = (event) => {
                         </Grid>
 
                           <Typography   marginTop={2}  variant="h5" >Color</Typography> 
-                          <TextField label='Rs' value={color} onChange={(e) => setColor(e.target.value)} />
+                          <TextField label='color' value={color} onChange={(e) => setColor(e.target.value)} />
                           <Typography  marginTop={2}  variant="h5" sx={{marginTop:4}}>Type</Typography> 
                           <Grid container p={4} spacing={2} >
                                 <FormControl component="fieldset">

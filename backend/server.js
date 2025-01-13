@@ -1,5 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
+dotenv.config(); 
 import connectDB from './src/config/db.js';
 import cors from 'cors';
 import path from 'path';
@@ -7,6 +8,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 
 import FormData from 'form-data';
+
 import userRoute from './src/routes/user.js'
 import productRoute from './src/routes/product.js'
 import bidRoute from './src/routes/biddingProduct.js'
@@ -14,15 +16,57 @@ import biddingRoute from './src/routes/bid.js'
 import paymentRoute from './src/routes/payment.js'
 import Chat from './src/models/chat.js';
 import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
+import { createServer } from 'http'; // Import to create HTTP server
 
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000", // Your frontend URL
-    methods: ["GET", "POST"]
-  }
+
+connectDB();
+
+console.log("api",process.env.REACT_APP_API_URL);
+
+app.use(cors({
+  origin: [
+    process.env.REACT_APP_API_URL,  // Development URL
+  ],
+  methods: ["POST", "GET", "PUT", "DELETE"],
+  credentials: true
+}));
+
+// Handle preflight requests
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin','*' );  // Change '*' to the allowed origins
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.status(200).end();
 });
+
+
+app.use(express.json());
+//app.use(express.urlencoded({ extended: true }));
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'production' ? {} : err.message,
+  });
+});
+
+// Crea
+
+ const httpServer = createServer(app);
+
+// Attach Socket.IO to the server
+const io = new Server(httpServer, {
+  cors: {
+    origin: process.env.REACT_APP_API_URL, 
+    methods: ["GET", "POST"],
+  },
+  transports: ['websocket', 'polling'], 
+   withCredentials: true, 
+});
+
+
 
 io.on('connection', (socket) => {
   console.log('A user connected');
@@ -34,14 +78,7 @@ io.on('connection', (socket) => {
       console.log('Message sent:', message);
   });
 
-  socket.on('disconnect', () => {
-      console.log('User disconnected');
-  });
-});
 
-// Socket.IO connection handler
-io.on('connection', (socket) => {
-  console.log('A user connected');
 
   // Example of sending a test notification
   socket.on('request_test_notification', () => {
@@ -98,13 +135,8 @@ app.use((req, res, next) => {
   next();
 });
 
-const port = process.env.PORT || 5000;
 
-connectDB();
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-dotenv.config();
+
 
 app.use('/api/user', userRoute);
 app.use('/api/product', productRoute);
@@ -120,11 +152,12 @@ app.use((err, req, res, next) => {
 
 app.get('/', (req, res) => res.send('Hello World!'));
 
-// Replace app.listen with server.listen
-server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  console.log(`Socket.IO server is running`);
+
+// Start server
+const PORT = process.env.PORT || 5000;
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
 
-// Export io for potential use in other files
-export default { io, server };
+// Export for serverless environments
+export default app;

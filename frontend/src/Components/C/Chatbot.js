@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 import './Chatbot.css';
 
-const socket = io('http://localhost:5000', {
+const socket = io(`${process.env.REACT_APP_LOCAL_URL}`, {
     transports: ['websocket'] // Ensures proper WebSocket transport
 });
 

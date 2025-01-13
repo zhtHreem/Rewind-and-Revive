@@ -24,7 +24,7 @@ const AddCart = () => {
         const updatedCart = await Promise.all(
           cart.map(async (item) => {
             // Fetch product data from API using item.id
-            const response = await axios.get(`http://localhost:5000/api/product/${item.id}`);
+            const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/${item.id}`);
             return { ...item, ...response.data }; // Merge response data with item data
           })
         );

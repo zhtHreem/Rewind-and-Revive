@@ -1,7 +1,7 @@
 import axios from 'axios';
 import FormData from 'form-data'; // Ensure this is imported
 import fs from 'fs'; // Import fs for file reading
-import Product from '../models/Product.js';
+import Product from '../models/product.js';
 
 export const createProduct = async (req, res) => {
   try {
@@ -106,7 +106,9 @@ export const createProduct = async (req, res) => {
 // Endpoint to fetch products
 export const getProductCatalogueList = async (req, res) => {
   try {
+    console.log('hi')
     const products = await Product.find(); // You can add filters based on query params
+    console.log("s",products)
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: 'Server Error' });

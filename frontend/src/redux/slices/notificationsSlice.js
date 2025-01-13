@@ -7,7 +7,7 @@ import BugReportIcon from '@mui/icons-material/BugReport';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import io from 'socket.io-client';
 
-const socket = io('http://localhost:5000'); // Your backend socket URL
+const socket = io(`${process.env.REACT_APP_LOCAL_URL}`); // Your backend socket URL
 
 
 

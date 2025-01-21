@@ -7,7 +7,7 @@ import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import AddCart from "../ShoppingCart/AddCart";
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat'; // Chat component import
-
+import SkeletonLoader from '../Utils/skeletonLoader';
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -15,6 +15,50 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 import axios from 'axios';
 
+  // Create skeleton components for different sections
+const ProductImageSkeleton = () => (
+  <Box>
+    {/* Main image skeleton */}
+    <Box sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2 }}>
+      <SkeletonLoader height="100%" />
+    </Box>
+    
+    {/* Thumbnail images skeleton */}
+    <Box sx={{ marginTop: '20px', height: 100 }}>
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        {Array(4).fill(0).map((_, i) => (
+          <SkeletonLoader key={i} width="100px" height="100px" />
+        ))}
+      </Box>
+    </Box>
+  </Box>
+);
+
+const ProductDetailsSkeleton = () => (
+  <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
+    {/* Title */}
+    <SkeletonLoader.Text lines={1} width="80%" />
+    
+    {/* Price */}
+    <SkeletonLoader.Text lines={1} width="30%" />
+    
+    {/* Username */}
+    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <SkeletonLoader width="20%" height="20px" />
+    </Box>
+    
+    {/* Buttons */}
+    <Box sx={{ display: 'flex', gap: 2 }}>
+      <SkeletonLoader height="48px" width="100%" />
+      <SkeletonLoader height="48px" width="100%" />
+    </Box>
+    
+    {/* Accordion buttons */}
+    {Array(3).fill(0).map((_, i) => (
+      <SkeletonLoader key={i} height="48px" width="100%" />
+    ))}
+  </Box>
+);
 const ProductPage = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -81,6 +125,7 @@ const ProductPage = () => {
       
       // Update the cart state
       setCart((prevCart) => {
+
         // Check if the product already exists in the cart by comparing product.id
         const isProductInCart = prevCart.find((item) => item.id === productId);
         if (isProductInCart) {
@@ -116,8 +161,22 @@ const ProductPage = () => {
   };
 
   if (!product) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Layout>
+        <Box sx={{ flexGrow: 1, padding: 6 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <ProductImageSkeleton />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <ProductDetailsSkeleton />
+            </Grid>
+          </Grid>
+        </Box>
+      </Layout>
+    );
   }
+
 
   const sizeDetails = product.type === 'top/bottom' ? [
     { label: 'Top - Waist', value: `${product.topSizes.waist} inches` },
@@ -231,10 +290,7 @@ const ProductPage = () => {
           borderRadius: '30px',
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           cursor: 'pointer',
-          zIndex: 1000,
-        }}
-        onClick={() => setIsChatOpen((prev) => !prev)}
-      >
+          zIndex: 1000,  }}  onClick={() => setIsChatOpen((prev) => !prev)}>
         💬 Chat
       </div>
 

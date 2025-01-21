@@ -99,7 +99,7 @@ const UserProfilePage = () => {
                 </Tabs>
                 <Box sx={{ padding: 2 }}>
                   {tabValue === 0 && <Typography>Info Tab Content</Typography>}
-                  {tabValue === 1 && <Dashboard stats={userData.stats} />}
+                  {tabValue === 1 && <Dashboard userId={userData.id} />}
                   {tabValue === 2 && <Typography>Products Tab Content</Typography>}
                 </Box>
               </Paper>

@@ -1,14 +1,14 @@
-import React, { useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import axios from 'axios';
 import { Box, Grid, Paper, Typography, LinearProgress, Divider } from '@mui/material';
 import CountUp from 'react-countup';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Chart, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import './Dashboard.css';
 
 Chart.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const RatingBar = ({ label, value, total }) => {
-  const percentage = (value / total) * 100;
+  const percentage = total > 0 ? (value / total) * 100 : 0;
   return (
     <Box sx={{ display: 'flex', alignItems: 'center', my: 1 }}>
       <Typography variant="body2" sx={{ width: '30px', fontWeight: 500 }}>{label}★</Typography>
@@ -29,172 +29,171 @@ const RatingBar = ({ label, value, total }) => {
   );
 };
 
-const Dashboard = React.memo(() => {
-  // Hardcoded data for demonstration purposes
-  const stats = {
-    productsSold: 150,
-    totalListed: 200,
-    itemsBought: 75,
-    totalSpent: 5000,
-    totalEarned: 10000,
-    likesReceived: 350,
-  };
+const Dashboard = ({ userId }) => {
+  const [stats, setStats] = useState({
+    productsSold: 0,
+    totalListed: 0,
+    itemsBought: 0,
+    totalSpent: 0,
+    totalEarned: 0,
+    likesReceived: 0
+  });
+  const [reviewsData, setReviewsData] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [topSellerRank, setTopSellerRank] = useState(0);
 
-  const monthlySales = [
-    { month: 'Jan', value: 200 },
-    { month: 'Feb', value: 150 },
-    { month: 'Mar', value: 300 },
-    { month: 'Apr', value: 250 },
-    { month: 'May', value: 320 },
-    { month: 'Jun', value: 400 },
-  ];
+  useEffect(() => {
+    const fetchStats = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert("Token missing. Please log in again.");
+        return;
+      }
 
-  const reviewsData = {
-    fiveStar: 80,
-    fourStar: 50,
-    threeStar: 30,
-    twoStar: 20,
-    oneStar: 10,
-  };
+      const decodedToken = JSON.parse(atob(token.split('.')[1]));
+      const currentUserId = userId || decodedToken.id;
 
-  const topSellerRank = 5;
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/user/profile/${currentUserId}`, {
+          headers: {
+            Authorization: token
+          }
+        });
+        const userData = response.data;
+        setStats(userData.stats);
+        setReviewsData(userData.reviewsData);
+        setTopSellerRank(userData.topSellerRank || 0);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching stats:", error.response?.data || error.message);
+        alert("Error fetching dashboard data");
+        setLoading(false);
+      }
+    };
 
-  const totalReviews = Object.values(reviewsData).reduce((acc, val) => acc + val, 0);
-  const averageRating = (
-    (5 * reviewsData.fiveStar +
-      4 * reviewsData.fourStar +
-      3 * reviewsData.threeStar +
-      2 * reviewsData.twoStar +
-      1 * reviewsData.oneStar) / totalReviews
-  ).toFixed(1);
+    fetchStats();
+  }, [userId]);
 
-  const salesData = useMemo(
-    () => ({
-      labels: monthlySales.map((sale) => sale.month),
-      datasets: [
-        {
-          label: 'Monthly Sales',
-          data: monthlySales.map((sale) => sale.value),
-          borderColor: '#42a5f5',
-          fill: false,
-          tension: 0.4,
-        },
-      ],
-    }),
-    [monthlySales]
+  const totalReviews = useMemo(() => (
+    (reviewsData.fiveStar || 0) +
+    (reviewsData.fourStar || 0) +
+    (reviewsData.threeStar || 0) +
+    (reviewsData.twoStar || 0) +
+    (reviewsData.oneStar || 0)
+  ), [reviewsData]);
+
+  const averageRating = useMemo(() => 
+    totalReviews > 0
+      ? ((5 * (reviewsData.fiveStar || 0) +
+          4 * (reviewsData.fourStar || 0) +
+          3 * (reviewsData.threeStar || 0) +
+          2 * (reviewsData.twoStar || 0) +
+          1 * (reviewsData.oneStar || 0)) / totalReviews).toFixed(1)
+      : 0,
+    [reviewsData, totalReviews]
   );
 
-  const donutData = useMemo(
-    () => ({
-      labels: ['Sold', 'Remaining'],
-      datasets: [
-        {
-          data: [stats.productsSold, stats.totalListed - stats.productsSold],
-          backgroundColor: ['#66bb6a', '#ef5350'],
-          hoverBackgroundColor: ['#81c784', '#e57373'],
-        },
-      ],
-    }),
-    [stats.productsSold, stats.totalListed]
-  );
+  const salesData = useMemo(() => ({
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    datasets: [{
+      label: 'Monthly Sales',
+      data: [200, 150, 300, 250, 320, 400],
+      borderColor: '#42a5f5',
+      fill: false,
+      tension: 0.4
+    }]
+  }), []);
+
+  const donutData = useMemo(() => ({
+    labels: ['Sold', 'Remaining'],
+    datasets: [{
+      data: [stats.productsSold, stats.totalListed - stats.productsSold],
+      backgroundColor: ['#66bb6a', '#ef5350']
+    }]
+  }), [stats.productsSold, stats.totalListed]);
+
+  if (loading) return <Typography>Loading dashboard data...</Typography>;
 
   return (
-    <Box className="dashboard-container">
+    <Box sx={{ padding: 3 }}>
       <Grid container spacing={3}>
-        {/* Likes Count */}
-        <Grid item xs={12} sm={4} md={4}>
-          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center' }}>
-            <Typography variant="h6" sx={{ mb: 2 }}>Likes Received</Typography>
-            <Typography variant="h4" className="dashboard-value">
+
+        {/* Likes and Top Seller Together */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
+            <Typography variant="h6">Likes Received</Typography>
+            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
               <CountUp end={stats.likesReceived} duration={2.5} />
             </Typography>
           </Paper>
         </Grid>
 
-        {/* Star Reviews Summary */}
-        <Grid item xs={12} sm={4} md={4}>
-          <Paper className="dashboard-paper equal-height" sx={{ padding: 3 }}>
-            <Typography variant="h6">Audience Rating Summary</Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-              <Box>
-                <Typography variant="h4" sx={{ fontWeight: 'bold' }}>{averageRating}</Typography>
-                <Typography variant="body2" color="textSecondary">★ {totalReviews} ratings</Typography>
-              </Box>
-            </Box>
-            <Divider sx={{ my: 1 }} />
-            <Box>
-              <RatingBar label="5" value={reviewsData.fiveStar} total={totalReviews} />
-              <RatingBar label="4" value={reviewsData.fourStar} total={totalReviews} />
-              <RatingBar label="3" value={reviewsData.threeStar} total={totalReviews} />
-              <RatingBar label="2" value={reviewsData.twoStar} total={totalReviews} />
-              <RatingBar label="1" value={reviewsData.oneStar} total={totalReviews} />
-            </Box>
-          </Paper>
-        </Grid>
-
-        {/* User's Top Seller Rank */}
-        <Grid item xs={12} sm={4} md={4}>
-          <Paper className="dashboard-paper equal-height" sx={{ padding: 3, textAlign: 'center' }}>
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
             <Typography variant="h6">Top Seller Position</Typography>
-            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
+            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
               Top {topSellerRank}%
             </Typography>
           </Paper>
         </Grid>
 
-        {/* Monthly Sales Line Graph */}
+        {/* Monthly Sales Trend Full Width */}
         <Grid item xs={12}>
-          <Paper className="dashboard-paper" sx={{ padding: 3 }}>
+          <Paper sx={{ padding: 3 }}>
             <Typography variant="h6">Monthly Sales Trend</Typography>
             <Line data={salesData} />
           </Paper>
         </Grid>
 
-        {/* Products Sold Donut Chart */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
+        {/* Audience Rating and Donut Chart Together */}
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ padding: 3 }}>
+            <Typography variant="h6">Audience Rating Summary</Typography>
+            <Typography variant="h4">{averageRating}</Typography>
+            <Typography variant="body2">★ {totalReviews} ratings</Typography>
+            <Divider sx={{ my: 1 }} />
+            <RatingBar label="5" value={reviewsData.fiveStar || 0} total={totalReviews} />
+            <RatingBar label="4" value={reviewsData.fourStar || 0} total={totalReviews} />
+            <RatingBar label="3" value={reviewsData.threeStar || 0} total={totalReviews} />
+            <RatingBar label="2" value={reviewsData.twoStar || 0} total={totalReviews} />
+            <RatingBar label="1" value={reviewsData.oneStar || 0} total={totalReviews} />
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Sold vs Inventory</Typography>
             <Doughnut data={donutData} />
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="body2">
-                {stats.productsSold} sold out of {stats.totalListed} listed
-              </Typography>
-            </Box>
+            <Typography variant="body2">
+              {stats.productsSold} sold out of {stats.totalListed}
+            </Typography>
           </Paper>
         </Grid>
 
-        {/* Items Bought */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
+        {/* Items Bought, Total Earned, Total Spent Together */}
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Items Bought</Typography>
-            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
-              {stats.itemsBought}
-            </Typography>
+            <Typography variant="h4">{stats.itemsBought}</Typography>
           </Paper>
         </Grid>
 
-        {/* Total Earned */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Earned</Typography>
-            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
-              ${stats.totalEarned}
-            </Typography>
+            <Typography variant="h4">${stats.totalEarned}</Typography>
           </Paper>
         </Grid>
 
-        {/* Total Spent */}
-        <Grid item xs={12} sm={6} md={3}>
-          <Paper className="dashboard-paper same-size" sx={{ padding: 3, textAlign: 'center' }}>
+        <Grid item xs={12} md={4}>
+          <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Spent</Typography>
-            <Typography variant="h4" className="dashboard-value" sx={{ mt: 2 }}>
-              ${stats.totalSpent}
-            </Typography>
+            <Typography variant="h4">${stats.totalSpent}</Typography>
           </Paper>
         </Grid>
       </Grid>
     </Box>
   );
-});
+};
 
 export default Dashboard;

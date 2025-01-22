@@ -12,18 +12,24 @@ const BiddingProduct = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isBiddingOpen, setIsBiddingOpen] = useState(false);
   const [isBiddingClosed, setIsBiddingClosed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/${id}`);
         const data = await response.json();
         setProduct(data);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching product:', error);
-      }
+        setLoading(false);
+      } finally {
+        setLoading(false);
+    }
     };
 
     const fetchBidders = async () => {
@@ -134,6 +140,9 @@ const BiddingProduct = () => {
     return 'Bidding has ended';
   };
   
+  if (loading) {
+      return <Typography textAlign="center">Loading...</Typography>;
+ }
 
   return (
     <Layout>

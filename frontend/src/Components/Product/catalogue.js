@@ -40,7 +40,7 @@ const FiltersSkeleton = () => (
 
 const CataloguePage = () => {
     const [products, setProducts] = useState([]);
-     const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState({});
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const [showSizeDropdown, setShowSizeDropdown] = useState(false);

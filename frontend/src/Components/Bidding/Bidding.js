@@ -1,66 +1,23 @@
 // src/components/PetInfo.js
 import React from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import Slider from 'react-slick';
 import 'slick-carousel/slick/slick.css';
 import 'slick-carousel/slick/slick-theme.css';
 import './Bidding.css';
 import { NextArrow, PrevArrow } from './customArrow';
-import chanel from '../../assets/Bidding/chanel.jpg';
-import chanel2 from '../../assets/Bidding/channel page.jpg';
-import LV from '../../assets/Bidding/LV.jpg';
-import prada from '../../assets/Bidding/prada.jpg';
-import gucci from '../../assets/Bidding/gucci.jpg';
-import { Card, CardContent, CardMedia, Typography, Button, Box, Chip, IconButton } from '@mui/material';
+import { Card, CardContent, CardMedia, Typography, Button, Box, Chip, IconButton, CircularProgress } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
 import bidProduct from '../BidProduct/BidProductHome';
 
-const items = [
-  {
-    id: 1,
-    image: chanel,
-    title: 'Cream Colour Premium Chanel',
-    currentBid: 8000.0,
-    buyNowPrice: 8000.0,
-    bids: 1,
-  },
-  {
-    id: 2,
-    image: chanel2,
-    title: 'Black Chanel Premium',
-    currentBid: 5001.0,
-    buyNowPrice: 5000.0,
-    bids: 1,
-  },
-  {
-    id: 3,
-    image: LV,
-    title: 'Limited Edition LV',
-    currentBid: 2002.0,
-    buyNowPrice: 2000.0,
-    bids: 1,
-  },
-  {
-    id: 4,
-    image: prada,
-    title: 'Classic Prada Handbag',
-    currentBid: 3000.0,
-    buyNowPrice: 4000.0,
-    bids: 3,
-  },
-  {
-    id: 5,
-    image: gucci,
-    title: 'Vintage Bag',
-    currentBid: 7000.0,
-    buyNowPrice: 10000.0,
-    bids: 5,
-  },
-];
 
 const Bidding = () => {
-  const navigate = useNavigate(); // Initialize useNavigate
+  const navigate = useNavigate(); 
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const settings = {
     dots: true,
@@ -95,12 +52,32 @@ const Bidding = () => {
     ],
   };
 
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/get`);
+        setProducts(response.data); // Assuming response.data is an array of products
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  if (loading) {
+    return <CircularProgress style={{ display: 'block', margin: 'auto' }} />;
+  }
+
   return (
     <div className="slider-container" style={{ position: 'relative'}}>
       <h1>Explore Our Bidding Collection</h1>
       <Slider {...settings}>
-        {items.map((item) => (
-          <div className="slide-item" key={item.id}>
+        {products.map((product) => (
+          <div className="slide-item" key={product.id}>
             <Card
               sx={{
                 maxWidth: 270,
@@ -111,12 +88,12 @@ const Bidding = () => {
                 justifyContent: 'space-between',
               }}
             >
-              <CardMedia component="img" height="100" image={item.image} alt={item.title} />
+              <CardMedia component="img" height="100" image={product.images && product.images[0]} alt={product.name} />
               <CardContent sx={{ padding: '8px' }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                {/* <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                   <Chip label="On Stock" sx={{backgroundColor:"#829460"}} size="small" />
                   <Chip label={`${item.bids} Bids`} sx={{backgroundColor:"#7D9D9C",color:"white"}}size="small" />
-                </Box>
+                </Box> */}
                 <Typography
                   gutterBottom
                   variant="h6"
@@ -124,7 +101,7 @@ const Bidding = () => {
                   noWrap
                   sx={{ fontSize: '14px', textAlign: 'center' }}
                 >
-                  {item.title}
+                  {product.name}
                 </Typography>
                 <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                   <Box>
@@ -132,19 +109,19 @@ const Bidding = () => {
                       Current Bid
                     </Typography>
                     <Typography variant="body1" color="text.primary">
-                      ${item.currentBid.toFixed(2)}
+                      Rs.{product.startingPrice}
                     </Typography>
                   </Box>
                   <Box>
                     <Typography variant="body2" color="text.secondary">
                       Buy Now
                     </Typography>
-                    <Typography variant="body1" color="text.primary">
+                    {/* <Typography variant="body1" color="text.primary">
                       ${item.buyNowPrice.toFixed(2)}
-                    </Typography>
+                    </Typography> */}
                   </Box>
                 </Box>
-                <Button variant="contained" sx={{backgroundColor:"#576F72",color:"white"}} startIcon={<ShoppingCartIcon />} fullWidth>
+                <Button variant="contained" sx={{backgroundColor:"#576F72",color:"white"}} startIcon={<ShoppingCartIcon />} fullWidth  onClick={() => navigate(`/biddingProduct/${product._id}`)}>
                   PLACE BID
                 </Button>
                 <Box display="flex" justifyContent="center" mt={1}>

@@ -22,16 +22,18 @@ const CreateProductForm = () => {
     description: "",
     bidStartTime: "",
     bidEndTime: "",
+    biddingModel: "Top 3 Bidders", 
     image: null,
-    biddingModel: "top3", // Default model
   });
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    console.log(`Updating ${name} with value:`, value); // Debugging log
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  
 
   const handleImageChange = (e) => {
     setFormData((prev) => ({ ...prev, image: e.target.files[0] }));
@@ -142,24 +144,20 @@ const CreateProductForm = () => {
         />
 
         {/* Dropdown for Bidding Model Selection */}
-        <FormControl fullWidth>
-          <InputLabel>Bidding Model</InputLabel>
+        <FormControl fullWidth required>
+          <InputLabel id="bidding-model-label">Bidding Model</InputLabel>
           <Tooltip title="Choose how bidders will be displayed">
-            <Select
-              name="biddingModel"
-              value={formData.biddingModel}
-              onChange={handleChange}
-              required
-            >
-              <Tooltip title="Shows only the top 3 highest bidders">
-                <MenuItem value="top3">Top 3 Bidders</MenuItem>
-              </Tooltip>
-              <Tooltip title="Only displays the highest bidder">
-                <MenuItem value="highest">Simple Highest Bidder</MenuItem>
-              </Tooltip>
-            </Select>
-          </Tooltip>
-        </FormControl>
+          <Select
+            labelId="bidding-model-label"
+            name="biddingModel"
+            value={formData.biddingModel} // Ensure this is set correctly
+            onChange={handleChange}
+         >
+           <MenuItem value="Top 3 Bidders">Top 3 Bidders</MenuItem>
+           <MenuItem value="Highest Bidder">Highest Bidder</MenuItem>
+         </Select>
+         </Tooltip>
+       </FormControl>
 
         <Button variant="contained" component="label">
           Upload Image

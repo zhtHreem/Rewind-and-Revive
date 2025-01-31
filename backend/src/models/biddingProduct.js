@@ -21,6 +21,9 @@ const BidSchema = new mongoose.Schema({
   bidEndTime: { 
     type: Date,
     default: () => new Date(new Date().toLocaleString("en-US", { timeZone: "Karachi" })),
+  },biddingModel: { 
+    type: String, 
+    enum: ["Top 3 Bidders", "Highest Bidder"] // Restrict to these values
   },
   images: [{ 
     type: String 
@@ -28,10 +31,6 @@ const BidSchema = new mongoose.Schema({
   createdAt: { 
     type: Date, 
     default: Date.now 
-  },biddingModel: {
-    type: String,
-    enum: ["top3", "highest"],
-    default: "top3",
   },
 });
 

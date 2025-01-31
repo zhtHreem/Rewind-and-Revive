@@ -15,7 +15,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Swal from 'sweetalert2';
 import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import { useParams , useNavigate} from 'react-router-dom';
 import AccountBalanceRoundedIcon from '@mui/icons-material/AccountBalanceRounded';
 import CreditCardRoundedIcon from '@mui/icons-material/CreditCardRounded';
 import SimCardRoundedIcon from '@mui/icons-material/SimCardRounded';
@@ -35,6 +35,7 @@ export default function PaymentForm() {
   const [cvv, setCvv] = React.useState('');
   const [name, setName] = React.useState('');
   const [expirationDate, setExpirationDate] = React.useState('');
+  const navigate = useNavigate();
   const handlePaymentTypeChange = (event) => {
     setPaymentType(event.target.value);
   };
@@ -314,11 +315,9 @@ export default function PaymentForm() {
             <Button variant="contained" onClick={handleSubmit} style={{marginBottom:'30px'}}>
               Submit
             </Button>
-            {/* {success && (
-              <Alert severity="success" sx={{ mt: 2 }}>
-                Payment submitted successfully!
-              </Alert>
-            )} */}
+            <Button variant="contained" onClick={() => navigate("/c")} style={{marginBottom:'30px'}}>
+              Back to shopping
+            </Button>
           </Stack>
         </Box>
       </Box>

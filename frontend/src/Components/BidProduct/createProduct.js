@@ -1,8 +1,19 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
-import { Box, Button, TextField, Typography, TextareaAutosize,} from "@mui/material";
-import Layout from '../Layout/layout';
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  TextareaAutosize,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
+  Tooltip,
+} from "@mui/material";
+import Layout from "../Layout/layout";
 
 const CreateProductForm = () => {
   const [formData, setFormData] = useState({
@@ -12,9 +23,10 @@ const CreateProductForm = () => {
     bidStartTime: "",
     bidEndTime: "",
     image: null,
+    biddingModel: "top3", // Default model
   });
 
-   const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -34,11 +46,15 @@ const CreateProductForm = () => {
     });
 
     try {
-      await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/create`, data, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      await axios.post(
+        `${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/create`,
+        data,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
       alert("Product created successfully!");
       navigate("/bidProduct");
     } catch (error) {
@@ -49,102 +65,123 @@ const CreateProductForm = () => {
 
   return (
     <Layout>
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      sx={{
-        maxWidth: 600,
-        margin: "auto",
-        display: "flex",
-        flexDirection: "column",
-        gap: 3,
-        marginTop: 5,
-        marginBottom: 5,
-        padding: 3,
-        boxShadow: 3,
-        borderRadius: 2,
-        backgroundColor: "#fff",
-      }}
-    >
-      <Typography variant="h4" align="center" gutterBottom>
-        Create Product
-      </Typography>
-      <TextField
-        label="Product Name"
-        name="name"
-        onChange={handleChange}
-        required
-        fullWidth
-      />
-      <TextField
-        label="Starting Price"
-        name="startingPrice"
-        type="number"
-        value={formData.startingPrice}
-        onChange={handleChange}
-        required
-        fullWidth
-      />
-      <TextareaAutosize
-        placeholder="Description"
-        name="description"
-        value={formData.description}
-        onChange={handleChange}
-        minRows={3}
-        style={{
-          width: "100%",
-          padding: "10px",
-          fontSize: "16px",
-          borderColor: "#ccc",
-          borderRadius: "4px",
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          maxWidth: 600,
+          margin: "auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+          marginTop: 5,
+          marginBottom: 5,
+          padding: 3,
+          boxShadow: 3,
+          borderRadius: 2,
+          backgroundColor: "#fff",
         }}
-        required
-      />
-      <TextField
-        label="Bid Start Time"
-        name="bidStartTime"
-        type="datetime-local"
-        value={formData.bidStartTime}
-        onChange={handleChange}
-        required
-        InputLabelProps={{
-          shrink: true,
-        }}
-        fullWidth
-      />
-      <TextField
-        label="Bid End Time"
-        name="bidEndTime"
-        type="datetime-local"
-        value={formData.bidEndTime}
-        onChange={handleChange}
-        required
-        InputLabelProps={{
-          shrink: true,
-        }}
-        fullWidth
-      />
-      <Button variant="contained" component="label">
-        Upload Image
-        <input
-          type="file"
-          name="image"
-          onChange={handleImageChange}
-          accept="image/*"
-          hidden
+      >
+        <Typography variant="h4" align="center" gutterBottom>
+          Create Product
+        </Typography>
+        <TextField
+          label="Product Name"
+          name="name"
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextField
+          label="Starting Price"
+          name="startingPrice"
+          type="number"
+          value={formData.startingPrice}
+          onChange={handleChange}
+          required
+          fullWidth
+        />
+        <TextareaAutosize
+          placeholder="Description"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          minRows={3}
+          style={{
+            width: "100%",
+            padding: "10px",
+            fontSize: "16px",
+            borderColor: "#ccc",
+            borderRadius: "4px",
+          }}
           required
         />
-      </Button>
-      <Button
-        type="submit"
-        variant="contained"
-        color="primary"
-        size="large"
-        sx={{ marginTop: 2 }}
-      >
-        Create Product
-      </Button>
-    </Box>
+        <TextField
+          label="Bid Start Time"
+          name="bidStartTime"
+          type="datetime-local"
+          value={formData.bidStartTime}
+          onChange={handleChange}
+          required
+          InputLabelProps={{
+            shrink: true,
+          }}
+          fullWidth
+        />
+        <TextField
+          label="Bid End Time"
+          name="bidEndTime"
+          type="datetime-local"
+          value={formData.bidEndTime}
+          onChange={handleChange}
+          required
+          InputLabelProps={{
+            shrink: true,
+          }}
+          fullWidth
+        />
+
+        {/* Dropdown for Bidding Model Selection */}
+        <FormControl fullWidth>
+          <InputLabel>Bidding Model</InputLabel>
+          <Tooltip title="Choose how bidders will be displayed">
+            <Select
+              name="biddingModel"
+              value={formData.biddingModel}
+              onChange={handleChange}
+              required
+            >
+              <Tooltip title="Shows only the top 3 highest bidders">
+                <MenuItem value="top3">Top 3 Bidders</MenuItem>
+              </Tooltip>
+              <Tooltip title="Only displays the highest bidder">
+                <MenuItem value="highest">Simple Highest Bidder</MenuItem>
+              </Tooltip>
+            </Select>
+          </Tooltip>
+        </FormControl>
+
+        <Button variant="contained" component="label">
+          Upload Image
+          <input
+            type="file"
+            name="image"
+            onChange={handleImageChange}
+            accept="image/*"
+            hidden
+            required
+          />
+        </Button>
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          size="large"
+          sx={{ marginTop: 2 }}
+        >
+          Create Product
+        </Button>
+      </Box>
     </Layout>
   );
 };

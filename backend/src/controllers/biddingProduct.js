@@ -69,6 +69,7 @@ export const createProduct = async (req, res) => {
         bidStartTime: req.body.bidStartTime,
         bidEndTime: req.body.bidEndTime,
         images: imageUrls,
+        biddingModel: req.body.biddingModel,
       });
   
       const savedProduct = await product.save();

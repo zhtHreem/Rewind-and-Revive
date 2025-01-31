@@ -28,7 +28,11 @@ const BidSchema = new mongoose.Schema({
   createdAt: { 
     type: Date, 
     default: Date.now 
-  }
+  },biddingModel: {
+    type: String,
+    enum: ["top3", "highest"],
+    default: "top3",
+  },
 });
 
 const BiddingProduct= mongoose.model('BidProduct', BidSchema);

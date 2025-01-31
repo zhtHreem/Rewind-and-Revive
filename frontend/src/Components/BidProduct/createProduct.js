@@ -119,29 +119,29 @@ const CreateProductForm = () => {
           required
         />
         <TextField
-          label="Bid Start Time"
-          name="bidStartTime"
-          type="datetime-local"
-          value={formData.bidStartTime}
-          onChange={handleChange}
-          required
-          InputLabelProps={{
-            shrink: true,
-          }}
-          fullWidth
-        />
-        <TextField
-          label="Bid End Time"
-          name="bidEndTime"
-          type="datetime-local"
-          value={formData.bidEndTime}
-          onChange={handleChange}
-          required
-          InputLabelProps={{
-            shrink: true,
-          }}
-          fullWidth
-        />
+        label="Bid Start Time"
+        name="bidStartTime"
+        type="datetime-local"
+        value={formData.bidStartTime}
+        onChange={handleChange}
+        required
+        InputLabelProps={{
+          shrink: true,
+        }}
+        fullWidth
+      />
+      <TextField
+        label="Bid End Time"
+        name="bidEndTime"
+        type="datetime-local"
+        value={formData.bidEndTime}
+        onChange={handleChange}
+        required
+        InputLabelProps={{
+          shrink: true,
+        }}
+        fullWidth
+      />
 
         {/* Dropdown for Bidding Model Selection */}
         <FormControl fullWidth required>

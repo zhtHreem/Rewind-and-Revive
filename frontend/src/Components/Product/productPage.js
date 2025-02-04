@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate ,useParams} from 'react-router-dom';
 
-import { Grid, Box, Typography, Button } from '@mui/material';
+import { Grid, Box, Typography, Button, Stack } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper,  Modal } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
+import { ArrowForward } from "@mui/icons-material";
+
 import AddCart from "../ShoppingCart/AddCart";
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat'; // Chat component import
@@ -14,7 +16,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 import axios from 'axios';
-
+import MatchOutfitModal from './matchMyOutfit';
   // Create skeleton components for different sections
 const ProductImageSkeleton = () => (
   <Box>
@@ -75,7 +77,11 @@ const ProductPage = () => {
   const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
   
   const { productId }= useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Handlers for modal
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
   useEffect(() => {
 
     const fetchProduct = async () => {
@@ -224,10 +230,14 @@ const ProductPage = () => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <Typography variant="h2">{product.name}</Typography>
-
-              <Typography variant="h4" sx={{ marginBottom: 2 }}>${product.price}</Typography>
+            <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              
+              <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
+                  <Typography variant="h4">{product.name}</Typography>
+                  <Button variant="outlined" endIcon={<ArrowForward />}  onClick={handleOpenModal}  sx={{minWidth:"40%", background: "transparent", color: "#9c27b0", border: "2px solid #c59bff", borderRadius: "20px", padding: "8px 20px", textTransform: "none", fontWeight: "bold", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s ease", "&:hover": { background: "linear-gradient(90deg, #c59bff, #9c27b0)", color: "#fff" } }}>Match My Outfit</Button>
+              </Stack>
+               <MatchOutfitModal  open={isModalOpen} onClose={handleCloseModal} product={product} /> 
+              <Typography variant="h5" sx={{ marginBottom: 2 }}>Rs. {product.price}</Typography>
               
               <Typography variant="overline" sx={{ marginLeft: '80%', cursor: 'pointer', '&:hover': { textDecoration: 'underline', color: 'primary.main' } }} onClick={() => navigate(`/profile/${product.owner._id}`)}>
                 {product.owner.username}
@@ -238,7 +248,7 @@ const ProductPage = () => {
                   variant="contained"
                   onClick={handleAddToCart}
                   size="large"
-                  sx={{ width: '100%', backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}
+                  sx={{ width: '100%', backgroundColor:'black' , '&:hover': { backgroundColor:  '#85586F' } }}
                 >
                   Add to Cart
                 </Button>

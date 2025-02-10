@@ -1,5 +1,5 @@
 import express from "express";
-import { createProduct,getProduct ,getProductCatalogueList} from "../controllers/product.js";
+import { createProduct,getProduct ,getProductCatalogueList,getProductRecommendations} from "../controllers/product.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 
 const router = express.Router();
@@ -13,6 +13,7 @@ router.post("/create",authMiddleware, upload.array('images', 5),createProduct)
 router.get('/catalogue',getProductCatalogueList)
 // Fetch product
 router.get("/:id",getProduct)
+router.get('/recommendations/:productId', getProductRecommendations);
 
 
 

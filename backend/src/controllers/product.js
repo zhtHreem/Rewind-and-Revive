@@ -2,6 +2,7 @@ import axios from 'axios';
 import FormData from 'form-data'; // Ensure this is imported
 import fs from 'fs'; // Import fs for file reading
 import Product from '../models/product.js';
+import ProductMatcher from '../utils/productMatcher.js';
 
 export const createProduct = async (req, res) => {
   try {
@@ -118,6 +119,8 @@ export const getProductCatalogueList = async (req, res) => {
 
 
 
+
+
 // Get a single product by ID
 export const getProduct = async (req, res) => {
   try {
@@ -140,3 +143,263 @@ export const getProduct = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
+
+// export const getProductRecommendations = async (req, res) => {
+//     try {
+//         const { productId } = req.params;
+//         const { 
+//             topK = 6,
+//             matchType = 'true', 
+//             matchMaterials = 'true' 
+//         } = req.query;
+
+//         console.log('Starting recommendation request:', {
+//             productId,
+//             topK: Number(topK),
+//             matchType: matchType === 'true',
+//             matchMaterials: matchMaterials === 'true'
+//         });
+
+//         // 1. First check if product exists and has images
+//         const sourceProduct = await Product.findById(productId);
+//         if (!sourceProduct || !sourceProduct.images?.length) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'Product not found or has no images'
+//             });
+//         }
+
+//         // 2. Find all potential matches (excluding source product)
+//         const potentialMatches = await Product.find({
+//             _id: { $ne: productId },
+//             images: { $exists: true, $ne: [] }
+//         });
+
+//         console.log('Found potential matches:', {
+//             count: potentialMatches.length,
+//             sampleProduct: potentialMatches[0]?.name
+//         });
+
+//         if (potentialMatches.length === 0) {
+//             return res.json({
+//                 success: true,
+//                 count: 0,
+//                 recommendations: []
+//             });
+//         }
+
+//         const matcher = new ProductMatcher();
+
+//         // 3. Try increasingly relaxed criteria until we get recommendations
+//         let recommendations = [];
+//         const criteria = [
+//             // First try: Original strict criteria
+//             {
+//                 topK: Number(topK),
+//                 matchType: matchType === 'true',
+//                 matchMaterials: matchMaterials === 'true'
+//             },
+//             // Second try: Match type only
+//             {
+//                 topK: Number(topK),
+//                 matchType: matchType === 'true',
+//                 matchMaterials: false
+//             },
+//             // Third try: No matching criteria
+//             {
+//                 topK: Number(topK),
+//                 matchType: false,
+//                 matchMaterials: false
+//             }
+//         ];
+
+//         for (const criteriaSet of criteria) {
+//             console.log('Trying criteria:', criteriaSet);
+//             recommendations = await matcher.recommendProducts(productId, criteriaSet);
+            
+//             if (recommendations && recommendations.length > 0) {
+//                 console.log(`Found ${recommendations.length} recommendations with criteria:`, criteriaSet);
+//                 break;
+//             }
+//         }
+
+//         // 4. Process and limit recommendations
+//         const limitedRecommendations = (recommendations || [])
+//             .slice(0, 6)
+//             .map(match => ({
+//                 product: match.product,
+//                 similarity: match.similarity,
+//                 matchScore: match.matchScore
+//             }));
+
+//         console.log('Final recommendations:', {
+//             total: limitedRecommendations.length,
+//             products: limitedRecommendations.map(r => ({
+//                 name: r.product.name,
+//                 similarity: r.similarity
+//             }))
+//         });
+
+//         res.json({
+//             success: true,
+//             count: limitedRecommendations.length,
+//             recommendations: limitedRecommendations
+//         });
+
+//     } catch (error) {
+//         console.error('Recommendation error:', {
+//             message: error.message,
+//             stack: error.stack
+//         });
+//         res.status(500).json({ 
+//             success: false, 
+//             message: error.message,
+//             stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+//         });
+//     }
+// };
+
+
+export const getProductRecommendations = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const { 
+            topK = 5, 
+            matchType = 'false', 
+            matchMaterials = 'false',
+            matchCategories = 'false'
+        } = req.query;
+         console.log('Starting recommendation request:', {matchType,matchMaterials,matchCategories});
+        // 1. Initialize ProductMatcher
+        const matcher = new ProductMatcher();
+        console.log('🧪 Starting ProductMatcher...\n');
+
+        // 2. Check database connection and count products
+        const totalCount = await Product.countDocuments();
+        console.log(`Total products in database: ${totalCount}`);
+
+        // 3. Get the source product
+        const testProduct = await Product.findById(productId);
+        
+        if (!testProduct) {
+            throw new Error('Product not found');
+        }
+
+        console.log('\nTest product details:', {
+            id: testProduct._id,
+            name: testProduct.name,
+            type: testProduct.type,
+            hasImages: testProduct.images?.length > 0,
+            imageUrls: testProduct.images,
+            materials: testProduct.materials,
+            categories: testProduct.categories
+        });
+
+        // 4. Verify there are other products that could match
+        const potentialMatches = await Product.find({
+            _id: { $ne: testProduct._id },
+            images: { $exists: true, $ne: [] }
+        });
+
+        console.log(`\nFound ${potentialMatches.length} other products with images`);
+        console.log('Sample of potential matches:', 
+            potentialMatches.slice(0, 3).map(p => ({
+                id: p._id,
+                name: p.name,
+                type: p.type,
+                hasImages: p.images?.length > 0
+            }))
+        );
+
+        // 5. Get Product Recommendations with specified criteria
+        console.log('\nTesting Product Recommendations...');
+        const recommendations = await matcher.recommendProducts(testProduct._id, {
+            topK: Number(topK),
+            matchType: matchType === 'true',      // Convert to boolean
+            matchMaterials: matchMaterials === 'true',  // Convert to boolean
+            matchCategories: matchCategories === 'true'  // Convert to boolean
+        });
+
+        if (!Array.isArray(recommendations)) {
+            console.error('Recommendations is not an array:', recommendations);
+            throw new Error('Invalid recommendations format returned');
+        }
+
+        if (recommendations.length === 0) {
+            // Debug query to see what products are available
+            const debugQuery = await Product.find({
+                _id: { $ne: testProduct._id },
+                'images.0': { $exists: true }
+            }).limit(5);
+            
+            console.log('\nDebug - Sample of available products:', 
+                debugQuery.map(p => ({
+                    id: p._id,
+                    name: p.name,
+                    type: p.type,
+                    imageCount: p.images?.length
+                }))
+            );
+           // throw new Error('No recommendations returned');
+            // return res.json({
+            //     success: true,
+            //     recommendations: []
+            // });
+        }
+
+        // 6. Print recommendations for debugging
+        console.log('\nRecommendations found:', recommendations.length);
+        recommendations.forEach((rec, index) => {
+            console.log(`\n${index + 1}. ${rec.product.name}`);
+            console.log(`   ID: ${rec.product._id}`);
+            console.log(`   Type: ${rec.product.type}`);
+            console.log(`   Has Images: ${rec.product.images?.length > 0}`);
+            console.log(`   Image URL: ${rec.product.images?.[0]}`);
+            console.log(`   Similarity Score: ${(rec.similarity * 100).toFixed(2)}%`);
+            console.log(`   Match Score: ${rec.matchScore}`);
+        });
+
+        console.log('\n🎉 Recommendations generated successfully!');
+
+        // Send response
+        res.json({
+            success: true,
+            recommendations: recommendations.slice(0, 6).map(match => ({
+                product: match.product,
+                similarity: match.similarity,
+                matchScore: match.matchScore
+            }))
+        });
+
+    } catch (error) {
+        console.error('❌ Recommendation error:', error);
+        console.error('Error details:', error.message);
+        if (error.stack) {
+            console.error('\nStack trace:', error.stack);
+        }
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

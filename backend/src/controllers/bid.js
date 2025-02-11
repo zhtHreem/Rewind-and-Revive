@@ -32,11 +32,11 @@ export const getBidsByProduct = async (req, res) => {
       }
 
       let bids;
-      if (product.biddingType === "Top 3 Bidders") {
-          bids = await Bid.find({ productId }).sort({ bidAmount: -1 }).limit(3);
-      } else if (product.biddingType === "Highest Bidder") {
+      if (product.biddingType === "Highest Bidder") {
           bids = await Bid.find({ productId }).sort({ bidAmount: -1 }).limit(1);
-      } else {
+      } else if (product.biddingType === "Top 3 Bidders") {
+        bids = await Bid.find({ productId }).sort({ bidAmount: -1 }).limit(3); 
+      }else {
           bids = await Bid.find({ productId }).sort({ bidAmount: -1 }); // Default case
       }
 

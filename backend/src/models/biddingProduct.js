@@ -16,11 +16,19 @@ const BidSchema = new mongoose.Schema({
   },
   bidStartTime: { 
     type: Date,
-    default: () => new Date(new Date().toLocaleString("en-US", { timeZone: "Karachi" })),
+    default: () => {
+      const date = new Date();
+      date.setUTCHours(date.getUTCHours() + 5); 
+      return date;
+    }
   },
   bidEndTime: { 
     type: Date,
-    default: () => new Date(new Date().toLocaleString("en-US", { timeZone: "Karachi" })),
+    default: () => {
+      const date = new Date();
+      date.setUTCHours(date.getUTCHours() + 5); 
+      return date;
+    }
   },biddingModel: { 
     type: String, 
     enum: ["Top 3 Bidders", "Highest Bidder"] // Restrict to these values

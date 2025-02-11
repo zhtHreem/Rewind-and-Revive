@@ -74,7 +74,7 @@ const BiddingProduct = () => {
       setBidders(data);
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error fetching bidders:', error);
+      console.error("Error fetching bidders:", error);
     }
   };
 
@@ -186,36 +186,37 @@ const BiddingProduct = () => {
 
               <Modal open={isModalOpen} onClose={handleCloseModal}>
                 <Box
-                  sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
+                 sx={{
+                    position: "absolute",
+                    top: "50%",
+                    left: "50%",
+                    transform: "translate(-50%, -50%)",
                     width: 400,
-                    bgcolor: 'background.paper',
+                    bgcolor: "background.paper",
                     borderRadius: 1,
                     boxShadow: 24,
                     p: 4,
-                  }}
+                 }}
                 >
-                  <Typography variant="h6" component="h2">
-                    Top Bidders
-                  </Typography>
-                  <Box sx={{ mt: 2 }}>
-                    {bidders.length > 0 ? (
-                      bidders.map((bid, index) => (
-                        <Paper key={index} sx={{ padding: 1, marginBottom: 1 }}>
-                          <Typography>
-                            <strong>{bid.name}</strong>: ${bid.bidAmount}
-                          </Typography>
-                        </Paper>
-                      ))
-                    ) : (
-                      <Typography>No bids yet!</Typography>
-                    )}
-                  </Box>
-                </Box>
-              </Modal>
+              <Typography variant="h6" component="h2">
+                {bidders.length === 1 ? "Highest Bidder" : "Top 3 Bidders"}
+             </Typography>
+           <Box sx={{ mt: 2 }}>
+          {bidders.length > 0 ? (
+            bidders.map((bid, index) => (
+            <Paper key={index} sx={{ padding: 1, marginBottom: 1 }}>
+               <Typography>
+                 <strong>{bid.name}</strong>: Rs.{bid.bidAmount}
+               </Typography>
+            </Paper>
+         ))
+      ) : (
+        <Typography>No bids yet!</Typography>
+      )}
+       </Box>
+     </Box>
+   </Modal>
+
 
               <TextField
                   label="Place your bid"

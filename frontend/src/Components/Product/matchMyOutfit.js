@@ -51,10 +51,12 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
             
             const matchItems = recommendations.map(rec => ({
               id: rec.product._id,
+              price: rec.product.price,
               image: rec.product.images[0],
               alt: rec.product.name,
               name: rec.product.name
             }));
+            
 
             setMatchingItems(matchItems);
             setPeopleAlsoBuy(matchItems.slice(0, 6)); // Using same items for people also buy section
@@ -108,10 +110,14 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
         <Box   sx={{   width: { xs: '100%', md: '300px' }, minWidth: { md: '400px' },   height: { xs: 'auto', md: '87%' }, backgroundImage: `url(${myMyo})`,   display: 'flex',   flexDirection: 'column',   alignItems: 'center',   p: { xs: 2, sm: 4 }  }}  >
           
             <>
-              <Box   component="img"    src={product?.images?.[0] || "/api/placeholder/300/400"}   alt={product?.name || "Product"}   sx={{    width: '100%',   height: '87%',  maxWidth: { xs: 200, sm: 300 }, objectFit: "cover", boxShadow: 10}} />
+              <Box   component="img"    src={product?.images?.[0] || "/api/placeholder/300/400"}   alt={product?.name || "Product"}   sx={{   position:"relative",  width: '100%',   height: '87%',  maxWidth: { xs: 200, sm: 300 }, objectFit: "cover", boxShadow: 10}} />
               <Typography    sx={{ mt: 2, textAlign: 'center' ,display: 'block',   cursor: 'pointer',  color: 'primary.main', transition: 'all 0.2s ease-in-out', '&:hover': {     color: 'primary.dark', textDecoration: 'underline', transform: 'scale(1.02)' }}}   onClick={() => navigate(`/product/${product?._id}`)} >
-                {product?.name}
+                {product?.name}   
               </Typography>
+              <Typography  variant='body2' sx={{color: 'darkblue'}} >
+                 Rs. {product?.price}
+              </Typography>
+            
             </>
         
         </Box>
@@ -132,11 +138,15 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               ) : matchingItems.length > 0 ? (
                 matchingItems.map((item) => (
                   <SwiperSlide key={item.id} style={{ padding: 6 }}>
-                    <Box   sx={{   width: '100%', height: { xs: 80, sm: "100%" }, bgcolor: '#f5f5f5',  overflow: 'hidden'  }} >
+                    <Box   sx={{  position: 'relative',  width: '100%', height: { xs: 80, sm: "100%" }, bgcolor: '#f5f5f5',  overflow: 'hidden'  }} >
                       <Box   component="img"  src={item.image} alt={item.alt} sx={{  width: '100%', height:'80%',objectFit: 'cover'}}   />
                       <Typography  variant="h6"   sx={{ textAlign: 'center', display: 'block',   cursor: 'pointer',  color: 'primary.main', transition: 'all 0.2s ease-in-out', '&:hover': {     color: 'primary.dark', textDecoration: 'underline', transform: 'scale(1.02)' } }}  onClick={() => navigate(`/product/${item?.id}`)} >
-                        {item.name}
+                        {item.name} 
                       </Typography>
+                      <Typography  variant='body2' sx={{color: 'white',position: 'absolute',backgroundColor: 'rgba(0, 0, 0, 0.5)',top: 0,right:0 }} >
+                        Rs.{item.price}
+                      </Typography>
+                 
                     </Box>
                   </SwiperSlide>
                 ))

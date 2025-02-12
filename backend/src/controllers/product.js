@@ -337,6 +337,7 @@ export const getProductRecommendations = async (req, res) => {
             console.log('\nDebug - Sample of available products:', 
                 debugQuery.map(p => ({
                     id: p._id,
+                    price: p.price,
                     name: p.name,
                     type: p.type,
                     imageCount: p.images?.length

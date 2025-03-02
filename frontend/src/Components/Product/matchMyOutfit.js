@@ -54,7 +54,8 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               price: rec.product.price,
               image: rec.product.images[0],
               alt: rec.product.name,
-              name: rec.product.name
+              name: rec.product.name,
+              owner: rec.product.owner
             }));
             
 
@@ -116,8 +117,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               </Typography>
               <Typography  variant='body2' sx={{color: 'darkblue'}} >
                  Rs. {product?.price}
-              </Typography>
-            
+              </Typography>   
             </>
         
         </Box>
@@ -128,7 +128,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
             <Typography variant="h6" sx={{ mb: { xs: 1, sm: 2 } }}>
               See Matching Items
             </Typography>
-            <Swiper  modules={[Navigation]} navigation={true}    slidesPerView={getSlidesPerView()}    spaceBetween={16}  style={{ width: '100%', height: 180 }} >
+            <Swiper  modules={[Navigation]} navigation={true}    slidesPerView={getSlidesPerView()}    spaceBetween={16}  style={{ width: '100%', height: 300 }} >
               {isLoading ? (
                 Array(4).fill(0).map((_, index) => (
                   <SwiperSlide key={`skeleton-${index}`} style={{ padding: 6 }}>
@@ -138,19 +138,23 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               ) : matchingItems.length > 0 ? (
                 matchingItems.map((item) => (
                   <SwiperSlide key={item.id} style={{ padding: 6 }}>
-                    <Box   sx={{  position: 'relative',  width: '100%', height: { xs: 80, sm: "100%" }, bgcolor: '#f5f5f5',  overflow: 'hidden'  }} >
+                    <Box   sx={{  position: 'relative',  width: '100%', height: { xs: "100%", sm: "100%" }, bgcolor: '#f5f5f5',  overflow: 'hidden'  }} >
                       <Box   component="img"  src={item.image} alt={item.alt} sx={{  width: '100%', height:'80%',objectFit: 'cover'}}   />
                       <Typography  variant="h6"   sx={{ textAlign: 'center', display: 'block',   cursor: 'pointer',  color: 'primary.main', transition: 'all 0.2s ease-in-out', '&:hover': {     color: 'primary.dark', textDecoration: 'underline', transform: 'scale(1.02)' } }}  onClick={() => navigate(`/product/${item?.id}`)} >
-                        {item.name} 
+                       {item.name}
                       </Typography>
-                      <Typography  variant='body2' sx={{color: 'white',position: 'absolute',backgroundColor: 'rgba(0, 0, 0, 0.5)',top: 0,right:0 }} >
+                      <Typography variant="body2" sx={{ color: 'black', position: 'absolute', backgroundColor: '#f5f5f5', bottom: 0, right: 0, left: 0, padding: '4px 8px', fontWeight: 'bold' }}>
+                          Seller: <Typography component="span" sx={{ color: 'blue', fontWeight: 'normal', cursor: 'pointer', marginLeft: '4px', textDecoration: 'underline' }} onClick={() => navigate(`/profile/${item.owner?._id}`)}>{item.owner?.username}</Typography>
+                      </Typography>
+
+                      <Typography  variant='body2' sx={{color: 'white',position: 'absolute',backgroundColor: 'rgba(0, 0, 0, 0.5)',top: 0,right:0,left:0 }} >
                         Rs.{item.price}
                       </Typography>
                  
                     </Box>
                   </SwiperSlide>
                 ))
-              ) : (
+            ) : (
                 <SwiperSlide>
                   <Typography sx={{ textAlign: 'center', py: 4 }}>
                     No matching items found
@@ -160,60 +164,8 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
             </Swiper>
           </Box>
 
-          <Box sx={{ mt: { xs: 2, sm: 4 } }}>
-            <Typography variant="h6" sx={{ mb: { xs: 1, sm: 2 } }}>
-              People also Buy
-            </Typography>
-            <Swiper 
-              modules={[Navigation]}  
-              navigation={true} 
-              slidesPerView={getSlidesPerView()} 
-              spaceBetween={16}   
-              style={{ width: '100%' }} 
-            >
-              {isLoading ? (
-                Array(4).fill(0).map((_, index) => (
-                  <SwiperSlide key={`skeleton-${index}`}>
-                    <ProductSkeleton />
-                  </SwiperSlide>
-                ))
-              ) : peopleAlsoBuy.length > 0 ? (
-                peopleAlsoBuy.map((item) => (
-                  <SwiperSlide key={item.id}>
-                    <Box 
-                      sx={{ 
-                        width: '100%', 
-                        height: { xs: 160, sm: 200 },  
-                        bgcolor: '#f5f5f5',
-                        borderRadius: '8px', 
-                        overflow: 'hidden'  
-                      }} 
-                    >
-                      <Box  
-                        component="img" 
-                        src={item.image}  
-                        alt={item.alt} 
-                        sx={{ 
-                          width: '100%',   
-                          height: '100%',  
-                          objectFit: 'cover' 
-                        }} 
-                      />
-                      <Typography variant="caption" sx={{ textAlign: 'center', display: 'block' }}>
-                        {item.name}
-                      </Typography>
-                    </Box>
-                  </SwiperSlide>
-                ))
-              ) : (
-                <SwiperSlide>
-                  <Typography sx={{ textAlign: 'center', py: 4 }}>
-                    No recommendations available
-                  </Typography>
-                </SwiperSlide>
-              )}
-            </Swiper>
-          </Box>
+        
+         
         </Box>
       </DialogContent>
     </Dialog>

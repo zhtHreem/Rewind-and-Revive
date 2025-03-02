@@ -146,120 +146,18 @@ export const getProduct = async (req, res) => {
 
 
 
-// export const getProductRecommendations = async (req, res) => {
-//     try {
-//         const { productId } = req.params;
-//         const { 
-//             topK = 6,
-//             matchType = 'true', 
-//             matchMaterials = 'true' 
-//         } = req.query;
 
-//         console.log('Starting recommendation request:', {
-//             productId,
-//             topK: Number(topK),
-//             matchType: matchType === 'true',
-//             matchMaterials: matchMaterials === 'true'
-//         });
 
-//         // 1. First check if product exists and has images
-//         const sourceProduct = await Product.findById(productId);
-//         if (!sourceProduct || !sourceProduct.images?.length) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'Product not found or has no images'
-//             });
-//         }
 
-//         // 2. Find all potential matches (excluding source product)
-//         const potentialMatches = await Product.find({
-//             _id: { $ne: productId },
-//             images: { $exists: true, $ne: [] }
-//         });
 
-//         console.log('Found potential matches:', {
-//             count: potentialMatches.length,
-//             sampleProduct: potentialMatches[0]?.name
-//         });
 
-//         if (potentialMatches.length === 0) {
-//             return res.json({
-//                 success: true,
-//                 count: 0,
-//                 recommendations: []
-//             });
-//         }
 
-//         const matcher = new ProductMatcher();
 
-//         // 3. Try increasingly relaxed criteria until we get recommendations
-//         let recommendations = [];
-//         const criteria = [
-//             // First try: Original strict criteria
-//             {
-//                 topK: Number(topK),
-//                 matchType: matchType === 'true',
-//                 matchMaterials: matchMaterials === 'true'
-//             },
-//             // Second try: Match type only
-//             {
-//                 topK: Number(topK),
-//                 matchType: matchType === 'true',
-//                 matchMaterials: false
-//             },
-//             // Third try: No matching criteria
-//             {
-//                 topK: Number(topK),
-//                 matchType: false,
-//                 matchMaterials: false
-//             }
-//         ];
 
-//         for (const criteriaSet of criteria) {
-//             console.log('Trying criteria:', criteriaSet);
-//             recommendations = await matcher.recommendProducts(productId, criteriaSet);
-            
-//             if (recommendations && recommendations.length > 0) {
-//                 console.log(`Found ${recommendations.length} recommendations with criteria:`, criteriaSet);
-//                 break;
-//             }
-//         }
 
-//         // 4. Process and limit recommendations
-//         const limitedRecommendations = (recommendations || [])
-//             .slice(0, 6)
-//             .map(match => ({
-//                 product: match.product,
-//                 similarity: match.similarity,
-//                 matchScore: match.matchScore
-//             }));
 
-//         console.log('Final recommendations:', {
-//             total: limitedRecommendations.length,
-//             products: limitedRecommendations.map(r => ({
-//                 name: r.product.name,
-//                 similarity: r.similarity
-//             }))
-//         });
 
-//         res.json({
-//             success: true,
-//             count: limitedRecommendations.length,
-//             recommendations: limitedRecommendations
-//         });
 
-//     } catch (error) {
-//         console.error('Recommendation error:', {
-//             message: error.message,
-//             stack: error.stack
-//         });
-//         res.status(500).json({ 
-//             success: false, 
-//             message: error.message,
-//             stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
-//         });
-//     }
-// };
 
 
 export const getProductRecommendations = async (req, res) => {
@@ -271,7 +169,9 @@ export const getProductRecommendations = async (req, res) => {
             matchMaterials = 'false',
             matchCategories = 'false'
         } = req.query;
-         console.log('Starting recommendation request:', {matchType,matchMaterials,matchCategories});
+        
+        console.log('Starting recommendation request:', { matchType, matchMaterials, matchCategories });
+
         // 1. Initialize ProductMatcher
         const matcher = new ProductMatcher();
         console.log('🧪 Starting ProductMatcher...\n');
@@ -280,9 +180,9 @@ export const getProductRecommendations = async (req, res) => {
         const totalCount = await Product.countDocuments();
         console.log(`Total products in database: ${totalCount}`);
 
-        // 3. Get the source product
-        const testProduct = await Product.findById(productId);
-        
+        // 3. Get the source product with owner details
+        const testProduct = await Product.findById(productId).populate('owner', 'username');
+
         if (!testProduct) {
             throw new Error('Product not found');
         }
@@ -290,6 +190,7 @@ export const getProductRecommendations = async (req, res) => {
         console.log('\nTest product details:', {
             id: testProduct._id,
             name: testProduct.name,
+            owner: testProduct.owner?.username,  // Owner's name
             type: testProduct.type,
             hasImages: testProduct.images?.length > 0,
             imageUrls: testProduct.images,
@@ -297,57 +198,52 @@ export const getProductRecommendations = async (req, res) => {
             categories: testProduct.categories
         });
 
-        // 4. Verify there are other products that could match
+        // 4. Find potential matches and populate owner details
         const potentialMatches = await Product.find({
             _id: { $ne: testProduct._id },
             images: { $exists: true, $ne: [] }
-        });
+        }).populate('owner', 'username');  // Populate owner details
 
         console.log(`\nFound ${potentialMatches.length} other products with images`);
         console.log('Sample of potential matches:', 
             potentialMatches.slice(0, 3).map(p => ({
                 id: p._id,
                 name: p.name,
+                owner: p.owner?.username,  // Owner's name
                 type: p.type,
                 hasImages: p.images?.length > 0
             }))
         );
 
-        // 5. Get Product Recommendations with specified criteria
-        console.log('\nTesting Product Recommendations...');
-        const recommendations = await matcher.recommendProducts(testProduct._id, {
-            topK: Number(topK),
-            matchType: matchType === 'true',      // Convert to boolean
-            matchMaterials: matchMaterials === 'true',  // Convert to boolean
-            matchCategories: matchCategories === 'true'  // Convert to boolean
-        });
+     
+       // 5. Get Product Recommendations with specified criteria
+      console.log('\nTesting Product Recommendations...');
+      let recommendations = await matcher.recommendProducts(testProduct._id, {
+    topK: Number(topK),
+    matchType: matchType === 'true',
+    matchMaterials: matchMaterials === 'true',
+    matchCategories: matchCategories === 'true'
+   });
+
+// Fix: Populate owner for each recommended product
+recommendations = await Promise.all(recommendations.map(async (rec) => {
+    const populatedProduct = await Product.findById(rec.product._id).populate('owner', 'username');
+    return {
+        product: {
+            ...populatedProduct.toObject(),
+            owner: populatedProduct.owner || 'Unknown' // Default if owner is missing
+        },
+        similarity: rec.similarity,
+        matchScore: rec.matchScore
+    };
+}));
+
+       console.log('\n🎉 Recommendations generated successfully!');
+
 
         if (!Array.isArray(recommendations)) {
             console.error('Recommendations is not an array:', recommendations);
             throw new Error('Invalid recommendations format returned');
-        }
-
-        if (recommendations.length === 0) {
-            // Debug query to see what products are available
-            const debugQuery = await Product.find({
-                _id: { $ne: testProduct._id },
-                'images.0': { $exists: true }
-            }).limit(5);
-            
-            console.log('\nDebug - Sample of available products:', 
-                debugQuery.map(p => ({
-                    id: p._id,
-                    price: p.price,
-                    name: p.name,
-                    type: p.type,
-                    imageCount: p.images?.length
-                }))
-            );
-           // throw new Error('No recommendations returned');
-            // return res.json({
-            //     success: true,
-            //     recommendations: []
-            // });
         }
 
         // 6. Print recommendations for debugging
@@ -355,6 +251,8 @@ export const getProductRecommendations = async (req, res) => {
         recommendations.forEach((rec, index) => {
             console.log(`\n${index + 1}. ${rec.product.name}`);
             console.log(`   ID: ${rec.product._id}`);
+            console.log(`   Owner: ${rec.product.owner?.username}`);  // Owner's name
+             console.log(`   Owner: ${rec.product.owner}`);  // Owner's name
             console.log(`   Type: ${rec.product.type}`);
             console.log(`   Has Images: ${rec.product.images?.length > 0}`);
             console.log(`   Image URL: ${rec.product.images?.[0]}`);
@@ -364,11 +262,21 @@ export const getProductRecommendations = async (req, res) => {
 
         console.log('\n🎉 Recommendations generated successfully!');
 
-        // Send response
+        // 7. Send response with owner details
         res.json({
             success: true,
             recommendations: recommendations.slice(0, 6).map(match => ({
-                product: match.product,
+                product: {
+                    _id: match.product._id,
+                    name: match.product.name,
+                    owner: match.product.owner,  // Include owner name
+                    price: match.product.price,
+                    color: match.product.color,
+                    description: match.product.description,
+                    category: match.product.category,
+                    type: match.product.type,
+                    images: match.product.images
+                },
                 similarity: match.similarity,
                 matchScore: match.matchScore
             }))
@@ -386,21 +294,3 @@ export const getProductRecommendations = async (req, res) => {
         });
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

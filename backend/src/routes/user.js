@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser,loginUser,GoogleloginUser ,Userbadges } from "../controllers/user.js";
+import { registerUser,loginUser,GoogleloginUser ,Userbadges, submitReview } from "../controllers/user.js";
 import { verifyEmail } from "../utils/emailVerificationUtils.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 const router = express.Router();
@@ -15,6 +15,7 @@ router.post("/login", loginUser);
 
 router.post("/google-login",GoogleloginUser)
 router.post('/verify-email', verifyEmail);
+router.post('/submit-review', submitReview);
 router.get('/badges',authMiddleware, Userbadges);
 //router.get('/profile/:id', authMiddleware, getUserProfile);
 router.get('/profile/:id', authMiddleware, (req, res, next) => {

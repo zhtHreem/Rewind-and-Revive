@@ -6,16 +6,21 @@ import cors from 'cors';
 import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
+import session from 'express-session';
 
 import FormData from 'form-data';
 
 import userRoute from './src/routes/user.js'
+import recommendationRoutes from './src/routes/recommendation.js';
 import productRoute from './src/routes/product.js'
 import bidRoute from './src/routes/biddingProduct.js'
 import biddingRoute from './src/routes/bid.js'
 import paymentRoute from './src/routes/payment.js'
 import Chat from './src/models/chat.js';
 import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
+// Add this import at the top with your other route imports
+import notificationRoutes from './src/routes/notifications.js';
+
 import { createServer } from 'http'; // Import to create HTTP server
 
 const app = express();
@@ -52,8 +57,25 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Crea
 
+app.use(session({
+  secret: 'your-secret-key',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
+}));
+// Session-based user tracking middleware
+const trackSessionActivity = (req, res, next) => {
+  // Initialize session data if it doesn't exist
+  if (!req.session.viewHistory) {
+    req.session.viewHistory = [];
+  }
+  
+  // Now you can access req.session.viewHistory instead of req.user.viewHistory
+  next();
+};
+
+app.use(trackSessionActivity);
  const httpServer = createServer(app);
 
 // Attach Socket.IO to the server
@@ -69,15 +91,66 @@ const io = new Server(httpServer, {
 
 
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  //console.log('A user connected');
 
   // Handle incoming chat messages
-  socket.on('sendMessage', (message) => {
-      // Broadcast message to all connected clients including the sender
-      io.emit('receiveMessage', message);
-      console.log('Message sent:', message);
-  });
+  // socket.on('sendMessage', (message) => {
+  //     // Broadcast message to all connected clients including the sender
+  //     io.emit('receiveMessage', message);
+  //   //  console.log('Message sent:', message);
+  // });
+  
 
+   socket.on('sendMessage', async (message) => {
+    // Broadcast message to all connected clients including the sender
+    io.emit('receiveMessage', message);
+    
+    try {
+      // Find or create a notification for this message
+      const sender = await User.findById(message.sender, 'username');
+      
+      let existingNotification = await Notification.findOne({
+        recipient: message.receiver,
+        sender: message.sender,
+        product: message.product,
+        type: 'message',
+        isRead: false
+      });
+      
+      if (existingNotification) {
+        existingNotification.count += 1;
+        existingNotification.description = `You have received ${existingNotification.count} new messages from ${sender.username}`;
+        existingNotification.timestamp = Date.now();
+        await existingNotification.save();
+        
+        io.emit('new_notification', {
+          ...existingNotification.toObject(),
+          title: 'New Message',
+          time: 'Just now'
+        });
+      } else {
+        const newNotification = new Notification({
+          recipient: message.receiver,
+          sender: message.sender,
+          product: message.product,
+          title: 'New Message',
+          description: `You have received a new message from ${sender.username}`,
+          type: 'message',
+          count: 1
+        });
+        
+        await newNotification.save();
+        
+        io.emit('new_notification', {
+          ...newNotification.toObject(),
+          title: 'New Message',
+          time: 'Just now'
+        });
+      }
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  });
 
 
   // Example of sending a test notification
@@ -97,7 +170,7 @@ io.on('connection', (socket) => {
 
     // Broadcast the notification to all connected clients
     io.emit('new_notification', testNotification);
-    console.log('Test notification sent'); // Add this for debugging
+   // console.log('Test notification sent'); // Add this for debugging
 
   });
 
@@ -122,9 +195,21 @@ io.on('connection', (socket) => {
       console.error('Error creating badge notification:', error);
     }
   });
+
+
+
+
+
+
+
+
+
+  
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });
+
+
 });
 
 
@@ -144,6 +229,10 @@ app.use('/api/biddingProduct', bidRoute);
 app.use('/api/bid', biddingRoute);
 app.use('/api/payment', paymentRoute);
 app.use('/api/chats', chatRoutes); // Add chat routes here
+
+app.use('/api/notifications', notificationRoutes);
+//app.use(trackUserActivity);
+app.use('/api', recommendationRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

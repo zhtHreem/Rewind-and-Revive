@@ -326,7 +326,7 @@ export const submitReview = async (req, res) => {
 
     console.log("After update:", user.reviewsData);
 
-    user.markModified("reviews"); 
+    user.markModified("reviewsData"); 
     await user.save();
     res.status(200).json({ message: "Review submitted successfully", reviews: user.reviewsData });
 

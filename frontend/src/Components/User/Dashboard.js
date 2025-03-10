@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { useParams } from "react-router-dom";
 import { Box, Grid, Paper, Typography, LinearProgress, Divider } from '@mui/material';
 import CountUp from 'react-countup';
 import { Line, Doughnut } from 'react-chartjs-2';
@@ -29,7 +30,10 @@ const RatingBar = ({ label, value, total }) => {
   );
 };
 
-const Dashboard = ({ userId }) => {
+const Dashboard = () => {
+  const params = useParams();
+  console.log("Params:", params); // Debugging
+  const userId = params.id;
   const [stats, setStats] = useState({
     productsSold: 0,
     totalListed: 0,
@@ -44,24 +48,34 @@ const Dashboard = ({ userId }) => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         alert("Token missing. Please log in again.");
         return;
       }
 
-      const decodedToken = JSON.parse(atob(token.split('.')[1]));
-      const currentUserId = userId || decodedToken.id;
+      if (!userId) {
+        console.warn("No userId found in the URL.");
+        return;
+      }
+
+      console.log("Fetching reviews for userId:", userId);
 
       try {
-        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/user/profile/${currentUserId}`, {
-          headers: {
-            Authorization: token
+        const response = await axios.get(
+          `${process.env.REACT_APP_LOCAL_URL}/api/user/profile/${userId}`,
+          {
+            headers: {
+              Authorization: token,
+            },
           }
-        });
+        );
+
         const userData = response.data;
+        console.log("Fetched reviewsData:", userData.reviewsData);
+
         setStats(userData.stats);
-        setReviewsData(userData.reviewsData);
+        setReviewsData(userData.reviewsData || {}); // Ensure safe state update
         setTopSellerRank(userData.topSellerRank || 0);
         setLoading(false);
       } catch (error) {

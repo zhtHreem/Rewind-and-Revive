@@ -220,7 +220,8 @@ const ProductPage = () => {
 
     resetReviewForm();
     setOpenReviewDialog(false);
-  };
+};
+
 
   if (!product) {
     return (

@@ -279,6 +279,43 @@ const getUserStats = async (userId) => {
   
 };
 
+// Update average rating
+export const updateAverageRating = async (req, res) => {
+  try {
+    console.log("Request Params:", req.params); // Debugging
+    console.log("Request Body:", req.body);     // Debugging
+
+    const { userId } = req.params;
+    let { averageRating } = req.body;
+    averageRating = parseFloat(averageRating);
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    if (isNaN(averageRating)) {
+      return res.status(400).json({ message: "Average rating must be a valid number" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: { averageRating } }, 
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "Average rating updated", user });
+  } catch (error) {
+    console.error("Error updating average rating:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
 export const submitReview = async (req, res) => {
   try {
     console.log("Incoming request body:", req.body);
@@ -326,7 +363,7 @@ export const submitReview = async (req, res) => {
 
     console.log("After update:", user.reviewsData);
 
-    user.markModified("reviewsData"); 
+    user.markModified("reviews"); 
     await user.save();
     res.status(200).json({ message: "Review submitted successfully", reviews: user.reviewsData });
 

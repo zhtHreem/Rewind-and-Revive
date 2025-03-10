@@ -95,7 +95,7 @@ const Dashboard = () => {
     (reviewsData.twoStar || 0) +
     (reviewsData.oneStar || 0)
   ), [reviewsData]);
-
+  
   const averageRating = useMemo(() => 
     totalReviews > 0
       ? ((5 * (reviewsData.fiveStar || 0) +
@@ -106,6 +106,42 @@ const Dashboard = () => {
       : 0,
     [reviewsData, totalReviews]
   );
+  
+  // Send averageRating to the backend when it changes
+  useEffect(() => {
+    console.log("User average ID:", userId);
+    if (userId && totalReviews > 0) {
+      const sendAverageRating = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            console.warn("No token found, skipping rating update.");
+            return;
+          }
+
+          console.log("Sending PUT request with:", { userId, averageRating });
+  
+          await axios.put(
+            `${process.env.REACT_APP_LOCAL_URL}/api/user/update-rating/${userId}`,
+            { averageRating },
+            {
+              headers: {
+                Authorization: token,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+  
+          console.log("Average rating updated successfully:", averageRating);
+        } catch (error) {
+          console.error("Error updating average rating:", error.response?.data || error.message);
+        }
+      };
+  
+      sendAverageRating();
+    }
+  }, [averageRating, userId, totalReviews]);
+  
 
   const salesData = useMemo(() => ({
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],

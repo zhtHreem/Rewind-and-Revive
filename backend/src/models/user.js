@@ -24,7 +24,11 @@ const reviewsSchema = new mongoose.Schema({
   fourStar: { type: Number, default: 0 },
   threeStar: { type: Number, default: 0 },
   twoStar: { type: Number, default: 0 },
-  oneStar: { type: Number, default: 0 }
+  oneStar: { type: Number, default: 0 },
+});
+
+const averageRatingSchema = new mongoose.Schema({
+  averageRating: { type: Number, default: 0 }
 });
 
 const userSchema = new mongoose.Schema({
@@ -47,6 +51,7 @@ const userSchema = new mongoose.Schema({
   reviewsData: { type: reviewsSchema, default: {} },
 
     // Add badge arrays with their default values
+  averageRating: { type: Number, default: 0 },
   sellerBadges: {
     type: [badgeSchema],
     default: [

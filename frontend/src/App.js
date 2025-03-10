@@ -4,7 +4,6 @@ import Header from './Components/Header/header';
 import Bidding from './Components/Bidding/Bidding';
 import Layout from './Components/Layout/layout';
 import LimitedTimeDeals from './Components/LimitedTimeDeals/limitedtimedeals';
-import PopularFabricsSection from './Components/MostPopularItem/mostPopular';
 import robotIcon from './assets/robot-svgrepo-com.svg'; // Import robot SVG
 import RecommendedProductsSection from './Components/MostPopularItem/exploreRecommendation';
 function App() {
@@ -20,7 +19,6 @@ function App() {
         <Header />
         <LimitedTimeDeals />
         <RecommendedProductsSection/>
-        <PopularFabricsSection />
         <Bidding />
 
         {/* Robot Icon with Dialog Box */}

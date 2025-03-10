@@ -1,112 +1,149 @@
 import Product from '../models/product.js';
 
+// In your trackUserActivity middleware, modify the code like this:
 export const trackUserActivity = async (req, res, next) => {
   try {
-    // Initialize session data if it doesn't exist
+    const productId = req.params.id;
+    
+    if (!productId) {
+      console.log("No product ID found in request");
+      return next();
+    }
+
+    console.log("Tracking product view for product:", productId);
+    
+    // Ensure session and history arrays exist
     if (!req.session) {
-      console.error("Session not initialized");
+      console.log("No session object found");
       return next();
     }
     
-    // Initialize view history arrays in session if they don't exist
+    // Initialize view history
     if (!req.session.viewHistory) {
       req.session.viewHistory = [];
     }
     
-    if (req.user && !req.session.userViewHistory) {
-      req.session.userViewHistory = [];
-    }
-    
-    // Get the current product ID if we're viewing a product
-    const productId = req.params.id;
-    console.log("Tracking product view:", productId);
-    
-    if (productId) {
-      // Choose the right history array based on login status
-      const historyArray = req.user ? 'userViewHistory' : 'viewHistory';
+    // For logged-in users
+    if (req.user && req.user.id) {
+      if (!req.session.userViewHistory) {
+        req.session.userViewHistory = [];
+      }
       
-      // Don't add duplicates in the recent views
-      if (!req.session[historyArray].includes(productId)) {
-        // Keep only the last 10 products viewed
-        if (req.session[historyArray].length >= 10) {
-          req.session[historyArray].pop();
+      // Only add if not already first in the list
+      if (req.session.userViewHistory[0] !== productId) {
+        // Remove if exists elsewhere in the array
+        req.session.userViewHistory = req.session.userViewHistory.filter(id => id !== productId);
+        // Add to the front
+        req.session.userViewHistory.unshift(productId);
+        // Keep only the most recent 10
+        if (req.session.userViewHistory.length > 10) {
+          req.session.userViewHistory = req.session.userViewHistory.slice(0, 10);
         }
-        req.session[historyArray].unshift(productId);
       }
       
-      // Save session
-      if (req.session.save) {
-        req.session.save();
+      console.log("Updated user view history:", req.session.userViewHistory);
+    } else {
+      // For anonymous users - similar logic
+      if (req.session.viewHistory[0] !== productId) {
+        req.session.viewHistory = req.session.viewHistory.filter(id => id !== productId);
+        req.session.viewHistory.unshift(productId);
+        if (req.session.viewHistory.length > 10) {
+          req.session.viewHistory = req.session.viewHistory.slice(0, 10);
+        }
       }
+      
+      console.log("Updated anonymous view history:", req.session.viewHistory);
     }
     
-    next();
+    // Save session explicitly
+    req.session.save(err => {
+      if (err) {
+        console.error("Error saving session:", err);
+      } else {
+        console.log("Session saved with ID:", req.session.id);
+        console.log("Current view history:", req.user && req.user.id ? 
+          req.session.userViewHistory : req.session.viewHistory);
+      }
+      next();
+    });
   } catch (error) {
-    console.error("Error in tracking user activity:", error);
+    console.error("Error tracking user activity:", error);
     next();
   }
 };
 
-// Add a recommendation generator middleware function
+// 4. Update the generateRecommendations middleware to be more robust
 export const generateRecommendations = async (req, res, next) => {
   try {
-    // Initialize empty recommendations array
+    // Initialize recommendations array
     req.recommendations = [];
     
-    // Make sure session exists
-    if (!req.session) {
-      console.error("Session not initialized");
-      return next();
-    }
+    console.log("Generating recommendations for session:", req.session.id);
     
     // Get view history based on login status
     let viewHistory = [];
     
-    if (req.user && req.session.userViewHistory && req.session.userViewHistory.length > 0) {
+    if (req.user && req.user.id && req.session.userViewHistory && req.session.userViewHistory.length > 0) {
       viewHistory = req.session.userViewHistory;
       console.log("Using logged-in user view history:", viewHistory);
     } else if (req.session.viewHistory && req.session.viewHistory.length > 0) {
       viewHistory = req.session.viewHistory;
-      console.log("Using session view history:", viewHistory);
+      console.log("Using anonymous session view history:", viewHistory);
     } else {
-      console.log("No view history found");
+      console.log("No view history found, will use trending products");
     }
+    
+    // Add this section to log important session data
+    console.log("Session ID:", req.session.id);
+    console.log("Cookie:", req.headers.cookie);
     
     if (viewHistory.length > 0) {
       try {
         // Get the most recently viewed product
-        const recentProduct = await Product.findById(viewHistory[0]);
+        const recentProducts = await Product.find({
+          _id: { $in: viewHistory.slice(0, 3) } // Get top 3 recent products
+        });
         
-        if (recentProduct) {
-          console.log("Found recent product:", recentProduct.title || recentProduct.name);
+        if (recentProducts.length > 0) {
+          console.log("Found recent products:", recentProducts.map(p => p.name || p._id));
           
-          // Find products with similar categories or materials
+          // Create array of conditions to match
+          const conditions = [];
+          recentProducts.forEach(product => {
+            if (product.category) conditions.push({ category: product.category });
+            if (product.categories && product.categories.length > 0) {
+              conditions.push({ categories: { $in: product.categories } });
+            }
+            if (product.materials && product.materials.length > 0) {
+              conditions.push({ materials: { $in: product.materials } });
+            }
+            if (product.color) conditions.push({ color: product.color });
+          });
+          
+          // Find similar products
           const recommendations = await Product.find({
-            _id: { $ne: recentProduct._id }, // Exclude the current product
-            $or: [
-              { category: recentProduct.category },
-              { categories: { $in: recentProduct.categories || [] } },
-              { materials: { $in: recentProduct.materials || [] } },
-              { color: recentProduct.color }
-            ]
-          }).limit(6);
+            _id: { $nin: viewHistory }, // Exclude viewed products
+            $or: conditions
+          }).populate('owner', 'username').limit(6);
           
-          console.log("Recommendations found:", recommendations.length);
+          console.log(`Found ${recommendations.length} recommendations based on product similarity`);
           req.recommendations = recommendations;
         } else {
-          console.log("Recent product not found in database");
+          console.log("Recent products not found in database");
         }
       } catch (error) {
-        console.error("Error finding recent product:", error);
+        console.error("Error finding recent products:", error);
       }
     }
     
     // If we still have no recommendations, show popular products
-    if (req.recommendations.length === 0) {
-      console.log("Falling back to popular products");
+    if (!req.recommendations || req.recommendations.length === 0) {
+      console.log("Falling back to trending products");
       req.recommendations = await Product.find()
         .sort({ createdAt: -1 })
+        .populate('owner', 'username')
         .limit(6);
+      console.log(`Found ${req.recommendations.length} trending products as fallback`);
     }
     
     next();

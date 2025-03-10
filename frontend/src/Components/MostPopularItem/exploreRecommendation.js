@@ -3,7 +3,7 @@ import { Box, Typography, Grid, Card, CardMedia, CardContent, Button } from '@mu
 import { useNavigate } from 'react-router-dom';
 import SkeletonLoader from '../Utils/skeletonLoader';
 import axios from 'axios';
-
+axios.defaults.withCredentials = true;
 const RecommendedProductsSection = ({ userId }) => {
   const navigate = useNavigate();
   const [recommendedProducts, setRecommendedProducts] = useState([]);
@@ -40,67 +40,41 @@ const RecommendedProductsSection = ({ userId }) => {
   // Flag to determine if we should use fallback data
   const useFallbackData = process.env.NODE_ENV === 'development';
 
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        // Check the correct URL
-        const apiUrl = `${process.env.REACT_APP_LOCAL_URL}/api/recommendations`;
-        console.log('Fetching recommendations from:', apiUrl);
-        
-        // Get recommendations using Axios
-        const response = await axios.get(apiUrl);
-        
-        console.log('API Response:', response.data);
-        
-        if (response.data.success) {
-          setRecommendedProducts(response.data.recommendations);
-        } else {
-          throw new Error(response.data.message || 'API returned unsuccessful response');
-        }
-      } catch (error) {
-        console.error("Error fetching recommendations:", error);
-        
-        // Handle Axios specific errors
-        if (error.response) {
-          // The request was made and the server responded with a status code outside of 2xx
-          const statusCode = error.response.status;
-          setError(`Server returned error: ${statusCode} ${error.response.statusText}`);
-          
-          // For 404 errors, we might want to use fallback data in development
-          if (statusCode === 404 && useFallbackData) {
-            console.log('Using fallback recommendation data');
-            setRecommendedProducts(fallbackData);
-            setError(null); // Clear error since we're using fallback data
-          } else {
-            setRecommendedProducts([]);
-          }
-        } else if (error.request) {
-          // The request was made but no response was received
-          setError('No response received from server. Check your network connection.');
-          
-          // Use fallback data in development
-          if (useFallbackData) {
-            console.log('Using fallback recommendation data due to network error');
-            setRecommendedProducts(fallbackData);
-            setError(null);
-          } else {
-            setRecommendedProducts([]);
-          }
-        } else {
-          // Something happened in setting up the request
-          setError(error.message);
-          setRecommendedProducts([]);
-        }
-      } finally {
-        setLoading(false);
+const fetchRecommendations = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+     console.log('API Response:aaaaaaaa');
+    const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/recommendations`, {
+       withCredentials: true,  // This is crucial - make sure it's working
+      headers: {
+        'Content-Type': 'application/json'
       }
-    };
-
-    fetchRecommendations();
-  }, [userId]); // Re-fetch when user ID changes (login/logout)
+    });
+    
+    console.log('API Response:', response.data);
+    
+    if (response.data.success) {
+      setRecommendedProducts(response.data.recommendations || []);
+    } else {
+      throw new Error(response.data.message || 'API returned unsuccessful response');
+    }
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    setError(error.message);
+    
+    // Optionally use fallback data here if needed
+    if (useFallbackData) {
+      setRecommendedProducts(fallbackData);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+// Add this useEffect to call fetchRecommendations when the component mounts
+useEffect(() => {
+  fetchRecommendations();
+}, []);
 
   const handleCardHover = (id) => {
     setHoveredCard(id);
@@ -222,11 +196,11 @@ const RecommendedProductsSection = ({ userId }) => {
                       {product.name}
                     </Typography>
                     <Typography variant="body1" color="text.secondary">
-                      ${product.price}
+                      Rs.{product.price}
                     </Typography>
                     <Typography textAlign={'end'} variant="body2" color="text.secondary">
                       {/* Display seller name if available */}
-                      {product.owner?.username || 'Hareem'}
+                      {product.owner?.username }
                     </Typography>
                   </CardContent>
                 </Card>
@@ -259,6 +233,9 @@ const RecommendedProductsSection = ({ userId }) => {
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
                   Rs {product.price}
                 </Typography>
+                <Typography variant="body2" sx={{ color: 'black', padding: '4px 8px', fontWeight: 'bold' }}>
+                                          Seller: <Typography component="span" sx={{ color: 'white', fontWeight: 'normal', cursor: 'pointer', marginLeft: '4px', textDecoration: 'underline' }} onClick={() => navigate(`/profile/${product.owner?._id}`)}>{product.owner?.username}</Typography>
+                 </Typography>     
                 <Button 
                   variant="contained" 
                   color="primary" 

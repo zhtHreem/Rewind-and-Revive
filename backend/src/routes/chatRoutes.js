@@ -67,12 +67,12 @@ router.get('/:productId', authMiddleware, async (req, res) => {
 // Send a message
 router.post('/', authMiddleware, async (req, res) => {
   const { receiver, product, message } = req.body;
-  console.log('Message:', message); // Debug
-  console.log('Sender:', req.user.id); // Debug
-  console.log('Receiver:', receiver); // Debug
+  // console.log('Message:', message); // Debug
+  // console.log('Sender:', req.user.id); // Debug
+  // console.log('Receiver:', receiver); // Debug
   const sender = req.user.id;
-  console.log('Product:', product); // Debug
-  console.log('Sender:', sender); // Debug
+  // console.log('Product:', product); // Debug
+  // console.log('Sender:', sender); // Debug
 
   if (!receiver || !product || !message) {
     return res.status(400).json({ error: "Receiver, product, and message are required" });
@@ -85,9 +85,9 @@ router.post('/', authMiddleware, async (req, res) => {
     
     // Get sender information for notification
     const senderUser = await User.findById(sender, 'username');
-    console.log('Sender user:', senderUser); // Debug
+  //  console.log('Sender user:', senderUser); // Debug
     const receiverUser = await User.findById(receiver, 'username');
-    console.log('Receiver user:', receiverUser); // Debug
+   // console.log('Receiver user:', receiverUser); // Debug
     
     // Check if there's an existing unread message notification from this sender for this product
     let existingNotification = await Notification.findOne({

@@ -9,17 +9,17 @@ const router = express.Router();
 // In notification.js routes
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    console.log('Fetching notifications for user:', req.user.id); // Debug
+   // console.log('Fetching notifications for user:', req.user.id); // Debug
     
     const notifications = await Notification.find({ recipient: req.user.id })
       .sort({ timestamp: -1 })
       .limit(20); // Limit to most recent
     
-    console.log('Found notifications:', notifications.length); // Debug
+   // console.log('Found notifications:', notifications.length); // Debug
     
     res.status(200).json(notifications);
   } catch (error) {
-    console.error('Error fetching notifications:', error);
+   // console.error('Error fetching notifications:', error);
     res.status(500).json({ error: 'Failed to fetch notifications' });
   }
 });

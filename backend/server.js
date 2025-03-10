@@ -30,11 +30,9 @@ connectDB();
 console.log("api",process.env.REACT_APP_API_URL);
 
 app.use(cors({
-  origin: [
-    process.env.REACT_APP_API_URL,  // Development URL
-  ],
+  origin: process.env.REACT_APP_API_URL,  // Use exact origin, not array
   methods: ["POST", "GET", "PUT", "DELETE"],
-  credentials: true
+  credentials: true  // Ensure this is true
 }));
 
 // Handle preflight requests
@@ -58,25 +56,31 @@ app.use((err, req, res, next) => {
 });
 
 
+// Make sure your session configuration looks like this:
 app.use(session({
   secret: 'your-secret-key',
-  resave: false,
+  resave: true,               // Changed back to true for better compatibility
   saveUninitialized: true,
-  cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 } // 30 days
-}));
-// Session-based user tracking middleware
-const trackSessionActivity = (req, res, next) => {
-  // Initialize session data if it doesn't exist
-  if (!req.session.viewHistory) {
-    req.session.viewHistory = [];
+  name: 'recommendSession',   // Give it a specific name
+  cookie: { 
+    maxAge: 30 * 24 * 60 * 60 * 1000, 
+    httpOnly: true,
+    secure: false,            // Keep false during development
+    sameSite: 'lax'           // Add this to help with cross-site requests
   }
-  
-  // Now you can access req.session.viewHistory instead of req.user.viewHistory
-  next();
-};
+}));
+// Add this to your routes
+app.get('/api/debug/session', (req, res) => {
+  res.json({
+    sessionId: req.session.id,
+    viewHistory: req.session.viewHistory || [],
+    userViewHistory: req.session.userViewHistory || [],
+    isAuthenticated: !!req.user
+  });
+});
 
-app.use(trackSessionActivity);
- const httpServer = createServer(app);
+
+const httpServer = createServer(app);
 
 // Attach Socket.IO to the server
 const io = new Server(httpServer, {
@@ -87,6 +91,7 @@ const io = new Server(httpServer, {
   transports: ['websocket', 'polling'], 
    withCredentials: true, 
 });
+
 
 
 

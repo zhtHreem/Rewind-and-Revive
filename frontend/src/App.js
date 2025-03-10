@@ -6,7 +6,7 @@ import Layout from './Components/Layout/layout';
 import LimitedTimeDeals from './Components/LimitedTimeDeals/limitedtimedeals';
 import PopularFabricsSection from './Components/MostPopularItem/mostPopular';
 import robotIcon from './assets/robot-svgrepo-com.svg'; // Import robot SVG
-
+import RecommendedProductsSection from './Components/MostPopularItem/exploreRecommendation';
 function App() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
@@ -19,6 +19,7 @@ function App() {
       <Layout>
         <Header />
         <LimitedTimeDeals />
+        <RecommendedProductsSection/>
         <PopularFabricsSection />
         <Bidding />
 

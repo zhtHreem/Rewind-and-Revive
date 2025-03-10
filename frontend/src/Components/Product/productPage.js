@@ -6,6 +6,9 @@ import { Table, TableBody, TableCell, TableContainer, TableRow, Paper,  Modal } 
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import { ArrowForward } from "@mui/icons-material";
 
+import { Dialog, DialogTitle, DialogContent, DialogActions, Rating, TextField, IconButton } from '@mui/material';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
+
 import AddCart from "../ShoppingCart/AddCart";
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat'; // Chat component import
@@ -79,9 +82,26 @@ const ProductPage = () => {
   const { productId }= useParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [openReviewDialog, setOpenReviewDialog] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [image, setImage] = useState(null);
+
+  const resetReviewForm = () => {
+    setRating(0);
+    setComment('');
+    setImage(null);
+  };
+
   // Handlers for modal
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleOpenReviewDialog = () => setOpenReviewDialog(true);
+  const handleCloseReviewDialog = () => {
+    resetReviewForm();
+    setOpenReviewDialog(false);
+  };
   useEffect(() => {
 
     const fetchProduct = async () => {
@@ -157,6 +177,7 @@ const ProductPage = () => {
       console.error("Error adding product to cart:", error);
     }
   };
+
   
   const handleCartOpenClose = () => {
     setShoppingCart((prev) => !prev);
@@ -165,6 +186,42 @@ const ProductPage = () => {
   const handleImageClick = (image) => {
     setMainImage(image);
   };
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    setImage(file);
+  };
+
+  const handleSubmitReview = async (event) => {
+    event.preventDefault();  // Prevent page reload
+      
+    if (!rating) {
+      alert("Please select a rating before submitting.");
+      return;
+   }
+          
+   const reviewData = {
+    userId: product.owner._id,  // Replace with actual user ID (e.g., from state or context)
+    rating: rating
+  };
+
+ try {
+    const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/submit-review`, reviewData, {
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+
+    console.log("Review submitted successfully:", response.data);
+} catch (error) {
+    console.error("Error submitting review:", error);
+}
+
+
+    resetReviewForm();
+    setOpenReviewDialog(false);
+};
+
 
   if (!product) {
     return (
@@ -283,10 +340,51 @@ const ProductPage = () => {
                 Description
               </Button>
               {description && <Typography>{product.description}</Typography>}
+
+              <Button onClick={handleOpenReviewDialog} sx={{ color: 'black', width: '100%', borderBottom: '1px outset black', borderLeft: '1px outset black' }}>
+                Leave a Review
+             </Button>
             </Box>
           </Grid>
         </Grid>
       </Box>
+
+ {/* Rating & Review Dialog */}
+ <Dialog open={openReviewDialog} onClose={handleCloseReviewDialog} fullWidth>
+  <DialogTitle>Rate & Review</DialogTitle>
+   <DialogContent>
+     {/* Star Rating */}
+     <Rating
+       value={rating}
+       onChange={(event, newValue) => setRating(newValue)}
+       size="large"
+     />
+
+     {/* Comment Box */}
+     <TextField label="Leave a comment" multiline rows={3} fullWidth margin="dense" value={comment} onChange={(e) => setComment(e.target.value)} />
+
+     {/* Image Upload */}
+     <input
+       accept="image/*"
+       type="file"
+       id="upload-image"
+       style={{ display: 'none' }}
+       onChange={handleImageUpload}
+     />
+     <label htmlFor="upload-image">
+       <IconButton color="primary" component="span">
+         <PhotoCamera />
+       </IconButton>
+       {image && <Typography variant="caption">{image.name}</Typography>}
+     </label>
+   </DialogContent>
+
+    {/* Submit & Cancel Buttons */}
+    <DialogActions>
+      <Button onClick={handleCloseReviewDialog} color="error">Cancel</Button>
+      <Button onClick={handleSubmitReview} variant="contained" color="primary">Submit</Button>
+    </DialogActions>
+  </Dialog>
 
       {/* Floating Chat Button */}
       <div

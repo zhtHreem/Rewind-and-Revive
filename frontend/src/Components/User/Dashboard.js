@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { useParams } from "react-router-dom";
 import { Box, Grid, Paper, Typography, LinearProgress, Divider } from '@mui/material';
 import CountUp from 'react-countup';
 import { Line, Doughnut } from 'react-chartjs-2';
@@ -29,7 +30,10 @@ const RatingBar = ({ label, value, total }) => {
   );
 };
 
-const Dashboard = ({ userId }) => {
+const Dashboard = () => {
+  const params = useParams();
+  console.log("Params:", params); // Debugging
+  const userId = params.id;
   const [stats, setStats] = useState({
     productsSold: 0,
     totalListed: 0,
@@ -44,24 +48,34 @@ const Dashboard = ({ userId }) => {
 
   useEffect(() => {
     const fetchStats = async () => {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       if (!token) {
         alert("Token missing. Please log in again.");
         return;
       }
 
-      const decodedToken = JSON.parse(atob(token.split('.')[1]));
-      const currentUserId = userId || decodedToken.id;
+      if (!userId) {
+        console.warn("No userId found in the URL.");
+        return;
+      }
+
+      console.log("Fetching reviews for userId:", userId);
 
       try {
-        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/user/profile/${currentUserId}`, {
-          headers: {
-            Authorization: token
+        const response = await axios.get(
+          `${process.env.REACT_APP_LOCAL_URL}/api/user/profile/${userId}`,
+          {
+            headers: {
+              Authorization: token,
+            },
           }
-        });
+        );
+
         const userData = response.data;
+        console.log("Fetched reviewsData:", userData.reviewsData);
+
         setStats(userData.stats);
-        setReviewsData(userData.reviewsData);
+        setReviewsData(userData.reviewsData || {}); // Ensure safe state update
         setTopSellerRank(userData.topSellerRank || 0);
         setLoading(false);
       } catch (error) {
@@ -81,7 +95,7 @@ const Dashboard = ({ userId }) => {
     (reviewsData.twoStar || 0) +
     (reviewsData.oneStar || 0)
   ), [reviewsData]);
-
+  
   const averageRating = useMemo(() => 
     totalReviews > 0
       ? ((5 * (reviewsData.fiveStar || 0) +
@@ -92,6 +106,42 @@ const Dashboard = ({ userId }) => {
       : 0,
     [reviewsData, totalReviews]
   );
+  
+  // Send averageRating to the backend when it changes
+  useEffect(() => {
+    console.log("User average ID:", userId);
+    if (userId && totalReviews > 0) {
+      const sendAverageRating = async () => {
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            console.warn("No token found, skipping rating update.");
+            return;
+          }
+
+          console.log("Sending PUT request with:", { userId, averageRating });
+  
+          await axios.put(
+            `${process.env.REACT_APP_LOCAL_URL}/api/user/update-rating/${userId}`,
+            { averageRating },
+            {
+              headers: {
+                Authorization: token,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+  
+          console.log("Average rating updated successfully:", averageRating);
+        } catch (error) {
+          console.error("Error updating average rating:", error.response?.data || error.message);
+        }
+      };
+  
+      sendAverageRating();
+    }
+  }, [averageRating, userId, totalReviews]);
+  
 
   const salesData = useMemo(() => ({
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],

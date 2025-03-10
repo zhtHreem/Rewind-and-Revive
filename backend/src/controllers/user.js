@@ -265,19 +265,115 @@ const getUserStats = async (userId) => {
     const itemsBought =purchasesCount || 0;
     const itemsSold = salesCount || 0;
     const likesReceived = 0;
-    const rating =  0;
+    //const rating =  0;
 
     return {
       itemsSold,
       itemsBought ,
       likesReceived,
-      rating
     };
   } catch (error) {
     console.error('Error getting user stats:', error);
     return null;
   }
+  
 };
+
+// Update average rating
+export const updateAverageRating = async (req, res) => {
+  try {
+    console.log("Request Params:", req.params); // Debugging
+    console.log("Request Body:", req.body);     // Debugging
+
+    const { userId } = req.params;
+    let { averageRating } = req.body;
+    averageRating = parseFloat(averageRating);
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    if (isNaN(averageRating)) {
+      return res.status(400).json({ message: "Average rating must be a valid number" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $set: { averageRating } }, 
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ message: "Average rating updated", user });
+  } catch (error) {
+    console.error("Error updating average rating:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
+export const submitReview = async (req, res) => {
+  try {
+    console.log("Incoming request body:", req.body);
+
+    const { userId, rating } = req.body;
+
+    if (!userId || !rating) {
+      return res.status(400).json({ message: "User ID and rating are required." });
+    }
+
+    if (![1, 2, 3, 4, 5].includes(rating)) {
+      return res.status(400).json({ message: "Invalid rating. Rating must be between 1 and 5." });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Ensure `reviews` exists before updating
+    if (!user.reviewsData) {
+      user.reviewsData = { fiveStar: 0, fourStar: 0, threeStar: 0, twoStar: 0, oneStar: 0 };
+    }
+
+    console.log("Before update:", user.reviewsData);
+
+    // Increment the corresponding star rating
+    switch (rating) {
+      case 5:
+        user.reviewsData.fiveStar += 1;
+        break;
+      case 4:
+        user.reviewsData.fourStar += 1;
+        break;
+      case 3:
+        user.reviewsData.threeStar += 1;
+        break;
+      case 2:
+        user.reviewsData.twoStar += 1;
+        break;
+      case 1:
+        user.reviewsData.oneStar += 1;
+        break;
+    }
+
+    console.log("After update:", user.reviewsData);
+
+    user.markModified("reviews"); 
+    await user.save();
+    res.status(200).json({ message: "Review submitted successfully", reviews: user.reviewsData });
+
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+
 
 // Route to get badges for both Seller and Customer
 export const Userbadges = async (req, res) => {
@@ -354,4 +450,6 @@ export const Userbadges = async (req, res) => {
     userBadges: customerUpdatedBadges,
     newlyUnlocked: newlyUnlockedBadges
   });
+
+  
 };

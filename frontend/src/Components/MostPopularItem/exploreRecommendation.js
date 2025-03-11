@@ -148,7 +148,7 @@ useEffect(() => {
   }
 
   return (
-    <Box p={12}>
+    <Box  sx={{ p: 4 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, height: 'auto' }}>
         <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
           Recommended For You

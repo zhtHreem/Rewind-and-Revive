@@ -1,15 +1,20 @@
 // notificationSlice.js
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import axios from 'axios';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import DiscountIcon from '@mui/icons-material/Discount';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
-import io from 'socket.io-client';
+import MessageIcon from '@mui/icons-material/Message';
 
-const socket = io(`${process.env.REACT_APP_LOCAL_URL}`); // Your backend socket URL
+const API_URL = process.env.REACT_APP_LOCAL_URL;
 
-
+// Get token from localStorage
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return { Authorization: token };
+};
 
 const getNotificationIcon = (title) => {
   switch(title) {
@@ -21,71 +26,60 @@ const getNotificationIcon = (title) => {
       return <DiscountIcon color="secondary" />;
     case 'Test Notification':
       return <BugReportIcon color="orange" />;
-     case 'Badge Unlocked!':
+    case 'Badge Unlocked!':
       return <LocalPoliceIcon color="orange" />; 
+    case 'New Message':
+      return <MessageIcon color="info" />;
     default:
-      return null; // or a default icon
+      return null;
   }
 };
-const initialNotifications = [
-  {
-    id: 1,
-    icon: <CheckCircleOutlineIcon color="success" />,
-    title: "Order Confirmed",
-    description: "Your order #1234 has been confirmed and is being processed.",
-    time: "2 mins ago",
-    isRead: false
-  },
-  {
-    id: 2,
-    icon: <LocalShippingIcon color="primary" />,
-    title: "Shipping Update",
-    description: "Your package is out for delivery.",
-    time: "1 hour ago",
-    isRead: false
-  },
-  {
-    id: 3,
-    icon: <DiscountIcon color="secondary" />,
-    title: "New Discount",
-    description: "Get 20% off on summer collection!",
-    time: "3 hours ago",
-    isRead: false
-  },
-   {
-    id: 4,
-    icon: <DiscountIcon color="secondary" />,
-    title: "New Discount",
-    description: "Get 20% off on summer collection!",
-    time: "3 hours ago",
-    isRead: false
-  },
-   {
-    id: 5,
-    icon: <DiscountIcon color="secondary" />,
-    title: "New Discount",
-    description: "Get 20% off on summer collection!",
-    time: "3 hours ago",
-    isRead: false
-  },
-   {
-    id: 6,
-    icon: <DiscountIcon color="secondary" />,
-    title: "New Discount",
-    description: "Get 20% off on summer collection!",
-    time: "3 hours ago",
-    isRead: false
+
+// Updated thunk action using axios with explicit headers
+export const fetchNotifications = createAsyncThunk(
+  'notifications/fetchNotifications',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/notifications`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        }
+      });
+      console.log('Fetched notifications:', response.data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.error || error.message || 'Failed to fetch notifications'
+      );
+    }
   }
-];
+);
+
+// Helper function to format timestamps
+const formatTimestamp = (timestamp) => {
+  const date = new Date(timestamp);
+  const now = new Date();
+  const diffMs = now - date;
+  const diffMins = Math.round(diffMs / 60000);
+  const diffHours = Math.round(diffMs / 3600000);
+  const diffDays = Math.round(diffMs / 86400000);
+  
+  if (diffMins < 1) return 'Just now';
+  if (diffMins < 60) return `${diffMins} mins ago`;
+  if (diffHours < 24) return `${diffHours} hours ago`;
+  if (diffDays === 1) return 'Yesterday';
+  return date.toLocaleDateString();
+};
 
 const notificationSlice = createSlice({
   name: 'notifications',
   initialState: {
-    notifications: initialNotifications,
+    notifications: [],
     isOpen: false,
-    unreadCount: initialNotifications.filter(notif => !notif.isRead).length,
-        socket: null
-
+    unreadCount: 0,
+    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    error: null
   },
   reducers: {
     openNotifications: (state) => {
@@ -104,7 +98,15 @@ const notificationSlice = createSlice({
       
       if (notification && !notification.isRead) {
         notification.isRead = true;
-        state.unreadCount -= 1;
+        state.unreadCount = state.unreadCount > 0 ? state.unreadCount - 1 : 0;
+        
+        // Call API to mark notification as read using axios
+        axios.put(`${API_URL}/api/notifications/${notification.id}/read`, {}, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...getAuthHeader()
+          }
+        }).catch(error => console.error('Error marking notification as read:', error));
       }
     },
     markAllNotificationsAsRead: (state) => {
@@ -112,41 +114,75 @@ const notificationSlice = createSlice({
         notif.isRead = true;
       });
       state.unreadCount = 0;
+      
+      // Call API to mark all notifications as read using axios
+      axios.put(`${API_URL}/api/notifications/read-all`, {}, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        }
+      }).catch(error => console.error('Error marking all notifications as read:', error));
     },
     addNotification: (state, action) => {
-      const newNotification = {
-        ...action.payload,
-        icon: getNotificationIcon(action.payload.title),
-        isRead: false
-      };
-      state.notifications.unshift(newNotification);
-      state.unreadCount += 1;
-    },
-    initializeSocket: (state) => {
-      socket.on('new_notification', (notification) => {
-        // Dispatch an action to add the new notification
-        state.notifications.unshift(notification);
+      // Check if notification with this ID already exists
+      const existingIndex = state.notifications.findIndex(n => n.id === action.payload.id);
+      
+      if (existingIndex >= 0) {
+        // Update existing notification
+        state.notifications[existingIndex] = {
+          ...state.notifications[existingIndex],
+          ...action.payload,
+          isRead: false // Mark as unread when updated
+        };
+      } else {
+        // Add new notification to the beginning of the array
+        const newNotification = {
+          ...action.payload,
+          icon: getNotificationIcon(action.payload.title),
+          isRead: false
+        };
+        state.notifications.unshift(newNotification);
         state.unreadCount += 1;
-      });
+      }
     }
-  
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchNotifications.pending, (state) => {
+        state.status = 'loading';
+      })
+      .addCase(fetchNotifications.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        
+        // Format the notifications for display
+        state.notifications = action.payload.map(notification => ({
+          id: notification._id,
+          icon: getNotificationIcon(notification.title),
+          title: notification.title,
+          description: notification.description,
+          time: formatTimestamp(notification.timestamp),
+          isRead: notification.isRead,
+          product: notification.product,
+          sender: notification.sender,
+          count: notification.count || 1
+        }));
+        
+        state.unreadCount = state.notifications.filter(notif => !notif.isRead).length;
+      })
+      .addCase(fetchNotifications.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.payload;
+      });
   }
 });
 
 export const {
   toggleNotifications,
+  openNotifications,
   closeNotifications,
   markNotificationAsRead,
   markAllNotificationsAsRead,
   addNotification
 } = notificationSlice.actions;
-
-
-// Export the socket connection action
-export const initializeSocket = () => (dispatch) => {
-  socket.on('new_notification', (notification) => {
-    dispatch(addNotification(notification));
-  });
-};
 
 export default notificationSlice.reducer;

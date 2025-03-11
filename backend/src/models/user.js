@@ -24,7 +24,11 @@ const reviewsSchema = new mongoose.Schema({
   fourStar: { type: Number, default: 0 },
   threeStar: { type: Number, default: 0 },
   twoStar: { type: Number, default: 0 },
-  oneStar: { type: Number, default: 0 }
+  oneStar: { type: Number, default: 0 },
+});
+
+const averageRatingSchema = new mongoose.Schema({
+  averageRating: { type: Number, default: 0 }
 });
 
 const userSchema = new mongoose.Schema({
@@ -47,6 +51,7 @@ const userSchema = new mongoose.Schema({
   reviewsData: { type: reviewsSchema, default: {} },
 
     // Add badge arrays with their default values
+  averageRating: { type: Number, default: 0 },
   sellerBadges: {
     type: [badgeSchema],
     default: [
@@ -68,7 +73,11 @@ const userSchema = new mongoose.Schema({
       { name: 'Ultimate Collector', description: 'Bought 100 Items', isAchieved: false },
       { name: 'Shopping Spree', description: 'Spent $500', isAchieved: false }
     ]
-  }
+  },
+   viewHistory: [{
+    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+    viewedAt: { type: Date, default: Date.now }
+  }],
 }, { timestamps: true });
 
 // Hash the password before saving

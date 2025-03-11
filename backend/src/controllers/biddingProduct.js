@@ -68,6 +68,7 @@ export const createProduct = async (req, res) => {
         description: req.body.description,
         bidStartTime: req.body.bidStartTime,
         bidEndTime: req.body.bidEndTime,
+        biddingModel: req.body.biddingModel,
         images: imageUrls,
       });
   

@@ -2,6 +2,8 @@ import axios from 'axios';
 import FormData from 'form-data'; // Ensure this is imported
 import fs from 'fs'; // Import fs for file reading
 import Product from '../models/product.js';
+import User from "../models/user.js";
+import ProductMatcher from '../utils/productMatcher.js';
 
 export const createProduct = async (req, res) => {
   try {
@@ -118,6 +120,8 @@ export const getProductCatalogueList = async (req, res) => {
 
 
 
+
+
 // Get a single product by ID
 export const getProduct = async (req, res) => {
   try {
@@ -128,6 +132,10 @@ export const getProduct = async (req, res) => {
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
+        // Add this section at the end before sending the response
+    console.log("Serving product:", req.params.id);
+    console.log("Current session viewHistory:", req.session.viewHistory || []);
+    
     
     res.json(product);
   } catch (error) {
@@ -140,3 +148,159 @@ export const getProduct = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getProductRecommendations = async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const { 
+            topK = 5, 
+            matchType = 'false', 
+            matchMaterials = 'false',
+            matchCategories = 'false'
+        } = req.query;
+        
+       // console.log('Starting recommendation request:', { matchType, matchMaterials, matchCategories });
+
+        // 1. Initialize ProductMatcher
+        const matcher = new ProductMatcher();
+       // console.log('🧪 Starting ProductMatcher...\n');
+
+        // 2. Check database connection and count products
+        const totalCount = await Product.countDocuments();
+       // console.log(`Total products in database: ${totalCount}`);
+
+        // 3. Get the source product with owner details
+        const testProduct = await Product.findById(productId).populate('owner', 'username');
+
+        if (!testProduct) {
+            throw new Error('Product not found');
+        }
+
+      //  console.log('\nTest product details:', {
+      //       id: testProduct._id,
+      //       name: testProduct.name,
+      //       owner: testProduct.owner?.username,  // Owner's name
+      //       type: testProduct.type,
+      //       hasImages: testProduct.images?.length > 0,
+      //       imageUrls: testProduct.images,
+      //       materials: testProduct.materials,
+      //       categories: testProduct.categories
+      //   });
+
+        // 4. Find potential matches and populate owner details
+        const potentialMatches = await Product.find({
+            _id: { $ne: testProduct._id },
+            images: { $exists: true, $ne: [] }
+        }).populate('owner', 'username averageRating');  // Populate owner details
+
+        // console.log(`\nFound ${potentialMatches.length} other products with images`);
+        // console.log('Sample of potential matches:', 
+        //     potentialMatches.slice(0, 3).map(p => ({
+        //         id: p._id,
+        //         name: p.name,
+        //         owner: p.owner?.username,  // Owner's name
+        //         type: p.type,
+        //         hasImages: p.images?.length > 0
+        //     }))
+        // );
+
+     
+       // 5. Get Product Recommendations with specified criteria
+     // console.log('\nTesting Product Recommendations...');
+      let recommendations = await matcher.recommendProducts(testProduct._id, {
+    topK: Number(topK),
+    matchType: matchType === 'true',
+    matchMaterials: matchMaterials === 'true',
+    matchCategories: matchCategories === 'true'
+   });
+
+// Fix: Populate owner for each recommended product
+recommendations = await Promise.all(recommendations.map(async (rec) => {
+    const populatedProduct = await Product.findById(rec.product._id).populate('owner', 'username averageRating');
+    //console.log("Owner Data:", JSON.stringify(populatedProduct.owner, null, 2));
+    return {
+        product: {
+            ...populatedProduct.toObject(),
+            owner: populatedProduct.owner || { username: "Unknown", averageRating: 0 } // Default if owner is missing
+        },
+        similarity: rec.similarity,
+        matchScore: rec.matchScore
+    };
+}));
+     //  console.log('\n🎉 Recommendations generated successfully!');
+
+
+        if (!Array.isArray(recommendations)) {
+        //    console.error('Recommendations is not an array:', recommendations);
+            throw new Error('Invalid recommendations format returned');
+        }
+
+        // 6. Print recommendations for debugging
+      //  console.log('\nRecommendations found:', recommendations.length);
+        recommendations.forEach((rec, index) => {
+            // console.log(`\n${index + 1}. ${rec.product.name}`);
+            // console.log(`   ID: ${rec.product._id}`);
+            // console.log(`   Owner: ${rec.product.owner?.username}`);  // Owner's name
+            //  console.log(`   Owner: ${rec.product.owner}`);  // Owner's name
+            // console.log(`   Type: ${rec.product.type}`);
+            // console.log(`   Has Images: ${rec.product.images?.length > 0}`);
+            // console.log(`   Image URL: ${rec.product.images?.[0]}`);
+            // console.log(`   Similarity Score: ${(rec.similarity * 100).toFixed(2)}%`);
+            // console.log(`   Match Score: ${rec.matchScore}`);
+        });
+
+       // console.log('\n🎉 Recommendations generated successfully!');
+
+        // 7. Send response with owner details
+        res.json({
+            success: true,
+            recommendations: recommendations.slice(0, 6).map(match => ({
+                product: {
+                    _id: match.product._id,
+                    name: match.product.name,
+                    owner: {
+                      username: match.product.owner.username,
+                      averageRating: match.product.owner.averageRating || 0 // Ensure it has a default value
+                  },  // Include owner name and average rating
+                    price: match.product.price,
+                    color: match.product.color,
+                    description: match.product.description,
+                    category: match.product.category,
+                    type: match.product.type,
+                    images: match.product.images
+                },
+                similarity: match.similarity,
+                matchScore: match.matchScore
+            }))
+        });
+
+    } catch (error) {
+        // console.error('❌ Recommendation error:', error);
+        // console.error('Error details:', error.message);
+        if (error.stack) {
+            console.error('\nStack trace:', error.stack);
+        }
+        res.status(500).json({ 
+            success: false, 
+            message: error.message 
+        });
+    }
+};
+
+

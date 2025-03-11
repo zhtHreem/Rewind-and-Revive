@@ -84,9 +84,6 @@ function NewProduct({ setAddProduct =true }){
     };
 
 
-   
-
-
 
         const handleSubmit = async (e) => {
         e.preventDefault();
@@ -262,31 +259,35 @@ const handleMaterialChange = (event) => {
             <Layout>
 
          
-         <Box   p={6} sx={{backgroundColor: 'rgba(0, 0, 0, 0.5)',}}>
+         <Box   p={{xs:3,sm:6}} sx={{backgroundColor: 'rgba(0, 0, 0, 0.5)',}}>
             <Paper sx={{p:{xs:3,sm:3},border:"1px solid black"}} elevation={24}>
                 <LoadingOverlay show={isLoading} />
                         <form onSubmit={handleSubmit}>
 
                 
                     <Typography variant="h3" sx={{textAlign:"center"}}>Create New Product</Typography>
-                    <Grid container direction={{xs:"column",md:"row"}} md={12}  justifyContent="space-between">
 
-                         <Grid item md={6}>  
-                           <Typography marginTop={2} variant="h5" >Name</Typography> 
-                           <TextField label='Enter Product Name' value={name} onChange={(e) => setName(e.target.value)} />
+                    <Grid container direction={{xs:"column",md:"row"}}  justifyContent="space-between" spacing={2} p={2} sx={{maxHeight: isExpanded ? 'none' : 850,}}>
+                               
+                          <Stack marginTop={2} direction="row" alignItems="center" spacing={2}  > 
+                              <Typography  variant="h5" >Name</Typography> 
+                              <TextField label='Enter Product Name' value={name} onChange={(e) => setName(e.target.value)} />
+                           </Stack>    
 
-                          <Typography   marginTop={2}  variant="h5" >Price</Typography> 
-                          <TextField   id="standard-number" label="Rs" name="bustChest" type="number" variant="standard" value={price} onChange={(e) => setPrice(e.target.value)}/>
-
+                          <Stack marginTop={2}direction="row" alignItems="center" spacing={2} > 
+                              <Typography   variant="h5" >Price</Typography> 
+                              <TextField   id="standard-number" label="Rs" name="bustChest" type="number" variant="standard" value={price} onChange={(e) => setPrice(e.target.value)}/>
+                          </Stack>      
                               {/* Category Dropdown */}
-                        <Grid item>
-                            <Typography variant="h5" marginTop={2}>Category</Typography>
-                            <Select
-                                value={selectedCategory}
-                                onChange={(e) => setSelectedCategory(e.target.value)}
-                                displayEmpty
-                        
-                            >
+
+                             <Stack  marginTop={2}direction="row" alignItems="center" spacing={2} > 
+                                <Typography     variant="h5" >Color</Typography> 
+                                <TextField label='color' value={color} onChange={(e) => setColor(e.target.value)} />
+                          </Stack>
+
+                        <Grid item marginTop={2}>
+                            {/* <Typography variant="h5" marginTop={2}>Category</Typography> */}
+                            <Select    fullWidth value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} displayEmpty  >
                                 <MenuItem value="" disabled>Select a Category</MenuItem>
                                 <MenuItem value="men">Men</MenuItem>
                                 <MenuItem value="women">Women</MenuItem>
@@ -294,8 +295,12 @@ const handleMaterialChange = (event) => {
                             </Select>
                         </Grid>
 
-                          <Typography   marginTop={2}  variant="h5" >Color</Typography> 
-                          <TextField label='color' value={color} onChange={(e) => setColor(e.target.value)} />
+                        
+                    </Grid>
+                    <Grid container direction={{xs:"column",md:"row"}} md={12}  justifyContent="space-between" p={1}>
+                           
+                         <Grid item md={6} >  
+                           
                           <Typography  marginTop={2}  variant="h5" sx={{marginTop:4}}>Type</Typography> 
                           <Grid container p={4} spacing={2} >
                                 <FormControl component="fieldset">
@@ -379,7 +384,7 @@ const handleMaterialChange = (event) => {
                         </Grid>
 
                        {/* Left side */}
-                       <Grid container direction={{xs:"column",md:"row" }} py={4}  md={6} spacing={2} sx={{maxHeight: isExpanded ? 'none' : 650,}}> {/*will not apply height when user clicks button */}
+                       <Grid container direction={{xs:"column",md:"row" }} py={4}  md={6} spacing={2} sx={{maxHeight: isExpanded ? 'none' : 850,}}> {/*will not apply height when user clicks button */}
 
                                <Grid item md={12}>
                                        <Typography variant="h5">Add Image</Typography>
@@ -411,7 +416,7 @@ const handleMaterialChange = (event) => {
 
                               <Grid item md={12}>
                                  { (selectedOption === 'top' || selectedOption ==="top/bottom")&& (
-                            <>
+                               <>
                                    <Stack direction="row" alignItems="center" marginTop={2}>
                                        <Typography variant="h5" >Top Size</Typography>
                                        <FormLabel component="legend"> (Inches)</FormLabel>
@@ -436,7 +441,7 @@ const handleMaterialChange = (event) => {
                                                <TextField   id="standard-number" label="Neck Circumference" name="neckCircumference" type="number" variant="standard" value={topSizes.neckCircumference}   onChange={handleTopSizeChange} />
                                           </Grid>
                                    </Grid>
-                            </>
+                                 </>
                               )}
 
                               
@@ -477,8 +482,9 @@ const handleMaterialChange = (event) => {
                                 <Grid item md={12}>
                                         <TextField  label="Description" value={description} onChange={(e) => setDescription(e.target.value)}multiline  rows={6} sx={{ width: "100%", border: "1px ridge white" }}/>
                                         <Button type="submit" marginTop={2} sx={{ color: "black", backgroundColor:"#A86464" }}> Enter</Button>
-                                 </Grid>
+                                </Grid>
                        </Grid>
+                        
                  
 
                 </Grid>

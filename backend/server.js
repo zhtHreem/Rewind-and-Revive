@@ -6,16 +6,21 @@ import cors from 'cors';
 import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
+import session from 'express-session';
 
 import FormData from 'form-data';
 
 import userRoute from './src/routes/user.js'
+import recommendationRoutes from './src/routes/recommendation.js';
 import productRoute from './src/routes/product.js'
 import bidRoute from './src/routes/biddingProduct.js'
 import biddingRoute from './src/routes/bid.js'
 import paymentRoute from './src/routes/payment.js'
 import Chat from './src/models/chat.js';
 import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
+// Add this import at the top with your other route imports
+import notificationRoutes from './src/routes/notifications.js';
+
 import { createServer } from 'http'; // Import to create HTTP server
 
 const app = express();
@@ -25,11 +30,9 @@ connectDB();
 console.log("api",process.env.REACT_APP_API_URL);
 
 app.use(cors({
-  origin: [
-    process.env.REACT_APP_API_URL,  // Development URL
-  ],
+  origin: process.env.REACT_APP_API_URL,  // Use exact origin, not array
   methods: ["POST", "GET", "PUT", "DELETE"],
-  credentials: true
+  credentials: true  // Ensure this is true
 }));
 
 // Handle preflight requests
@@ -52,9 +55,32 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Crea
 
- const httpServer = createServer(app);
+// Make sure your session configuration looks like this:
+app.use(session({
+  secret: 'your-secret-key',
+  resave: true,               // Changed back to true for better compatibility
+  saveUninitialized: true,
+  name: 'recommendSession',   // Give it a specific name
+  cookie: { 
+    maxAge: 30 * 24 * 60 * 60 * 1000, 
+    httpOnly: true,
+    secure: false,            // Keep false during development
+    sameSite: 'lax'           // Add this to help with cross-site requests
+  }
+}));
+// Add this to your routes
+app.get('/api/debug/session', (req, res) => {
+  res.json({
+    sessionId: req.session.id,
+    viewHistory: req.session.viewHistory || [],
+    userViewHistory: req.session.userViewHistory || [],
+    isAuthenticated: !!req.user
+  });
+});
+
+
+const httpServer = createServer(app);
 
 // Attach Socket.IO to the server
 const io = new Server(httpServer, {
@@ -68,16 +94,68 @@ const io = new Server(httpServer, {
 
 
 
+
 io.on('connection', (socket) => {
-  console.log('A user connected');
+  //console.log('A user connected');
 
   // Handle incoming chat messages
-  socket.on('sendMessage', (message) => {
-      // Broadcast message to all connected clients including the sender
-      io.emit('receiveMessage', message);
-      console.log('Message sent:', message);
-  });
+  // socket.on('sendMessage', (message) => {
+  //     // Broadcast message to all connected clients including the sender
+  //     io.emit('receiveMessage', message);
+  //   //  console.log('Message sent:', message);
+  // });
+  
 
+   socket.on('sendMessage', async (message) => {
+    // Broadcast message to all connected clients including the sender
+    io.emit('receiveMessage', message);
+    
+    try {
+      // Find or create a notification for this message
+      const sender = await User.findById(message.sender, 'username');
+      
+      let existingNotification = await Notification.findOne({
+        recipient: message.receiver,
+        sender: message.sender,
+        product: message.product,
+        type: 'message',
+        isRead: false
+      });
+      
+      if (existingNotification) {
+        existingNotification.count += 1;
+        existingNotification.description = `You have received ${existingNotification.count} new messages from ${sender.username}`;
+        existingNotification.timestamp = Date.now();
+        await existingNotification.save();
+        
+        io.emit('new_notification', {
+          ...existingNotification.toObject(),
+          title: 'New Message',
+          time: 'Just now'
+        });
+      } else {
+        const newNotification = new Notification({
+          recipient: message.receiver,
+          sender: message.sender,
+          product: message.product,
+          title: 'New Message',
+          description: `You have received a new message from ${sender.username}`,
+          type: 'message',
+          count: 1
+        });
+        
+        await newNotification.save();
+        
+        io.emit('new_notification', {
+          ...newNotification.toObject(),
+          title: 'New Message',
+          time: 'Just now'
+        });
+      }
+    } catch (error) {
+      console.error('Error creating notification:', error);
+    }
+  });
 
 
   // Example of sending a test notification
@@ -97,7 +175,7 @@ io.on('connection', (socket) => {
 
     // Broadcast the notification to all connected clients
     io.emit('new_notification', testNotification);
-    console.log('Test notification sent'); // Add this for debugging
+   // console.log('Test notification sent'); // Add this for debugging
 
   });
 
@@ -122,9 +200,21 @@ io.on('connection', (socket) => {
       console.error('Error creating badge notification:', error);
     }
   });
+
+
+
+
+
+
+
+
+
+  
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });
+
+
 });
 
 
@@ -144,6 +234,10 @@ app.use('/api/biddingProduct', bidRoute);
 app.use('/api/bid', biddingRoute);
 app.use('/api/payment', paymentRoute);
 app.use('/api/chats', chatRoutes); // Add chat routes here
+
+app.use('/api/notifications', notificationRoutes);
+//app.use(trackUserActivity);
+app.use('/api', recommendationRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

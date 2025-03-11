@@ -12,18 +12,23 @@ const BiddingProduct = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isBiddingOpen, setIsBiddingOpen] = useState(false);
   const [isBiddingClosed, setIsBiddingClosed] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-
 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
+        setLoading(true);
         const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/${id}`);
         const data = await response.json();
         setProduct(data);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching product:', error);
-      }
+        setLoading(false);
+      } finally {
+        setLoading(false);
+    }
     };
 
     const fetchBidders = async () => {
@@ -68,7 +73,7 @@ const BiddingProduct = () => {
       setBidders(data);
       setIsModalOpen(true);
     } catch (error) {
-      console.error('Error fetching bidders:', error);
+      console.error("Error fetching bidders:", error);
     }
   };
 
@@ -134,6 +139,16 @@ const BiddingProduct = () => {
     return 'Bidding has ended';
   };
   
+  if (loading) {
+      return <Typography textAlign="center">Loading...</Typography>;
+ }
+ 
+  const selectedOption = product.biddingModel;
+  const highestBidderOnly = selectedOption === "Highest Bidder";
+
+    const displayedBidders = highestBidderOnly
+  ? bidders.length > 0 ? [bidders[0]] : [] // Show only the highest bidder
+  : bidders.slice(0, 3); // Show top 3 bidders
 
   return (
     <Layout>
@@ -175,38 +190,43 @@ const BiddingProduct = () => {
                 View Top Bidders
               </Button>
 
-              <Modal open={isModalOpen} onClose={handleCloseModal}>
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    top: '50%',
-                    left: '50%',
-                    transform: 'translate(-50%, -50%)',
-                    width: 400,
-                    bgcolor: 'background.paper',
-                    borderRadius: 1,
-                    boxShadow: 24,
-                    p: 4,
-                  }}
-                >
-                  <Typography variant="h6" component="h2">
-                    Top Bidders
-                  </Typography>
-                  <Box sx={{ mt: 2 }}>
-                    {bidders.length > 0 ? (
-                      bidders.map((bid, index) => (
-                        <Paper key={index} sx={{ padding: 1, marginBottom: 1 }}>
-                          <Typography>
-                            <strong>{bid.name}</strong>: ${bid.bidAmount}
-                          </Typography>
-                        </Paper>
-                      ))
-                    ) : (
-                      <Typography>No bids yet!</Typography>
-                    )}
-                  </Box>
-                </Box>
-              </Modal>
+
+
+<Modal open={isModalOpen} onClose={handleCloseModal}>
+  <Box
+    sx={{
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      width: 400,
+      bgcolor: "background.paper",
+      borderRadius: 1,
+      boxShadow: 24,
+      p: 4,
+    }}
+  >
+    <Typography variant="h6" component="h2">
+      {highestBidderOnly ? "Highest Bidder" : "Top 3 Bidders"}
+    </Typography>
+
+    <Box sx={{ mt: 2 }}>
+      {displayedBidders.length > 0 ? (
+        displayedBidders.map((bid, index) => (
+          <Paper key={index} sx={{ padding: 1, marginBottom: 1 }}>
+            <Typography>
+              <strong>{bid.name}</strong>: Rs.{bid.bidAmount}
+            </Typography>
+          </Paper>
+        ))
+      ) : (
+        <Typography>No bids yet!</Typography>
+      )}
+    </Box>
+  </Box>
+</Modal>
+
+
 
               <TextField
                   label="Place your bid"

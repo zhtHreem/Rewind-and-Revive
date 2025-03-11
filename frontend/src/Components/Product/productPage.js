@@ -1,20 +1,69 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate ,useParams} from 'react-router-dom';
 
-import { Grid, Box, Typography, Button } from '@mui/material';
+import { Grid, Box, Typography, Button, Stack } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper,  Modal } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
+import { ArrowForward } from "@mui/icons-material";
+
+import { Dialog, DialogTitle, DialogContent, DialogActions, Rating, TextField, IconButton } from '@mui/material';
+import PhotoCamera from '@mui/icons-material/PhotoCamera';
+
 import AddCart from "../ShoppingCart/AddCart";
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat'; // Chat component import
-
+import SkeletonLoader from '../Utils/skeletonLoader';
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 import axios from 'axios';
+import MatchOutfitModal from './matchMyOutfit';
+  // Create skeleton components for different sections
+const ProductImageSkeleton = () => (
+  <Box>
+    {/* Main image skeleton */}
+    <Box sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2 }}>
+      <SkeletonLoader height="100%" />
+    </Box>
+    
+    {/* Thumbnail images skeleton */}
+    <Box sx={{ marginTop: '20px', height: 100 }}>
+      <Box sx={{ display: 'flex', gap: 2 }}>
+        {Array(4).fill(0).map((_, i) => (
+          <SkeletonLoader key={i} width="100px" height="100px" />
+        ))}
+      </Box>
+    </Box>
+  </Box>
+);
 
+const ProductDetailsSkeleton = () => (
+  <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
+    {/* Title */}
+    <SkeletonLoader.Text lines={1} width="80%" />
+    
+    {/* Price */}
+    <SkeletonLoader.Text lines={1} width="30%" />
+    
+    {/* Username */}
+    <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <SkeletonLoader width="20%" height="20px" />
+    </Box>
+    
+    {/* Buttons */}
+    <Box sx={{ display: 'flex', gap: 2 }}>
+      <SkeletonLoader height="48px" width="100%" />
+      <SkeletonLoader height="48px" width="100%" />
+    </Box>
+    
+    {/* Accordion buttons */}
+    {Array(3).fill(0).map((_, i) => (
+      <SkeletonLoader key={i} height="48px" width="100%" />
+    ))}
+  </Box>
+);
 const ProductPage = () => {
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -31,7 +80,28 @@ const ProductPage = () => {
   const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
   
   const { productId }= useParams();
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [openReviewDialog, setOpenReviewDialog] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
+  const [image, setImage] = useState(null);
+
+  const resetReviewForm = () => {
+    setRating(0);
+    setComment('');
+    setImage(null);
+  };
+
+  // Handlers for modal
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleOpenReviewDialog = () => setOpenReviewDialog(true);
+  const handleCloseReviewDialog = () => {
+    resetReviewForm();
+    setOpenReviewDialog(false);
+  };
   useEffect(() => {
 
     const fetchProduct = async () => {
@@ -81,6 +151,7 @@ const ProductPage = () => {
       
       // Update the cart state
       setCart((prevCart) => {
+
         // Check if the product already exists in the cart by comparing product.id
         const isProductInCart = prevCart.find((item) => item.id === productId);
         if (isProductInCart) {
@@ -106,6 +177,7 @@ const ProductPage = () => {
       console.error("Error adding product to cart:", error);
     }
   };
+
   
   const handleCartOpenClose = () => {
     setShoppingCart((prev) => !prev);
@@ -115,9 +187,59 @@ const ProductPage = () => {
     setMainImage(image);
   };
 
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0];
+    setImage(file);
+  };
+
+  const handleSubmitReview = async (event) => {
+    event.preventDefault();  // Prevent page reload
+      
+    if (!rating) {
+      alert("Please select a rating before submitting.");
+      return;
+   }
+          
+   const reviewData = {
+    userId: product.owner._id,  // Replace with actual user ID (e.g., from state or context)
+    rating: rating
+  };
+
+ try {
+    const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/submit-review`, reviewData, {
+        headers: {
+            "Content-Type": "application/json",
+        }
+    });
+
+    console.log("Review submitted successfully:", response.data);
+} catch (error) {
+    console.error("Error submitting review:", error);
+}
+
+
+    resetReviewForm();
+    setOpenReviewDialog(false);
+};
+
+
   if (!product) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Layout>
+        <Box sx={{ flexGrow: 1, padding: 6 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={6}>
+              <ProductImageSkeleton />
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <ProductDetailsSkeleton />
+            </Grid>
+          </Grid>
+        </Box>
+      </Layout>
+    );
   }
+
 
   const sizeDetails = product.type === 'top/bottom' ? [
     { label: 'Top - Waist', value: `${product.topSizes.waist} inches` },
@@ -165,10 +287,14 @@ const ProductPage = () => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
-              <Typography variant="h2">{product.name}</Typography>
-
-              <Typography variant="h4" sx={{ marginBottom: 2 }}>${product.price}</Typography>
+            <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              
+              <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
+                  <Typography variant="h4">{product.name}</Typography>
+                  <Button variant="outlined" endIcon={<ArrowForward />}  onClick={handleOpenModal}  sx={{minWidth:"40%", background: "transparent", color: "#9c27b0", border: "2px solid #c59bff", borderRadius: "20px", padding: "8px 20px", textTransform: "none", fontWeight: "bold", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s ease", "&:hover": { background: "linear-gradient(90deg, #c59bff, #9c27b0)", color: "#fff" } }}>Match My Outfit</Button>
+              </Stack>
+               <MatchOutfitModal  open={isModalOpen} onClose={handleCloseModal} product={product} /> 
+              <Typography variant="h5" sx={{ marginBottom: 2 }}>Rs. {product.price}</Typography>
               
               <Typography variant="overline" sx={{ marginLeft: '80%', cursor: 'pointer', '&:hover': { textDecoration: 'underline', color: 'primary.main' } }} onClick={() => navigate(`/profile/${product.owner._id}`)}>
                 {product.owner.username}
@@ -179,7 +305,7 @@ const ProductPage = () => {
                   variant="contained"
                   onClick={handleAddToCart}
                   size="large"
-                  sx={{ width: '100%', backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}
+                  sx={{ width: '100%', backgroundColor:'black' , '&:hover': { backgroundColor:  '#85586F' } }}
                 >
                   Add to Cart
                 </Button>
@@ -214,10 +340,51 @@ const ProductPage = () => {
                 Description
               </Button>
               {description && <Typography>{product.description}</Typography>}
+
+              <Button onClick={handleOpenReviewDialog} sx={{ color: 'black', width: '100%', borderBottom: '1px outset black', borderLeft: '1px outset black' }}>
+                Leave a Review
+             </Button>
             </Box>
           </Grid>
         </Grid>
       </Box>
+
+ {/* Rating & Review Dialog */}
+ <Dialog open={openReviewDialog} onClose={handleCloseReviewDialog} fullWidth>
+  <DialogTitle>Rate & Review</DialogTitle>
+   <DialogContent>
+     {/* Star Rating */}
+     <Rating
+       value={rating}
+       onChange={(event, newValue) => setRating(newValue)}
+       size="large"
+     />
+
+     {/* Comment Box */}
+     <TextField label="Leave a comment" multiline rows={3} fullWidth margin="dense" value={comment} onChange={(e) => setComment(e.target.value)} />
+
+     {/* Image Upload */}
+     <input
+       accept="image/*"
+       type="file"
+       id="upload-image"
+       style={{ display: 'none' }}
+       onChange={handleImageUpload}
+     />
+     <label htmlFor="upload-image">
+       <IconButton color="primary" component="span">
+         <PhotoCamera />
+       </IconButton>
+       {image && <Typography variant="caption">{image.name}</Typography>}
+     </label>
+   </DialogContent>
+
+    {/* Submit & Cancel Buttons */}
+    <DialogActions>
+      <Button onClick={handleCloseReviewDialog} color="error">Cancel</Button>
+      <Button onClick={handleSubmitReview} variant="contained" color="primary">Submit</Button>
+    </DialogActions>
+  </Dialog>
 
       {/* Floating Chat Button */}
       <div
@@ -231,10 +398,7 @@ const ProductPage = () => {
           borderRadius: '30px',
           boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
           cursor: 'pointer',
-          zIndex: 1000,
-        }}
-        onClick={() => setIsChatOpen((prev) => !prev)}
-      >
+          zIndex: 1000,  }}  onClick={() => setIsChatOpen((prev) => !prev)}>
         💬 Chat
       </div>
 

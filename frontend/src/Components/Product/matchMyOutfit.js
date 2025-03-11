@@ -114,7 +114,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
         <Box   sx={{   width: { xs: '100%', md: '300px' }, minWidth: { md: '400px' },   height: { xs: 'auto', md: '87%' }, backgroundImage: `url(${myMyo})`,   display: 'flex',   flexDirection: 'column',   alignItems: 'center',   p: { xs: 2, sm: 4 }  }}  >
           
             <>
-              <Box   component="img"    src={product?.images?.[0] || "/api/placeholder/300/400"}   alt={product?.name || "Product"}   sx={{   position:"relative",  width: '100%',   height: '87%',  maxWidth: { xs: 200, sm: 300 }, objectFit: "cover", boxShadow: 10}} />
+              <Box   component="img"    src={product?.images?.[0] || "/api/placeholder/300/400"}   alt={product?.name || "Product"}   sx={{   position:"relative",  width: '100%',   height: '95%',  maxWidth: { xs: 200, sm: 300 }, objectFit: "cover", boxShadow: 10}} />
               <Typography    sx={{ mt: 2, textAlign: 'center' ,display: 'block',   cursor: 'pointer',  color: 'primary.main', transition: 'all 0.2s ease-in-out', '&:hover': {     color: 'primary.dark', textDecoration: 'underline', transform: 'scale(1.02)' }}}   onClick={() => navigate(`/product/${product?._id}`)} >
                 {product?.name}   
               </Typography>
@@ -124,7 +124,12 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
              
                <Typography variant="body2" sx={{ color: 'black',backgroundColor: '#f5f5f5', padding: '4px 8px', fontWeight: 'bold' }}>
                           Seller: <Typography component="span" sx={{ color: 'blue', fontWeight: 'normal', cursor: 'pointer', marginLeft: '4px', textDecoration: 'underline' }} onClick={() => navigate(`/profile/${product.owner?._id}`)}>{product.owner?.username}</Typography>
-               </Typography>     
+               </Typography>  
+               <Typography variant="body2" sx={{ color: 'black',    padding: '4px 8px', fontWeight: 'bold' }}>
+                  Seller rating: <Typography  component="span" sx={{color: 'gray', fontSize: '0.8rem', marginLeft: '8px' }}>
+                    ⭐ {product.owner?.averageRating?.toFixed(1) || "N/A"}
+                      </Typography>
+                </Typography>
             </>
         
         </Box>
@@ -135,7 +140,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
             <Typography variant="h6" sx={{ mb: { xs: 1, sm: 2 } }}>
               See Matching Items
             </Typography>
-            <Swiper  modules={[Navigation]} navigation={true}    slidesPerView={getSlidesPerView()}    spaceBetween={16}  style={{ width: '100%', height: 300 }} >
+            <Swiper  modules={[Navigation]} navigation={true}    slidesPerView={getSlidesPerView()}    spaceBetween={16}  style={{ width: '100%', height: 450 }} >
               {isLoading ? (
                 Array(4).fill(0).map((_, index) => (
                   <SwiperSlide key={`skeleton-${index}`} style={{ padding: 6 }}>

@@ -55,7 +55,8 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               image: rec.product.images[0],
               alt: rec.product.name,
               name: rec.product.name,
-              owner: rec.product.owner
+              owner: rec.product.owner,
+              averageRating : rec.product.owner.averageRating
             }));
             
 
@@ -95,6 +96,8 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
       </Box>
     </Box>
   );
+
+
 
   return (
     <Dialog  open={open}   onClose={onClose}  maxWidth="xl"  fullWidth  PaperProps={{   sx: {   borderRadius: "12px",  background: "#fff",    position: 'relative',   m: { xs: 1, sm: 2 },   maxHeight: { xs: '95vh', sm: 'calc(100% - 32px)' },   overflowY: 'hidden'   }  }} >
@@ -152,7 +155,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'black', position: 'absolute', backgroundColor: '#f5f5f5', bottom: 0, right: 0, left: 0, padding: '4px 8px', fontWeight: 'bold' }}>
                         Rating: <Typography  component="span" sx={{color: 'gray', fontSize: '0.8rem', marginLeft: '8px' }}>
-                         ⭐ {item.owner?.averageRating?.toFixed(1) ?? "N/A"}
+                         ⭐ {item.owner?.averageRating?.toFixed(1) || "N/A"}
                          </Typography>
                         </Typography>
                       <Typography  variant='body2' sx={{color: 'white',position: 'absolute',backgroundColor: 'rgba(0, 0, 0, 0.5)',top: 0,right:0,left:0 }} >
@@ -171,7 +174,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               )}
             </Swiper>
           </Box>
-
+        
         
          
         </Box>

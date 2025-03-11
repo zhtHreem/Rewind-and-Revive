@@ -404,15 +404,15 @@ const getFilteredProducts = (products, filters) => {
                                             </CardMedia>
                                             <CardContent>
                                                 <Typography textAlign="start" variant="h6">{product.name}</Typography>
-                                                <Typography variant="body1" color="text.secondary">${product.price}</Typography>
+                                                <Typography variant="body1" color="text.secondary">Rs.{product.price}</Typography>
                                                 <Typography variant="body2" color="text.secondary">
                                                     {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
                                                 </Typography>
-                                                {product.owner && (
+                                               
                                                     <Typography textAlign="end" variant="body2" color="text.secondary">
-                                                        {product.owner.name}
+                                                        {product.owner.username || 'Hareem'}
                                                     </Typography>
-                                                )}
+                                                
                                             </CardContent>
                                         </Card>
                                     </Link>

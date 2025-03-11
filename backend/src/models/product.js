@@ -50,6 +50,10 @@ const ProductSchema = new mongoose.Schema({
   images: [{ 
     type: String 
   }],
+  viewCount: {
+    type: Number,
+    default: 0
+  },
   createdAt: { 
     type: Date, 
     default: Date.now 
@@ -59,3 +63,7 @@ const ProductSchema = new mongoose.Schema({
 const Product= mongoose.model('Product', ProductSchema);
 
 export default Product;
+
+
+
+

@@ -1,13 +1,33 @@
-import React, { useState ,useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import io from 'socket.io-client';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import { useLogin } from "../Login/logincontext";
-
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleNotifications,addNotification,  closeNotifications,markNotificationAsRead,markAllNotificationsAsRead} from '../../redux/slices/notificationsSlice.js';
+import { 
+  toggleNotifications, 
+  addNotification, 
+  fetchNotifications, 
+  closeNotifications, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead 
+} from '../../redux/slices/notificationsSlice.js';
 
-
-import { Stack, Link, Box, IconButton, Typography, Button,Badge, Drawer, Divider,Paper ,Menu,ListItemIcon,ListItemText,MenuItem} from "@mui/material";
+import { 
+  Stack, 
+  Link, 
+  Box, 
+  IconButton, 
+  Typography, 
+  Button, 
+  Badge, 
+  Drawer, 
+  Divider, 
+  Paper, 
+  Menu, 
+  ListItemIcon, 
+  ListItemText, 
+  MenuItem 
+} from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
@@ -17,14 +37,11 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AddCart from "../ShoppingCart/AddCart";
 import AddIcon from '@mui/icons-material/Add';
-  // Assuming the user data is stored in the login context
-
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import GavelIcon from '@mui/icons-material/Gavel';
 
- 
 function Navbar() {
-  const { user } = useLogin();
+  const user= localStorage.getItem('token');
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -53,25 +70,61 @@ function Navbar() {
     navigate("/create");
     handleClose();
   };
- useEffect(() => {
-    // Create socket connection
-    const socket = io(`${process.env.REACT_APP_LOCAL_URL}`); 
-      socket.emit('request_test_notification');
 
+  // Set up socket connection for real-time notifications
+  useEffect(() => {
+    // Create socket connection
+    const socket = io(`${process.env.REACT_APP_LOCAL_URL}`);
+    
     // Listen for new notifications
     socket.on('new_notification', (notification) => {
-      dispatch(addNotification(notification));
+      console.log('Received notification:', notification);
+      
+      // Make sure the notification has the expected format before adding it
+      if (notification) {
+        // Format the notification for the Redux store
+        const formattedNotification = {
+          id: notification._id || Date.now(),
+          title: notification.title,
+          description: notification.description,
+          time: 'Just now',
+          isRead: false,
+          product: notification.product,
+          sender: notification.sender,
+          count: notification.count || 1
+        };
+        
+        dispatch(addNotification(formattedNotification));
+      }
     });
-
-    // Cleanup socket connection on component unmount
+    
+    // Clean up on unmount
     return () => {
       socket.disconnect();
     };
   }, [dispatch]);
-  
-  const handleMarkAsRead = (notificationId) => {
-    dispatch(markNotificationAsRead(notificationId));
+
+  // Fetch notifications when component mounts and user is logged in
+ // In your Navbar.jsx component
+useEffect(() => {
+  // Only fetch notifications if user is logged in
+  console.log("Fetching notifications for user:",user ); // Add debugging
+  if (user) {
+    dispatch(fetchNotifications());
+    console.log("Fetching notifications for user:", user.id); // Add debugging
+  }
+}, [user, dispatch]);
+
+  // Handle marking notifications as read
+  const handleMarkAsRead = (notification) => {
+    dispatch(markNotificationAsRead(notification.id));
+    
+    // If it's a message notification, navigate to the chat for that product
+    if (notification.title === 'New Message' && notification.product) {
+      navigate(`/product/${notification.product}/chat`);
+    }
   };
+  
   const handleNotificationsToggle = () => {
     dispatch(toggleNotifications());
   };
@@ -93,51 +146,77 @@ function Navbar() {
     setDrawerOpen(prevState => !prevState);
   };
 
-  
-
   const performSearch = () => {
     // Your search functionality here
   };
 
- 
-
-
-    const NotificationsDropdown = () => (
-    <Paper sx={{  position: 'absolute',boxShadow: 3,borderRadius: 2,  top: '100%',right: 200, width: 300,   maxHeight: '75vh', overflow: 'auto',zIndex: 10,   p: 2 }}>
+  const NotificationsDropdown = () => (
+    <Paper sx={{ position: 'absolute', boxShadow: 3, borderRadius: 2, top: '100%', right: 200, width: 300, maxHeight: '75vh', overflow: 'auto', zIndex: 10, p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>  Notifications ({unreadCount} unread) </Typography>
-        <Button   size="small"  onClick={() => dispatch(markAllNotificationsAsRead())} > Mark All as Read </Button>
+        <Typography variant="h6" sx={{ mb: 2 }}>
+          Notifications ({unreadCount} unread)
+        </Typography>
+        <Button size="small" onClick={() => dispatch(markAllNotificationsAsRead())}>
+          Mark All as Read
+        </Button>
       </Box>
   
-      {notifications.map((notification) => (
-        <React.Fragment key={notification.id}>
-          <Box   sx={{ display: 'flex', alignItems: 'center',gap: 2  , backgroundColor: notification.isRead ? '#f0f0f0' : 'white', opacity: notification.isRead ? 0.7 : 1, cursor: 'pointer',  '&:hover': {  backgroundColor: notification.isRead ? '#e0e0e0' : '#f5f5f5'  }  }}  onClick={() => handleMarkAsRead(notification.id)}>
-            <Box sx={{ m: 2 ,display: 'flex', alignItems: 'center' }}>{notification.icon}</Box>
-            <Box>
-              <Typography variant="subtitle1" sx={{  fontWeight: notification.isRead ? 'normal' : 'bold',color: notification.isRead ? 'text.secondary' : 'text.primary' }}>
-                {notification.title}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {notification.description}
-              </Typography>
-              <Typography variant="caption" color="text.disabled">
-                {notification.time}
-              </Typography>
+      {notifications.length > 0 ? (
+        notifications.map((notification) => (
+          <React.Fragment key={notification.id}>
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+                backgroundColor: notification.isRead ? '#f0f0f0' : 'white',
+                opacity: notification.isRead ? 0.7 : 1,
+                cursor: 'pointer',
+                '&:hover': {
+                  backgroundColor: notification.isRead ? '#e0e0e0' : '#f5f5f5'
+                }
+              }}
+              onClick={() => handleMarkAsRead(notification)}
+            >
+              <Box sx={{ m: 2, display: 'flex', alignItems: 'center' }}>
+                {notification.icon}
+              </Box>
+              <Box>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: notification.isRead ? 'normal' : 'bold',
+                    color: notification.isRead ? 'text.secondary' : 'text.primary'
+                  }}
+                >
+                  {notification.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {notification.description}
+                </Typography>
+                <Typography variant="caption" color="text.disabled">
+                  {notification.time}
+                </Typography>
+              </Box>
             </Box>
-          </Box>
-          <Divider />
-        </React.Fragment>
-      ))}
+            <Divider />
+          </React.Fragment>
+        ))
+      ) : (
+        <Typography variant="body2" sx={{ textAlign: 'center', py: 2 }}>
+          No notifications to display
+        </Typography>
+      )}
     </Paper>
-    );
+  );
 
   return (
     <>
-      <Box component="navbar" marginBottom={10} sx={{ position: "fixed", zIndex: 2,width:"100%",backgroundColor:"white", display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }} >
+      <Box component="navbar" marginBottom={10} sx={{ position: "fixed", zIndex: 2, width: "100%", backgroundColor: "white", display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
         <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
           <Typography variant="h4" className="logo">
             <span>
-            <Box component="img" src={require("./S.png")} alt="Logo" sx={{ width: 100, height: 55 }} />
+              <Box component="img" src={require("./S.png")} alt="Logo" sx={{ width: 100, height: 55 }} />
             </span>
           </Typography>
         </Stack>
@@ -157,89 +236,96 @@ function Navbar() {
           </Link>
         </Stack>
 
-        <Stack direction="row" alignItems="center" sx={{position:"relative"}} spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 15 }}>
-        <IconButton onClick={() => setShoppingCart(!shoppingCart)}>
-              {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
-        </IconButton>
+        <Stack direction="row" alignItems="center" sx={{ position: "relative" }} spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 15 }}>
+          <IconButton onClick={() => setShoppingCart(!shoppingCart)}>
+            {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
+          </IconButton>
 
-           <IconButton onClick={handleAddClick}  aria-controls={open ? 'add-product-menu' : undefined}  aria-haspopup="true"  aria-expanded={open ? 'true' : undefined}>
-        <AddIcon />
-      </IconButton>
+          <IconButton 
+            onClick={handleAddClick}
+            aria-controls={open ? 'add-product-menu' : undefined}
+            aria-haspopup="true"
+            aria-expanded={open ? 'true' : undefined}
+          >
+            <AddIcon />
+          </IconButton>
 
-      <Menu id="add-product-menu" anchorEl={anchorEl} open={open}  onClose={handleClose}
-        MenuListProps={{
-          'aria-labelledby': 'add-product-button',
-        }}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            minWidth: '200px',
-            mt: 1,
-          }
-        }}
-        transformOrigin={{ horizontal: 'center', vertical: 'top' }}
-        anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
-        slotProps={{
-          paper: {
-            sx: {
-              '& .MuiList-root': {
-                padding: 0,
+          <Menu
+            id="add-product-menu"
+            anchorEl={anchorEl}
+            open={open}
+            onClose={handleClose}
+            MenuListProps={{
+              'aria-labelledby': 'add-product-button',
+            }}
+            PaperProps={{
+              elevation: 3,
+              sx: {
+                minWidth: '200px',
+                mt: 1,
+              }
+            }}
+            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
+            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
+            slotProps={{
+              paper: {
+                sx: {
+                  '& .MuiList-root': {
+                    padding: 0,
+                  },
+                },
               },
-            },
-          },
-        }}
-      >
-        <MenuItem onClick={handleSimpleProduct}>
-          <ListItemIcon>
-            <ShoppingBagIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Create Simple Product</ListItemText>
-        </MenuItem>
-        <MenuItem onClick={handleBiddingProduct}>
-          <ListItemIcon>
-            <GavelIcon fontSize="small" />
-          </ListItemIcon>
-          <ListItemText>Create Bidding Product</ListItemText>
-        </MenuItem>
-      </Menu>
+            }}
+          >
+            <MenuItem onClick={handleSimpleProduct}>
+              <ListItemIcon>
+                <ShoppingBagIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Create Simple Product</ListItemText>
+            </MenuItem>
+            <MenuItem onClick={handleBiddingProduct}>
+              <ListItemIcon>
+                <GavelIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>Create Bidding Product</ListItemText>
+            </MenuItem>
+          </Menu>
+          
           {!login && (
             <>
-            <IconButton onClick={() => {
-  const token = localStorage.getItem('token');
-  let userId;
-  
-  if (user?.id) {
-    userId = user.id;
-  } else if (token) {
-    try {
-      const decodedToken = JSON.parse(atob(token.split('.')[1])); 
-      userId = decodedToken.id;
-    } catch (error) {
-      console.error("Error decoding token:", error);
-      alert("Invalid token");
-    }
-  } 
-  
-  if (userId) {
-    navigate(`/profile/${userId}`);
-  } else {
-    console.error("User ID is missing.");
-    alert("User ID is not available");
-  }
-}}>
-  <PersonIcon />
-</IconButton>
+              <IconButton onClick={() => {
+                const token = localStorage.getItem('token');
+                let userId;
+                
+                if (user?.id) {
+                  userId = user.id;
+                } else if (token) {
+                  try {
+                    const decodedToken = JSON.parse(atob(token.split('.')[1])); 
+                    userId = decodedToken.id;
+                  } catch (error) {
+                    console.error("Error decoding token:", error);
+                    alert("Invalid token");
+                  }
+                } 
+                
+                if (userId) {
+                  navigate(`/profile/${userId}`);
+                } else {
+                  console.error("User ID is missing.");
+                  alert("User ID is not available");
+                }
+              }}>
+                <PersonIcon />
+              </IconButton>
 
-
-
-
-            <IconButton onClick={(e) => { e.stopPropagation();   handleNotificationsToggle();  }} >
-              {unreadCount > 0 ? (
-                    <Badge badgeContent={unreadCount} color="primary">
-                        <NotificationsIcon />
-                    </Badge>
-            ) : (
-                     <NotificationsNoneIcon />
+              <IconButton onClick={(e) => { e.stopPropagation(); handleNotificationsToggle(); }}>
+                {unreadCount > 0 ? (
+                  <Badge badgeContent={unreadCount} color="primary">
+                    <NotificationsIcon />
+                  </Badge>
+                ) : (
+                  <NotificationsNoneIcon />
                 )}
               </IconButton>
             </>

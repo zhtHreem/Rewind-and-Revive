@@ -43,7 +43,7 @@ class ProductMatcher {
                 });
                 this.modelLoaded = true;
             } catch (error) {
-                console.error('Error loading model:', error);
+               // console.error('Error loading model:', error);
                 throw new Error('Failed to load feature extractor model');
             }
         }
@@ -120,7 +120,7 @@ class ProductMatcher {
                 throw new Error('Product not found or has no images');
             }
 
-            console.log('Processing base product image:', baseProduct.images[0]);
+         //   console.log('Processing base product image:', baseProduct.images[0]);
             const baseFeatures = await this.extractFeatures(baseProduct.images[0]);
 
             const query = {
@@ -150,7 +150,7 @@ class ProductMatcher {
                 const batch = compatibleProducts.slice(i, i + batchSize);
                 const batchPromises = batch.map(async (product) => {
                     try {
-                        console.log('Processing comparison product image:', product.images[0]);
+                       // console.log('Processing comparison product image:', product.images[0]);
                         const productFeatures = await this.extractFeatures(product.images[0]);
                         const similarity = this.cosineSimilarity(baseFeatures, productFeatures);
                         return {
@@ -159,7 +159,7 @@ class ProductMatcher {
                             matchScore: this.calculateMatchScore(baseProduct, product)
                         };
                     } catch (error) {
-                        console.warn(`Skipping product ${product._id} due to error:`, error.message);
+                       // console.warn(`Skipping product ${product._id} due to error:`, error.message);
                         return null;
                     }
                 });
@@ -173,7 +173,7 @@ class ProductMatcher {
                 .slice(0, topK);
 
         } catch (error) {
-            console.error('Error in recommendProducts:', error);
+          //  console.error('Error in recommendProducts:', error);
             throw error;
         }
     }

@@ -73,7 +73,11 @@ const userSchema = new mongoose.Schema({
       { name: 'Ultimate Collector', description: 'Bought 100 Items', isAchieved: false },
       { name: 'Shopping Spree', description: 'Spent $500', isAchieved: false }
     ]
-  }
+  },
+   viewHistory: [{
+    product: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+    viewedAt: { type: Date, default: Date.now }
+  }],
 }, { timestamps: true });
 
 // Hash the password before saving

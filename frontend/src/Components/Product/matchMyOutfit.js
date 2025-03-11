@@ -117,7 +117,11 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               </Typography>
               <Typography  variant='body2' sx={{color: 'darkblue'}} >
                  Rs. {product?.price}
-              </Typography>   
+              </Typography>
+             
+               <Typography variant="body2" sx={{ color: 'black',backgroundColor: '#f5f5f5', padding: '4px 8px', fontWeight: 'bold' }}>
+                          Seller: <Typography component="span" sx={{ color: 'blue', fontWeight: 'normal', cursor: 'pointer', marginLeft: '4px', textDecoration: 'underline' }} onClick={() => navigate(`/profile/${product.owner?._id}`)}>{product.owner?.username}</Typography>
+               </Typography>     
             </>
         
         </Box>

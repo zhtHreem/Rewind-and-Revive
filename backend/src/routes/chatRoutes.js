@@ -6,18 +6,28 @@ import authMiddleware from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // Fetch messages for a specific product
-router.get('/:productId', authMiddleware, async (req, res) => {
-  const { productId } = req.params;
+router.get('/:productId/:buyerId', authMiddleware, async (req, res) => {
+  const { productId, buyerId } = req.params;
+  const sellerId = req.user.id; // Assuming seller is logged in
+
   try {
-    const messages = await Chat.find({ product: productId })
+    const messages = await Chat.find({
+      product: productId,
+      $or: [
+        { sender: buyerId, receiver: sellerId },
+        { sender: sellerId, receiver: buyerId }
+      ]
+    })
       .populate('sender', 'username')
       .populate('receiver', 'username')
       .sort({ timestamp: 1 });
+
     res.status(200).json(messages);
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
+
 
 // Send a message
 router.post('/', authMiddleware, async (req, res) => {

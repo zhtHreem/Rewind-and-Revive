@@ -106,13 +106,13 @@ useEffect(() => {
 
   if (loading) {
     return (
-      <Box p={12}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, height: 'auto' }}>
+      <Box >
+        <Box  sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: 'auto' }}>
           <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
             Recommended For You
           </Typography>
         </Box>
-        <Grid container spacing={2}>
+        <Grid container spacing={2} >
           {Array.from(new Array(3)).map((_, index) => (
             <Grid item xs={12} sm={6} md={4} lg={4} key={index}>
               <ProductCardSkeleton />

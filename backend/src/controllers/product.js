@@ -2,6 +2,7 @@ import axios from 'axios';
 import FormData from 'form-data'; // Ensure this is imported
 import fs from 'fs'; // Import fs for file reading
 import Product from '../models/product.js';
+import User from "../models/user.js";
 import ProductMatcher from '../utils/productMatcher.js';
 
 export const createProduct = async (req, res) => {
@@ -206,7 +207,7 @@ export const getProductRecommendations = async (req, res) => {
         const potentialMatches = await Product.find({
             _id: { $ne: testProduct._id },
             images: { $exists: true, $ne: [] }
-        }).populate('owner', 'username');  // Populate owner details
+        }).populate('owner', 'username averageRating');  // Populate owner details
 
         // console.log(`\nFound ${potentialMatches.length} other products with images`);
         // console.log('Sample of potential matches:', 
@@ -231,17 +232,17 @@ export const getProductRecommendations = async (req, res) => {
 
 // Fix: Populate owner for each recommended product
 recommendations = await Promise.all(recommendations.map(async (rec) => {
-    const populatedProduct = await Product.findById(rec.product._id).populate('owner', 'username');
+    const populatedProduct = await Product.findById(rec.product._id).populate('owner', 'username averageRating');
+    //console.log("Owner Data:", JSON.stringify(populatedProduct.owner, null, 2));
     return {
         product: {
             ...populatedProduct.toObject(),
-            owner: populatedProduct.owner || 'Unknown' // Default if owner is missing
+            owner: populatedProduct.owner || { username: "Unknown", averageRating: 0 } // Default if owner is missing
         },
         similarity: rec.similarity,
         matchScore: rec.matchScore
     };
 }));
-
      //  console.log('\n🎉 Recommendations generated successfully!');
 
 
@@ -273,7 +274,10 @@ recommendations = await Promise.all(recommendations.map(async (rec) => {
                 product: {
                     _id: match.product._id,
                     name: match.product.name,
-                    owner: match.product.owner,  // Include owner name
+                    owner: {
+                      username: match.product.owner.username,
+                      averageRating: match.product.owner.averageRating || 0 // Ensure it has a default value
+                  },  // Include owner name and average rating
                     price: match.product.price,
                     color: match.product.color,
                     description: match.product.description,

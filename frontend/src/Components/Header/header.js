@@ -71,13 +71,13 @@ function Header() {
   return (
     <>
     
-    <Box marginLeft={4}  p={{ xs: 1, md: 5 }} >
+    <Box marginLeft={4}  p={{ xs: 1, md: 5 }} marginTop={{xs:2,sm:0}} >
      {isLoginOpen && (
         <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
           <Login setLogin={setLoginOpen} />
         </Box>
       )}
-      <Grid container spacing={{ xs: 3, md: 8 }}>
+      <Grid container spacing={{ xs: 3, md: 8 }}  >
         <Grid item xs={12} md={5}>
           <Typography variant='h2' fontFamily={"'Times New Roman', serif"}fontSize={{xs: '2rem', sm: '2.5rem',   md: '3rem',lg: '3.5rem',  }}>
             Rewind and Revive
@@ -93,17 +93,18 @@ function Header() {
         </Grid>
 
         {/* Nested Grid Container */}
-        <Grid container spacing={10}  xs={12} md={7}  >
+        <Grid container spacing={{xs:5,sm:10}}  xs={12} md={7}  >
+
           <Grid item xs={6} md={6}  >
 
-             <Box marginLeft={3}  marginTop={10} sx={{ minWidth:100,width: {xs: '100%',sm:300}, height:{xs:400,md:470}, background: 'linear-gradient(45deg,#A6B37D ,#CCD3CA)',   border: '2px solid #fffefa', transform: 'rotate(5deg)', display: 'flex',   alignItems: 'center',   justifyContent: 'center', position:"relative", }} >
+             <Box marginLeft={3}  marginTop={{xs:5,sm:10}} sx={{ minWidth:100,width: {xs: '100%',sm:300}, height:{xs: 250, sm: 350, md: 470}, background: 'linear-gradient(45deg,#A6B37D ,#CCD3CA)',   border: '2px solid #fffefa', transform: 'rotate(5deg)', display: 'flex',   alignItems: 'center',   justifyContent: 'center', position:"relative", }} >
                <Card>
-                 <CardMedia component="img" image={require("./images/r.jpg")}  alt="Description"  sx={{width:"100%",height:"100%",position:"absolute",transform: 'rotate(355deg)',top:5,left:-5}} />
+                 <CardMedia component="img" image={require("./images/r.jpg")}  alt="Description"  sx={{width:"100%",height:"100%",position:"absolute",transform: 'rotate(355deg)',top:5,left:-5,objectFit: 'cover'}} />
                 </Card>
              </Box>
           </Grid>
 
-          <Grid item xs={6} md={6} justifyContent={"space-around"} marginTop={10} >
+          <Grid item xs={6} md={6} justifyContent={"space-around"} marginTop={{xs:5,sm:10}} >
 
             <Stack direction="row" spacing={2} >
               <IconButton  sx={{ border: '2px solid #000', borderRadius: '1' }}>
@@ -116,8 +117,8 @@ function Header() {
             </Stack>
 
 
-            <Box  marginTop={5} p={{xs:1,sm:2}}sx={{ minWidth:100,width: {xs: '100%',sm:250},height: {xs:300,sm:400},  background: 'linear-gradient(135deg, #F5E8DD 50%,  #867070 50%)',  border: '2px solid #fffefa', }}>
-                  <CardMedia component="img"sx={{ height: '100%', width: '100%' }}image={require("./images/a.jpg")} alt="Description" />
+            <Box  marginTop={5} p={{xs:1,sm:2}}sx={{ minWidth:{xs:80,sm:100},width: {xs: '100%',sm:250},height: {xs: 200, sm: 300, md: 400},  background: 'linear-gradient(135deg, #F5E8DD 50%,  #867070 50%)',  border: '2px solid #fffefa',overflow: 'hidden' }}>
+                  <CardMedia component="img"sx={{ height: '100%', width: '100%',objectFit: 'cover' }}image={require("./images/a.jpg")} alt="Description" />
             </Box>
           </Grid>
         </Grid>

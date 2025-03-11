@@ -143,10 +143,14 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
                       <Typography  variant="h6"   sx={{ textAlign: 'center', display: 'block',   cursor: 'pointer',  color: 'primary.main', transition: 'all 0.2s ease-in-out', '&:hover': {     color: 'primary.dark', textDecoration: 'underline', transform: 'scale(1.02)' } }}  onClick={() => navigate(`/product/${item?.id}`)} >
                        {item.name}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: 'black', position: 'absolute', backgroundColor: '#f5f5f5', bottom: 0, right: 0, left: 0, padding: '4px 8px', fontWeight: 'bold' }}>
+                      <Typography variant="body2" sx={{ color: 'black', position: 'absolute', backgroundColor: '#f5f5f5', bottom: 30, right: 0, left: 0, padding: '4px 8px', fontWeight: 'bold' }}>
                           Seller: <Typography component="span" sx={{ color: 'blue', fontWeight: 'normal', cursor: 'pointer', marginLeft: '4px', textDecoration: 'underline' }} onClick={() => navigate(`/profile/${item.owner?._id}`)}>{item.owner?.username}</Typography>
                       </Typography>
-
+                      <Typography variant="body2" sx={{ color: 'black', position: 'absolute', backgroundColor: '#f5f5f5', bottom: 0, right: 0, left: 0, padding: '4px 8px', fontWeight: 'bold' }}>
+                        Rating: <Typography  component="span" sx={{color: 'gray', fontSize: '0.8rem', marginLeft: '8px' }}>
+                         ⭐ {item.owner?.averageRating?.toFixed(1) ?? "N/A"}
+                         </Typography>
+                        </Typography>
                       <Typography  variant='body2' sx={{color: 'white',position: 'absolute',backgroundColor: 'rgba(0, 0, 0, 0.5)',top: 0,right:0,left:0 }} >
                         Rs.{item.price}
                       </Typography>

@@ -26,7 +26,11 @@ import {
   Menu, 
   ListItemIcon, 
   ListItemText, 
-  MenuItem 
+  MenuItem,
+  List,
+  ListItem,
+  ListSubheader,
+  Avatar
 } from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
@@ -39,9 +43,13 @@ import AddCart from "../ShoppingCart/AddCart";
 import AddIcon from '@mui/icons-material/Add';
 import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import GavelIcon from '@mui/icons-material/Gavel';
+import HomeIcon from '@mui/icons-material/Home';
+import InfoIcon from '@mui/icons-material/Info';
+import ContactsIcon from '@mui/icons-material/Contacts';
+import LogoutIcon from '@mui/icons-material/Logout';
 
 function Navbar() {
-  const user= localStorage.getItem('token');
+  const user = localStorage.getItem('token');
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
@@ -64,11 +72,13 @@ function Navbar() {
   const handleSimpleProduct = () => {
     navigate("/createproduct");
     handleClose();
+    setDrawerOpen(false);
   };
 
   const handleBiddingProduct = () => {
     navigate("/create");
     handleClose();
+    setDrawerOpen(false);
   };
 
   // Set up socket connection for real-time notifications
@@ -105,15 +115,14 @@ function Navbar() {
   }, [dispatch]);
 
   // Fetch notifications when component mounts and user is logged in
- // In your Navbar.jsx component
-useEffect(() => {
-  // Only fetch notifications if user is logged in
-  console.log("Fetching notifications for user:",user ); // Add debugging
-  if (user) {
-    dispatch(fetchNotifications());
-    console.log("Fetching notifications for user:", user.id); // Add debugging
-  }
-}, [user, dispatch]);
+  useEffect(() => {
+    // Only fetch notifications if user is logged in
+    console.log("Fetching notifications for user:", user); // Add debugging
+    if (user) {
+      dispatch(fetchNotifications());
+      console.log("Fetching notifications for user:", user.id); // Add debugging
+    }
+  }, [user, dispatch]);
 
   // Handle marking notifications as read
   const handleMarkAsRead = (notification) => {
@@ -146,8 +155,38 @@ useEffect(() => {
     setDrawerOpen(prevState => !prevState);
   };
 
+  const navigateToProfile = () => {
+    const token = localStorage.getItem('token');
+    let userId;
+    
+    if (user?.id) {
+      userId = user.id;
+    } else if (token) {
+      try {
+        const decodedToken = JSON.parse(atob(token.split('.')[1])); 
+        userId = decodedToken.id;
+      } catch (error) {
+        console.error("Error decoding token:", error);
+        alert("Invalid token");
+      }
+    } 
+    
+    if (userId) {
+      navigate(`/profile/${userId}`);
+      setDrawerOpen(false);
+    } else {
+      console.error("User ID is missing.");
+      alert("User ID is not available");
+    }
+  };
+
   const performSearch = () => {
     // Your search functionality here
+  };
+
+  const handleLogout = () => {
+    setLoginOpen(true);
+    setDrawerOpen(false);
   };
 
   const NotificationsDropdown = () => (
@@ -164,31 +203,12 @@ useEffect(() => {
       {notifications.length > 0 ? (
         notifications.map((notification) => (
           <React.Fragment key={notification.id}>
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                backgroundColor: notification.isRead ? '#f0f0f0' : 'white',
-                opacity: notification.isRead ? 0.7 : 1,
-                cursor: 'pointer',
-                '&:hover': {
-                  backgroundColor: notification.isRead ? '#e0e0e0' : '#f5f5f5'
-                }
-              }}
-              onClick={() => handleMarkAsRead(notification)}
-            >
+            <Box  sx={{ display: 'flex',  alignItems: 'center', gap: 2, backgroundColor: notification.isRead ? '#f0f0f0' : 'white',opacity: notification.isRead ? 0.7 : 1, cursor: 'pointer','&:hover': {  backgroundColor: notification.isRead ? '#e0e0e0' : '#f5f5f5'}  }} onClick={() => handleMarkAsRead(notification)} >
               <Box sx={{ m: 2, display: 'flex', alignItems: 'center' }}>
                 {notification.icon}
               </Box>
               <Box>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: notification.isRead ? 'normal' : 'bold',
-                    color: notification.isRead ? 'text.secondary' : 'text.primary'
-                  }}
-                >
+                <Typography variant="subtitle1" sx={{  fontWeight: notification.isRead ? 'normal' : 'bold', color: notification.isRead ? 'text.secondary' : 'text.primary'  }}>
                   {notification.title}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -208,6 +228,90 @@ useEffect(() => {
         </Typography>
       )}
     </Paper>
+  );
+
+  // Enhanced Mobile Sidebar Menu
+  const MobileSidebar = () => (
+    <Drawer  PaperProps={{  sx: {  width: 240, bgcolor: '#f9f5f7' } }}  anchor="left"   open={drawerOpen}  onClose={handleDrawerToggle}>
+      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        {/* Logo & Brand */}
+        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+          <Box component="img" src={require("./S.png")} alt="Logo" sx={{ width: 80, height: 45 }} />
+        </Box>
+        <Divider sx={{ mb: 2 }} />
+
+        {/* My Account Section */}
+        <List subheader={
+            <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
+              MY ACCOUNT
+            </ListSubheader>
+          }>
+          <ListItem button onClick={navigateToProfile} sx={{ py: 0.5 }}>
+            <ListItemIcon sx={{ minWidth: 35 }}>
+              <PersonIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="My Profile" />
+          </ListItem>
+        </List>
+        
+        {/* Add Products Section */}
+        <List  subheader={
+            <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
+              ADD PRODUCTS
+            </ListSubheader>  } >
+          <ListItem button onClick={handleSimpleProduct} sx={{ py: 0.5 }}>
+            <ListItemIcon sx={{ minWidth: 35 }}>
+              <ShoppingBagIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Simple Product" />
+          </ListItem>
+          <ListItem button onClick={handleBiddingProduct} sx={{ py: 0.5 }}>
+            <ListItemIcon sx={{ minWidth: 35 }}>
+              <GavelIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Bidding Product" />
+          </ListItem>
+        </List>
+
+        {/* Navigation Section */}
+        <List subheader={  <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
+              NAVIGATION
+            </ListSubheader> }>
+          <ListItem   button  component={RouterLink}  to="/"  onClick={handleDrawerToggle} sx={{ py: 0.5 }} >
+            <ListItemIcon sx={{ minWidth: 35 }}>
+              <HomeIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+          </ListItem>
+          <ListItem  button  component={RouterLink}    to="/c"    onClick={handleDrawerToggle}   sx={{ py: 0.5 }} >
+            <ListItemIcon sx={{ minWidth: 35 }}>
+              <ShoppingBagIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Products" />
+          </ListItem>
+          <ListItem    button   component={RouterLink}   to="#"  onClick={handleDrawerToggle} sx={{ py: 0.5 }} >
+            <ListItemIcon sx={{ minWidth: 35 }}>
+              <InfoIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="About Us" />
+          </ListItem>
+          <ListItem   button   component={RouterLink}   to="/contact"  onClick={handleDrawerToggle} sx={{ py: 0.5 }}>
+            <ListItemIcon sx={{ minWidth: 35 }}>
+              <ContactsIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Contact Us" />
+          </ListItem>
+        </List>
+        
+        {/* Spacer to push logout to bottom */}
+        <Box sx={{ flexGrow: 1 }} />
+        
+        {/* Logout Button */}
+        <Button   variant="contained"   color="primary"  fullWidth onClick={handleLogout}  startIcon={<LogoutIcon />} sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }} >
+          Logout
+        </Button>
+      </Box>
+    </Drawer>
   );
 
   return (
@@ -241,42 +345,11 @@ useEffect(() => {
             {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
           </IconButton>
 
-          <IconButton 
-            onClick={handleAddClick}
-            aria-controls={open ? 'add-product-menu' : undefined}
-            aria-haspopup="true"
-            aria-expanded={open ? 'true' : undefined}
-          >
+          <IconButton    onClick={handleAddClick} aria-controls={open ? 'add-product-menu' : undefined} aria-haspopup="true"  aria-expanded={open ? 'true' : undefined} sx={{ display: { xs: 'none', md: 'flex' } }} >
             <AddIcon />
           </IconButton>
 
-          <Menu
-            id="add-product-menu"
-            anchorEl={anchorEl}
-            open={open}
-            onClose={handleClose}
-            MenuListProps={{
-              'aria-labelledby': 'add-product-button',
-            }}
-            PaperProps={{
-              elevation: 3,
-              sx: {
-                minWidth: '200px',
-                mt: 1,
-              }
-            }}
-            transformOrigin={{ horizontal: 'center', vertical: 'top' }}
-            anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}
-            slotProps={{
-              paper: {
-                sx: {
-                  '& .MuiList-root': {
-                    padding: 0,
-                  },
-                },
-              },
-            }}
-          >
+          <Menu   id="add-product-menu"  anchorEl={anchorEl}  open={open} onClose={handleClose}  MenuListProps={{ 'aria-labelledby': 'add-product-button', }} PaperProps={{  elevation: 3,  sx: {  minWidth: '200px', mt: 1,  } }} transformOrigin={{ horizontal: 'center', vertical: 'top' }}  anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}  slotProps={{paper: {  sx: { '& .MuiList-root': {   padding: 0, }, }, }, }}>
             <MenuItem onClick={handleSimpleProduct}>
               <ListItemIcon>
                 <ShoppingBagIcon fontSize="small" />
@@ -293,29 +366,7 @@ useEffect(() => {
           
           {!login && (
             <>
-              <IconButton onClick={() => {
-                const token = localStorage.getItem('token');
-                let userId;
-                
-                if (user?.id) {
-                  userId = user.id;
-                } else if (token) {
-                  try {
-                    const decodedToken = JSON.parse(atob(token.split('.')[1])); 
-                    userId = decodedToken.id;
-                  } catch (error) {
-                    console.error("Error decoding token:", error);
-                    alert("Invalid token");
-                  }
-                } 
-                
-                if (userId) {
-                  navigate(`/profile/${userId}`);
-                } else {
-                  console.error("User ID is missing.");
-                  alert("User ID is not available");
-                }
-              }}>
+              <IconButton   onClick={navigateToProfile}  sx={{ display: { xs: 'none', md: 'flex' } }}  >
                 <PersonIcon />
               </IconButton>
 
@@ -335,9 +386,10 @@ useEffect(() => {
             <SearchIcon fontSize="medium" />
           </IconButton>
 
-          <Button onClick={() => setLoginOpen(true)} variant="contained" color="primary" sx={{ backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black', }, }} size="small">
+          <Button   onClick={() => setLoginOpen(true)}   variant="contained"   color="primary"   sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
             {login ? "Logout" : "Login"}
           </Button>
+          
           <IconButton sx={{ display: { xs: 'flex', md: 'none' } }} onClick={handleDrawerToggle}>
             <MenuIcon />
           </IconButton>
@@ -345,22 +397,8 @@ useEffect(() => {
 
         {isOpen && <NotificationsDropdown />}
 
-        <Drawer PaperProps={{ sx: { width: 240 } }} anchor="left" open={drawerOpen} onClose={handleDrawerToggle}>
-          <Stack direction="column" spacing={2} p={2}>
-            <Link component={RouterLink} to="/" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} onClick={handleDrawerToggle}>
-              Home
-            </Link>
-            <Link component={RouterLink} to="/c" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} onClick={handleDrawerToggle}>
-              Products
-            </Link>
-            <Link component={RouterLink} to="#" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} onClick={handleDrawerToggle}>
-              About Us
-            </Link>
-            <Link component={RouterLink} to="/contact" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }} onClick={handleDrawerToggle}>
-              Contact Us
-            </Link>
-          </Stack>
-        </Drawer>
+        {/* Enhanced Mobile Side Menu */}
+        <MobileSidebar />
       </Box>
       {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />}
       <Box sx={{ height: "64px" }} />

@@ -57,6 +57,11 @@ const ProductSchema = new mongoose.Schema({
   createdAt: { 
     type: Date, 
     default: Date.now 
+  },
+    featureVector: {
+    type: [Number],
+    default: null,
+    index: false // Don't index this large array
   }
 });
 

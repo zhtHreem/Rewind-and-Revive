@@ -4,11 +4,11 @@ import Product from '../models/product.js';
 export const getRecommendations = async (req, res) => {
   try {
     // Log session info for debugging
-    console.log("Session ID:", req.session.id);
-    console.log("User logged in:", !!req.user);
-    console.log("View history:", req.session.viewHistory || []);
-    console.log("User view history:", req.session.userViewHistory || []);
-    console.log("Generated recommendations:", req.recommendations || []);
+    // console.log("Session ID:", req.session.id);
+    // console.log("User logged in:", !!req.user);
+    // console.log("View history:", req.session.viewHistory || []);
+    // console.log("User view history:", req.session.userViewHistory || []);
+    // console.log("Generated recommendations:", req.recommendations || []);
     
     return res.status(200).json({
       success: true,

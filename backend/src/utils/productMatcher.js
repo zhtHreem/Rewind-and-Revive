@@ -48,6 +48,7 @@ class ProductMatcher {
             }
         }
     }
+    
 
     async processImage(imageSource) {
         try {
@@ -79,6 +80,7 @@ class ProductMatcher {
         }
     }
 
+    
     async extractFeatures(imageSource) {
         try {
             const pixels = await this.processImage(imageSource);
@@ -109,7 +111,8 @@ class ProductMatcher {
             topK = 6,
             matchType = true,
             matchMaterials = true,
-            matchCategories = true
+            matchCategories = true,
+            category = ''
         } = options;
 
         try {
@@ -120,13 +123,35 @@ class ProductMatcher {
                 throw new Error('Product not found or has no images');
             }
 
-         //   console.log('Processing base product image:', baseProduct.images[0]);
-            const baseFeatures = await this.extractFeatures(baseProduct.images[0]);
+            // console.log('Processing base product image:', baseProduct.images[0]);
+            // const baseFeatures = await this.extractFeatures(baseProduct.images[0]);
+
+            //  console.log('Processing base product image:', baseProduct.featureVector)
+            // Check if feature vector exists
+        if (!baseProduct.featureVector || baseProduct.featureVector.length === 0) {
+            // If no feature vector, extract it now and save it
+            await this.loadFeatureExtractor();
+            const features = await this.extractFeatures(baseProduct.images[0]);
+            console.log('features:');
+            // Update the product with the feature vector
+            await Product.findByIdAndUpdate(productId, {
+                featureVector: Array.from(features)
+            });
+            
+            // Refresh the product data
+            baseProduct.featureVector = Array.from(features);
+        }
 
             const query = {
                 _id: { $ne: productId },
+                featureVector: { $exists: true, $ne: [] }, // Only get products with feature vectors
                 'images.0': { $exists: true }
             };
+
+            // Add category filtering
+        if (category && category !== '') {
+            query.category = category;
+        }
 
             if (matchType) {
                 query.type = baseProduct.type;
@@ -142,38 +167,55 @@ class ProductMatcher {
             }
 
             const compatibleProducts = await Product.find(query);
+                    console.log(`Found ${compatibleProducts.length} compatible products`);
+
             const similarities = [];
 
             // Process in smaller batches
-            const batchSize = 5;
-            for (let i = 0; i < compatibleProducts.length; i += batchSize) {
-                const batch = compatibleProducts.slice(i, i + batchSize);
-                const batchPromises = batch.map(async (product) => {
-                    try {
-                       // console.log('Processing comparison product image:', product.images[0]);
-                        const productFeatures = await this.extractFeatures(product.images[0]);
-                        const similarity = this.cosineSimilarity(baseFeatures, productFeatures);
-                        return {
-                            product,
-                            similarity,
-                            matchScore: this.calculateMatchScore(baseProduct, product)
-                        };
-                    } catch (error) {
-                       // console.warn(`Skipping product ${product._id} due to error:`, error.message);
-                        return null;
-                    }
-                });
+            // const batchSize = 5;
+            // for (let i = 0; i < compatibleProducts.length; i += batchSize) {
+            //     const batch = compatibleProducts.slice(i, i + batchSize);
+            //     const batchPromises = batch.map(async (product) => {
+            //         try {
+            //            // console.log('Processing comparison product image:', product.images[0]);
+            //             const productFeatures = await this.extractFeatures(product.images[0]);
+            //             const similarity = this.cosineSimilarity(baseFeatures, productFeatures);
+            //             return {
+            //                 product,
+            //                 similarity,
+            //                 matchScore: this.calculateMatchScore(baseProduct, product)
+            //             };
+            //         } catch (error) {
+            //             console.warn(`Skipping product ${product._id} due to error:`, error.message);
+            //             return null;
+            //         }
+            //     });
 
-                const batchResults = await Promise.all(batchPromises);
-                similarities.push(...batchResults.filter(result => result !== null));
+            //     const batchResults = await Promise.all(batchPromises);
+            //     similarities.push(...batchResults.filter(result => result !== null));
+            // }
+              
+
+            for (const product of compatibleProducts) {
+                
+                if (!product.featureVector || !Array.isArray(product.featureVector) || product.featureVector.length === 0) {
+                console.warn(`Product ${product._id} has invalid feature vector, skipping`);
+                continue;
             }
+            const similarity = this.cosineSimilarity(baseProduct.featureVector, product.featureVector);
+            similarities.push({
+                product,
+                similarity,
+                matchScore: this.calculateMatchScore(baseProduct, product)
+            });
+        }
 
             return similarities
                 .sort((a, b) => b.similarity + b.matchScore - (a.similarity + a.matchScore))
                 .slice(0, topK);
 
         } catch (error) {
-          //  console.error('Error in recommendProducts:', error);
+            console.error('Error in recommendProducts:', error);
             throw error;
         }
     }

@@ -26,20 +26,20 @@ export const addPayment = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Create a new payment record with the productOwner extracted from the product
+    
     const newPayment = new Payment({
-      productBuyers: user,  // The buyer's user ID
-      productOwner: product.owner,  // The owner's user ID from the product
-      cardNumber,  // Save as 'number' in the database
+      productBuyers: user,  
+      productOwner: product.owner,  
+      cardNumber,  
       cvv,
       name,
-      expirationDate,  // Save as 'expDate' in the database
+      expirationDate,  
     });
 
-    // Save the payment to the database
+    
     await newPayment.save();
 
-    // Respond with a success message and the saved payment
+    
     res.status(201).json({
       message: 'Payment placed successfully',
       payment: newPayment,

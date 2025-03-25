@@ -1,6 +1,6 @@
 .robot-icon-container {
   position: fixed;
-  bottom: 150px; /* Adjust as needed */
+  bottom: 50px; /* Adjust as needed */
   right: 20px;
   zIndex: 100;
   display: flex;

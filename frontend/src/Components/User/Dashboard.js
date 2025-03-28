@@ -5,8 +5,25 @@ import { Box, Grid, Paper, Typography, LinearProgress, Divider } from '@mui/mate
 import CountUp from 'react-countup';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { Chart, ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import SkeletonLoader from '../Utils/skeletonLoader';
 
 Chart.register(ArcElement, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+const DashboardSkeleton = () => (
+  <Box sx={{ padding: 3 }}>
+    <Grid container spacing={3}>
+      {[...Array(8)].map((_, idx) => (
+        <Grid key={idx} item xs={12} md={idx < 2 ? 6 : idx < 6 ? 6 : 4}>
+          <Paper sx={{ padding: 3, textAlign: 'center' }}>
+            <SkeletonLoader.Text lines={1} width="60%" />
+            <SkeletonLoader.Text lines={1} width="40%" />
+            {idx === 2 && <SkeletonLoader height="200px" width="100%" />} {/* Chart placeholder */}
+            {idx === 5 && <SkeletonLoader height="180px" width="100%" />} {/* Doughnut chart */}
+          </Paper>
+        </Grid>
+      ))}
+    </Grid>
+  </Box>
+);
 
 const RatingBar = ({ label, value, total }) => {
   const percentage = total > 0 ? (value / total) * 100 : 0;
@@ -162,7 +179,8 @@ const Dashboard = () => {
     }]
   }), [stats.productsSold, stats.totalListed]);
 
-  if (loading) return <Typography>Loading dashboard data...</Typography>;
+  if (loading) return <DashboardSkeleton />;
+
 
   return (
     <Box sx={{ padding: 3 }}>

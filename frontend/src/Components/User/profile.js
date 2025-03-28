@@ -1,11 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import axios from 'axios';
 import { Container, Grid, Paper, Typography, Avatar, Tabs, Tab, Box } from '@mui/material';
 import Badges from './badges';
 import Layout from '../Layout/layout';
-import Dashboard from './Dashboard';
 import { useParams } from 'react-router-dom';
+import SkeletonLoader from '../Utils/skeletonLoader';
 
+const Dashboard = lazy(() => import('./Dashboard'));
+
+
+const ProfileSkeleton = () => (
+  <Container maxWidth="lg" sx={{ mt: 4 }}>
+    <Grid container spacing={3}>
+      {/* Left Block */}
+      <Grid item xs={12} md={4}>
+        <Paper elevation={3} sx={{ padding: 2, textAlign: 'center' }}>
+          <SkeletonLoader width={150} height={150} style={{ borderRadius: '50%', margin: 'auto' }} />
+          <SkeletonLoader.Text lines={1} width="60%" />
+        </Paper>
+        <Paper elevation={3} sx={{ my: 2, padding: 2, textAlign: 'center' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
+            {Array(4).fill(0).map((_, i) => (
+              <SkeletonLoader key={i} width="40px" height="40px" style={{ borderRadius: '50%' }} />
+            ))}
+          </Box>
+        </Paper>
+      </Grid>
+
+      {/* Right Block */}
+      <Grid item xs={12} md={8}>
+        <Paper elevation={3} sx={{ padding: 2 }}>
+          <SkeletonLoader.Text lines={1} width="40%" />
+          <SkeletonLoader.Text lines={1} width="60%" />
+          <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+            <SkeletonLoader height="40px" width="100px" />
+            <SkeletonLoader height="40px" width="100px" />
+            <SkeletonLoader height="40px" width="100px" />
+          </Box>
+          <Box sx={{ padding: 2 }}>
+            <SkeletonLoader.Text lines={3} width="100%" />
+          </Box>
+        </Paper>
+      </Grid>
+    </Grid>
+  </Container>
+);
 
 const UserProfilePage = () => {
   const { id } = useParams();
@@ -52,8 +91,14 @@ const UserProfilePage = () => {
   };
 
   if (loading) {
-    return <Typography>Loading...</Typography>;
+    return (
+      <Layout>
+        <ProfileSkeleton />
+      </Layout>
+    );
   }
+  
+  
 
   if (!userData) {
     return <Typography>Error loading user data.</Typography>;
@@ -93,15 +138,21 @@ const UserProfilePage = () => {
                   Email: {userData.email}
                 </Typography>
                 <Tabs value={tabValue} onChange={handleTabChange} aria-label="user profile tabs" sx={{ mt: 2 }}>
-                  <Tab label="Info" />
-                  <Tab label="Stats" />
-                  <Tab label="Products" />
-                </Tabs>
-                <Box sx={{ padding: 2 }}>
-                  {tabValue === 0 && <Typography>Info Tab Content</Typography>}
-                  {tabValue === 1 && <Dashboard userId={userData.id} />}
-                  {tabValue === 2 && <Typography>Products Tab Content</Typography>}
-                </Box>
+  <Tab label="Info" />
+  <Tab label="Stats" />
+  <Tab label="Products" />
+</Tabs>
+
+<Box sx={{ padding: 2 }}>
+  {tabValue === 0 && <Typography>Info Tab Content</Typography>}
+  {tabValue === 1 && (
+    <Suspense fallback={<SkeletonLoader.Text lines={6} />}>
+      <Dashboard userId={userData.id} />
+    </Suspense>
+  )}
+  {tabValue === 2 && <Typography>Products Tab Content</Typography>}
+</Box>
+
               </Paper>
             </Grid>
           </Grid>

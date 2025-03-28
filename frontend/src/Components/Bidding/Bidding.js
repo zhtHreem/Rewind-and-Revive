@@ -121,7 +121,7 @@ const Bidding = () => {
                     </Typography> */}
                   </Box>
                 </Box>
-                <Button variant="contained" sx={{backgroundColor:"#576F72",color:"white"}} startIcon={<ShoppingCartIcon />} fullWidth  onClick={() => navigate(`/biddingProduct/${product._id}`)}>
+                <Button variant="contained" sx={{backgroundColor:"#85586F",color:"white"}} startIcon={<ShoppingCartIcon />} fullWidth  onClick={() => navigate(`/biddingProduct/${product._id}`)}>
                   PLACE BID
                 </Button>
                 <Box display="flex" justifyContent="center" mt={1}>

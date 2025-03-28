@@ -125,11 +125,11 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
                <Typography variant="body2" sx={{ color: 'black',backgroundColor: '#f5f5f5', padding: '4px 8px', fontWeight: 'bold' }}>
                           Seller: <Typography component="span" sx={{ color: 'blue', fontWeight: 'normal', cursor: 'pointer', marginLeft: '4px', textDecoration: 'underline' }} onClick={() => navigate(`/profile/${product.owner?._id}`)}>{product.owner?.username}</Typography>
                </Typography>  
-               <Typography variant="body2" sx={{ color: 'black',    padding: '4px 8px', fontWeight: 'bold' }}>
+               {/* <Typography variant="body2" sx={{ color: 'black',    padding: '4px 8px', fontWeight: 'bold' }}>
                   Seller rating: <Typography  component="span" sx={{color: 'gray', fontSize: '0.8rem', marginLeft: '8px' }}>
                     ⭐ {product.owner?.averageRating?.toFixed(1) || "N/A"}
                       </Typography>
-                </Typography>
+                </Typography> */}
             </>
         
         </Box>

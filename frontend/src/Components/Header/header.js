@@ -124,7 +124,7 @@ function Header() {
         </Grid>
 
         {/* "What Makes Us Pro?" Section Moves Below on Small Screens */}
-        <Grid item xs={12}  sx={{ position: {xs:"none",md:'absolute'},zIndex: 1,bottom:100 }}>
+        <Grid item xs={12}  sx={{ position: {xs:"none",md:'absolute'},zIndex: 1,bottom:{md:100,lg:20,xl:100} }}>
           <Stack py={2}>
             <Typography variant="h5" fontFamily={"'Times New Roman', serif"} fontSize={{  xs: '1.5rem', sm: '1.75rem',md: '2rem',  lg: '2.25rem',}} >
                  What Makes Us Pro?

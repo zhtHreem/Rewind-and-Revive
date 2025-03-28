@@ -312,10 +312,10 @@ export default function PaymentForm() {
                 </Box>
               
             )}
-            <Button variant="contained" onClick={handleSubmit} style={{marginBottom:'30px'}}>
+            <Button variant="contained" onClick={handleSubmit} style={{marginBottom:'30px', backgroundColor: "#85586F"}}>
               Submit
             </Button>
-            <Button variant="contained" onClick={() => navigate("/c")} style={{marginBottom:'30px'}}>
+            <Button variant="contained" onClick={() => navigate("/c")} style={{marginBottom:'30px', backgroundColor: "#85586F"}}>
               Back to shopping
             </Button>
           </Stack>

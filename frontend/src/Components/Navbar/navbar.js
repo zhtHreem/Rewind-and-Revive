@@ -324,7 +324,7 @@ function Navbar() {
           </Typography>
         </Stack>
 
-        <Stack direction="row" alignItems="center" spacing={{ sm: 1, md: 3, lg: 5 }} borderLeft={{ sm: "inset" }} borderRight={{ sm: "inset" }} p={2.4} px={{ xs: 2.4, md: 10, lg: 20, xl: 25 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
+        <Stack direction="row" alignItems="center" spacing={{ sm: 1, md: 2, lg: 2, xl:5 }} borderLeft={{ sm: "inset" }} borderRight={{ sm: "inset" }}  px={{ xs: 2.4, md: 10, lg: 10, xl: 25 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
           <Link component={RouterLink} to="/" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
             Home
           </Link>

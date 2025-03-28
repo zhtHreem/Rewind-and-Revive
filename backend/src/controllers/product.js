@@ -5,6 +5,8 @@ import Product from '../models/product.js';
 import User from "../models/user.js";
 import ProductMatcher from '../utils/productMatcher.js';
 
+
+
 export const createProduct = async (req, res) => {
   try {
     const user=req.user.id
@@ -63,6 +65,7 @@ export const createProduct = async (req, res) => {
         const imageUrl = imgBBResponse.data.data.url;
         imageUrls.push(imageUrl); // Add the URL to the imageUrls array
         console.log('Image uploaded to ImgBB:', imageUrl);
+        
       } catch (error) {
         return res.status(500).json({
           message: 'Error uploading image to ImgBB',
@@ -87,11 +90,44 @@ export const createProduct = async (req, res) => {
 
     // Save product to database
     const savedProduct = await newProduct.save();
+  
+
+
+
+    
 
     res.status(201).json({
       message: 'Product created successfully',
       product: savedProduct
     });
+
+
+  // AFTER sending response, try to queue the feature extraction job
+  //  global.console.log('Queuing feature extraction job for product:', savedProduct._id);
+     if (savedProduct.images && savedProduct.images.length > 0) {
+      // global.console.log("entered")
+      // This runs asynchronously without blocking
+      (async () => {
+        try {
+          // global.console.log("entered1 ")
+          const matcher = new ProductMatcher();
+          await matcher.loadFeatureExtractor();
+          const features = await matcher.extractFeatures(savedProduct.images[0]);
+          //  global.console.log("entered2")
+          // Update the product with the feature vector
+          await Product.findByIdAndUpdate(savedProduct._id, {
+            featureVector: Array.from(features)
+          });
+          
+          //  global.console.log(`Features extracted for product ${savedProduct._id}`);
+        } catch (extractionError) {
+          //  global.console.error('Feature extraction error (non-critical):', extractionError);
+        }
+      })();
+    }
+     
+
+
   } catch (error) {
     console.error('Product creation error:', error);
     res.status(500).json({
@@ -200,7 +236,8 @@ export const getProductRecommendations = async (req, res) => {
       //       hasImages: testProduct.images?.length > 0,
       //       imageUrls: testProduct.images,
       //       materials: testProduct.materials,
-      //       categories: testProduct.categories
+      //       categories: testProduct.categories,
+      //       category: testProduct.category
       //   });
 
         // 4. Find potential matches and populate owner details
@@ -221,19 +258,20 @@ export const getProductRecommendations = async (req, res) => {
         // );
 
      
-       // 5. Get Product Recommendations with specified criteria
-     // console.log('\nTesting Product Recommendations...');
+      //  // 5. Get Product Recommendations with specified criteria
+      // console.log('\nTesting Product Recommendations...');
       let recommendations = await matcher.recommendProducts(testProduct._id, {
     topK: Number(topK),
     matchType: matchType === 'true',
     matchMaterials: matchMaterials === 'true',
-    matchCategories: matchCategories === 'true'
+    matchCategories: matchCategories === 'true',
+    category: testProduct.category
    });
 
 // Fix: Populate owner for each recommended product
 recommendations = await Promise.all(recommendations.map(async (rec) => {
     const populatedProduct = await Product.findById(rec.product._id).populate('owner', 'username averageRating');
-    //console.log("Owner Data:", JSON.stringify(populatedProduct.owner, null, 2));
+    // console.log("Owner Data:", JSON.stringify(populatedProduct.owner, null, 2));
     return {
         product: {
             ...populatedProduct.toObject(),
@@ -243,7 +281,7 @@ recommendations = await Promise.all(recommendations.map(async (rec) => {
         matchScore: rec.matchScore
     };
 }));
-     //  console.log('\n🎉 Recommendations generated successfully!');
+       console.log('\n🎉 Recommendations generated successfully!');
 
 
         if (!Array.isArray(recommendations)) {

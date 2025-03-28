@@ -80,7 +80,16 @@ function Navbar() {
     handleClose();
     setDrawerOpen(false);
   };
+  const handleMarkAsRead = (notification) => {
+    dispatch(markNotificationAsRead(notification.id));
+  
+    // ✅ Ensure we navigate to the correct chat for the specific buyer
+    if (notification.title === 'New Message' && notification.product && notification.sender) {
+      navigate(`/product/${notification.product}?openChat=true&buyer=${notification.sender}`);
 
+    }
+  };
+  
   // Set up socket connection for real-time notifications
   useEffect(() => {
     // Create socket connection
@@ -123,16 +132,6 @@ function Navbar() {
       console.log("Fetching notifications for user:", user.id); // Add debugging
     }
   }, [user, dispatch]);
-
-  // Handle marking notifications as read
-  const handleMarkAsRead = (notification) => {
-    dispatch(markNotificationAsRead(notification.id));
-    
-    // If it's a message notification, navigate to the chat for that product
-    if (notification.title === 'New Message' && notification.product) {
-      navigate(`/product/${notification.product}/chat`);
-    }
-  };
   
   const handleNotificationsToggle = () => {
     dispatch(toggleNotifications());

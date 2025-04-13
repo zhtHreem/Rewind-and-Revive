@@ -28,9 +28,16 @@ const notificationSchema = new mongoose.Schema({
     enum: ['message', 'order', 'shipping', 'discount', 'badge', 'system'],
     default: 'system'
   },
+   isBroadcast: {
+    type: Boolean,
+    default: false
+  },
   isRead: {
     type: Boolean,
     default: false
+  },
+  data: {
+    type: Object
   },
   count: {
     type: Number,

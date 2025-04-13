@@ -155,6 +155,30 @@ io.on('connection', (socket) => {
     } catch (error) {
       console.error('Error creating notification:', error);
     }
+
+
+
+
+    // Add this to your existing Socket.io connection handler
+  socket.on('product_purchased', async (data) => {
+  const { buyerId, sellerId, productId } = data;
+  
+  try {
+    // Find product and user information
+    const product = await Product.findById(productId);
+    const buyer = await User.findById(buyerId);
+    const seller = await User.findById(sellerId);
+    
+    if (product && buyer && seller) {
+      // Create and emit notifications
+      // (this logic is now handled in the addPayment controller)
+      console.log(`Product ${product.name} purchased: buyer=${buyer.username}, seller=${seller.username}`);
+    }
+  } catch (error) {
+    console.error('Error handling product purchase event:', error);
+  }
+});
+
   });
 
 
@@ -201,7 +225,7 @@ io.on('connection', (socket) => {
     }
   });
 
-
+ 
 
 
 

@@ -92,9 +92,10 @@ function Navbar() {
   
   // Set up socket connection for real-time notifications
   useEffect(() => {
+    if (!user ) return; 
     // Create socket connection
     const socket = io(`${process.env.REACT_APP_LOCAL_URL}`);
-    
+     socket.emit('authenticate', user.id);
     // Listen for new notifications
     socket.on('new_notification', (notification) => {
       console.log('Received notification:', notification);
@@ -121,7 +122,7 @@ function Navbar() {
     return () => {
       socket.disconnect();
     };
-  }, [dispatch]);
+  }, [user,dispatch]);
 
   // Fetch notifications when component mounts and user is logged in
   useEffect(() => {

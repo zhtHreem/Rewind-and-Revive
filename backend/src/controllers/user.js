@@ -1,6 +1,7 @@
 import User from "../models/user.js";
 import mongoose from "mongoose";
 //import { generateToken } from "../utils/jwtUtils.js";
+import Notification from '../models/notifications.js';
 import Payment from "../models/payment.js";
 import { generateToken } from "../utils/jwtUtils.js";
 import { OAuth2Client } from 'google-auth-library';
@@ -282,10 +283,10 @@ const getUserStats = async (userId) => {
 // Update average rating
 export const updateAverageRating = async (req, res) => {
   try {
-    console.log("Request Params:", req.params); // Debugging
-    console.log("Request Body:", req.body);     // Debugging
+    // console.log("Request Params:", req.params); // Debugging
+    // console.log("Request Body:", req.body);     // Debugging
 
-    const { userId } = req.params;
+    // const { userId } = req.params;
     let { averageRating } = req.body;
     averageRating = parseFloat(averageRating);
 
@@ -318,7 +319,7 @@ export const updateAverageRating = async (req, res) => {
 
 export const submitReview = async (req, res) => {
   try {
-    console.log("Incoming request body:", req.body);
+    // console.log("Incoming request body:", req.body);
 
     const { userId, rating } = req.body;
 
@@ -340,7 +341,7 @@ export const submitReview = async (req, res) => {
       user.reviewsData = { fiveStar: 0, fourStar: 0, threeStar: 0, twoStar: 0, oneStar: 0 };
     }
 
-    console.log("Before update:", user.reviewsData);
+    // console.log("Before update:", user.reviewsData);
 
     // Increment the corresponding star rating
     switch (rating) {
@@ -361,7 +362,7 @@ export const submitReview = async (req, res) => {
         break;
     }
 
-    console.log("After update:", user.reviewsData);
+    // console.log("After update:", user.reviewsData);
 
     user.markModified("reviews"); 
     await user.save();
@@ -374,82 +375,183 @@ export const submitReview = async (req, res) => {
 };
 
 
-
-// Route to get badges for both Seller and Customer
 export const Userbadges = async (req, res) => {
-  const userId = req.user.id; // Assuming user info is in req.user
-  const userStats =await getUserStats(userId);
-  const newlyUnlockedBadges = [];
-  // Modify the seller badges based on stats
-  const sellerUpdatedBadges = sellerBadges.map((badge) => {
-     const wasAchieved = badge.isAchieved;
-    if (badge.name === 'Starter Seller' && userStats.itemsSold >= 1) badge.isAchieved = true;
-    if (badge.name === 'Rising Star' && userStats.itemsSold >= 50) badge.isAchieved = true;
-    if (badge.name === 'Market Leader' && userStats.itemsSold >= 100) badge.isAchieved = true;
-    if (badge.name === 'Popularity Pro' && userStats.likesReceived >= 100) badge.isAchieved = true;
-    if (badge.name === 'Top Seller' && userStats.likesReceived >= 500) badge.isAchieved = true;
-    if (badge.name === 'Customer Choice' && userStats.rating === 5.0) badge.isAchieved = true;
-    //return badge;
- 
-
-   // If badge wasn't achieved before but is now, emit socket event
-    if (!wasAchieved && badge.isAchieved) {
-      newlyUnlockedBadges.push(badge);
-      // Emit socket event for each newly unlocked badge
-       const notification = {
-        id: Date.now(),
-        title: 'Badge Unlocked!',
-        description: `Congratulations! You've earned the ${badge.name} badge - ${badge.Description}`,
-        time: 'just now',
-        isRead: false,
-        badgeData: badge // Include badge data
-      };
-            // Use req.io directly (it's already set up in your middleware)
-      req.io.emit('new_notification', notification);
+  try {
+    const userId = req.user.id;
+    console.log(`Updating badges for user: ${userId}`);
+    
+    const userStats = await getUserStats(userId);
+    
+    if (!userStats) {
+      return res.status(500).json({ error: 'Failed to retrieve user statistics' });
     }
-    return badge;
-  });
-
-  // Modify the customer badges based on stats
-  const customerUpdatedBadges = userBadges.map((badge) => {
-     const wasAchieved = badge.isAchieved;
-    if (badge.name === 'First Purchase' && userStats.itemsBought >= 1) badge.isAchieved = true;
-    if (badge.name === 'Frequent Buyer' && userStats.itemsBought >= 10) badge.isAchieved = true;
-    if (badge.name === 'Loyal Shopper' && userStats.itemsBought >= 25) badge.isAchieved = true;
-    if (badge.name === 'Big Spender' && userStats.itemsBought >= 50) badge.isAchieved = true;
-    if (badge.name === 'Ultimate Collector' && userStats.itemsBought >= 100) badge.isAchieved = true;
-    if (badge.name === 'Shopping Spree' && userStats.totalSpent >= 500) badge.isAchieved = true;
-
-    if (!wasAchieved && badge.isAchieved) {
-      newlyUnlockedBadges.push(badge);
+    
+    const newlyUnlockedBadges = [];
+    
+    // Fetch user with existing badges
+    const User = mongoose.model('User');
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    console.log('Current user badges:', {
+      sellerBadges: user.sellerBadges || [],
+      userBadges: user.userBadges || []
+    });
+    
+    // Process seller badges - note we're using 'description' (lowercase) to match your model
+    let sellerBadgesChanged = false;
+    user.sellerBadges = user.sellerBadges.map(badge => {
+      const wasAchieved = badge.isAchieved;
       
-      const testNotification = {
-        id: Date.now(),
-        title: 'Badge Unlocked!',
-        description: `Congratulations! You've earned the ${badge.name} badge - ${badge.Description}`,
-        time: 'just now',
-        isRead: false,
-      }     
-   
-
-    // Broadcast the notification to all connected clients
-            req.io.emit('new_notification', testNotification);
-     //   badgeData: badge
-     
+      if (badge.name === 'Starter Seller' && userStats.itemsSold >= 1) badge.isAchieved = true;
+      if (badge.name === 'Rising Star' && userStats.itemsSold >= 50) badge.isAchieved = true;
+      if (badge.name === 'Market Leader' && userStats.itemsSold >= 100) badge.isAchieved = true;
+      if (badge.name === 'Popularity Pro' && userStats.likesReceived >= 100) badge.isAchieved = true;
+      if (badge.name === 'Top Seller' && userStats.likesReceived >= 500) badge.isAchieved = true;
+      if (badge.name === 'Customer Choice' && userStats.rating === 5.0) badge.isAchieved = true;
+      
+      if (!wasAchieved && badge.isAchieved) {
+        sellerBadgesChanged = true;
+        newlyUnlockedBadges.push({
+          name: badge.name,
+          description: badge.description, // Using lowercase to match your model
+          isAchieved: true
+        });
+        
+        // Create notification
+        (async () => {
+          try {
+            const newNotification = new Notification({
+              recipient: userId,
+              title: 'Badge Unlocked!',
+              description: `Congratulations! You've earned the ${badge.name} badge - ${badge.description}`,
+              type: 'badge',
+              data: { badge: badge }
+            });
+            
+            await newNotification.save();
+            
+            if (req.io) {
+              req.io.to(userId.toString()).emit('new_notification', {
+                ...newNotification.toObject(),
+                time: 'Just now'
+              });
+            }
+          } catch (err) {
+            console.error('Failed to create notification:', err);
+          }
+        })();
+      }
+      
+      return badge;
+    });
+    
+    // Process customer badges
+    let customerBadgesChanged = false;
+    user.userBadges = user.userBadges.map(badge => {
+      const wasAchieved = badge.isAchieved;
+      
+      if (badge.name === 'First Purchase' && userStats.itemsBought >= 1) badge.isAchieved = true;
+      if (badge.name === 'Frequent Buyer' && userStats.itemsBought >= 10) badge.isAchieved = true;
+      if (badge.name === 'Loyal Shopper' && userStats.itemsBought >= 25) badge.isAchieved = true;
+      if (badge.name === 'Big Spender' && userStats.itemsBought >= 50) badge.isAchieved = true;
+      if (badge.name === 'Ultimate Collector' && userStats.itemsBought >= 100) badge.isAchieved = true;
+      if (badge.name === 'Shopping Spree' && userStats.totalSpent >= 500) badge.isAchieved = true;
+      
+      if (!wasAchieved && badge.isAchieved) {
+        customerBadgesChanged = true;
+        newlyUnlockedBadges.push({
+          name: badge.name,
+          description: badge.description, // Using lowercase to match your model
+          isAchieved: true
+        });
+        
+        // Create notification
+        (async () => {
+          try {
+            const newNotification = new Notification({
+              recipient: userId,
+              title: 'Badge Unlocked!',
+              description: `Congratulations! You've earned the ${badge.name} badge - ${badge.description}`,
+              type: 'badge',
+              data: { badge: badge }
+            });
+            
+            await newNotification.save();
+            
+            if (req.io) {
+              req.io.to(userId.toString()).emit('new_notification', {
+                ...newNotification.toObject(),
+                time: 'Just now'
+              });
+            }
+          } catch (err) {
+            console.error('Failed to create notification:', err);
+          }
+        })();
+      }
+      
+      return badge;
+    });
+    
+    console.log('Updated badges:', {
+      sellerBadges: user.sellerBadges,
+      userBadges: user.userBadges,
+      newlyUnlocked: newlyUnlockedBadges
+    });
+    
+    // Only save if badges have changed
+    if (sellerBadgesChanged || customerBadgesChanged) {
+      try {
+        // Use markModified to tell Mongoose we've modified the badge arrays
+        user.markModified('sellerBadges');
+        user.markModified('userBadges');
+        
+        const savedUser = await user.save();
+        console.log('Badges saved successfully:', {
+          sellerBadges: savedUser.sellerBadges,
+          userBadges: savedUser.userBadges
+        });
+      } catch (saveError) {
+        console.error('Error saving user badges:', saveError);
+        
+        // Try alternative approach with findByIdAndUpdate
+        try {
+          console.log('Attempting alternative save method...');
+          const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { 
+              $set: { 
+                sellerBadges: user.sellerBadges,
+                userBadges: user.userBadges 
+              } 
+            },
+            { new: true }
+          );
+          
+          console.log('Alternative save successful:', {
+            sellerBadges: updatedUser.sellerBadges,
+            userBadges: updatedUser.userBadges
+          });
+        } catch (updateError) {
+          console.error('Alternative update also failed:', updateError);
+        }
+      }
+    } else {
+      console.log('No badge changes detected, skipping save.');
     }
-    return badge;
-  });
-
-   
-
-  console.log('Seller Badges:', sellerUpdatedBadges);
-    console.log('user Badges:', customerUpdatedBadges );
-  // Respond with both badge types
-  res.json({
-    sellerBadges: sellerUpdatedBadges,
-    userBadges: customerUpdatedBadges,
-    newlyUnlocked: newlyUnlockedBadges
-  });
-
-  
+    
+    // Send response with the processed badge arrays
+    res.json({
+      sellerBadges: user.sellerBadges,
+      userBadges: user.userBadges,
+      newlyUnlocked: newlyUnlockedBadges
+    });
+  } catch (error) {
+    console.error('Error updating badges:', error);
+    res.status(500).json({ error: 'Error updating badges' });
+  }
 };

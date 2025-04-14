@@ -94,7 +94,6 @@ const io = new Server(httpServer, {
 
 
 
-
 io.on('connection', (socket) => {
   //console.log('A user connected');
 
@@ -105,6 +104,16 @@ io.on('connection', (socket) => {
   //   //  console.log('Message sent:', message);
   // });
   
+
+   socket.on('authenticate', (userId) => {
+    if (userId) {
+      // Add this socket to a room named after the user ID
+      socket.join(userId);
+      console.log(`User ${userId} authenticated and joined room ${userId}`);
+    }
+  });
+
+
 
    socket.on('sendMessage', async (message) => {
     // Broadcast message to all connected clients including the sender

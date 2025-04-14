@@ -1,11 +1,14 @@
 import User from "../models/user.js";
 import mongoose from "mongoose";
-//import { generateToken } from "../utils/jwtUtils.js";
 import Notification from '../models/notifications.js';
+import Product from '../models/product.js';
+
 import Payment from "../models/payment.js";
 import { generateToken } from "../utils/jwtUtils.js";
 import { OAuth2Client } from 'google-auth-library';
 import { sendVerificationEmail } from "../utils/emailVerificationUtils.js";
+import { checkAndUpdateBadges } from '../utils/badgeService.js';
+
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 
@@ -203,119 +206,89 @@ export const GoogleloginUser = async (req, res) => {
 
 export const getUserProfile = async (req, res) => {
   try {
-      const { id } = req.params;
-      console.log("Fetching user profile for ID:", id);
+    const { id } = req.params;
 
-      const user = await User.findById(id).select('-password');
-      
-      if (!user) {
-          console.error("User not found!");
-          return res.status(404).json({ message: "User not found" });
-      }
-
-      console.log("User found and sending data:", user);
-      res.status(200).json(user);
-  } catch (error) {
-      console.error("Error fetching user profile:", error);
-      res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
-
-
-
-// Mock seller and customer badges
-const sellerBadges = [
-  { name: 'Starter Seller', Description: 'Sold 10 Items', image: './badges/startseller.png', isAchieved: false },
-  { name: 'Rising Star', Description: 'Sold 50 Items', image: './badges/star.png', isAchieved: false },
-  { name: 'Market Leader', Description: 'Sold 100 Items', image: './badges/marketleader.png', isAchieved: false },
-  { name: 'Popularity Pro', Description: 'Received 100 Likes', image: './badges/popularitypro.png', isAchieved: false },
-  { name: 'Top Seller', Description: 'Received 500 Likes', image: './badges/sell.png', isAchieved: false },
-  { name: 'Customer Choice', Description: 'Achieved 5-Star Rating', image: './badges/bestseller.png', isAchieved: false },
-];
-
-const userBadges = [
-  { name: 'First Purchase', Description: 'Bought 1 Item', image: './badges/firstpurchase.png', isAchieved: false },
-  { name: 'Frequent Buyer', Description: 'Bought 10 Items', image: './badges/frequentpurchase.png', isAchieved: false },
-  { name: 'Loyal Shopper', Description: 'Bought 25 Items', image: './badges/loyalshopper.png', isAchieved: false },
-  { name: 'Big Spender', Description: 'Bought 50 Items', image: './badges/bigspender.png', isAchieved: false },
-  { name: 'Ultimate Collector', Description: 'Bought 100 Items', image: './badges/ultimatecollector.png', isAchieved: false },
-  { name: 'Shopping Spree', Description: 'Spent $500', image: './badges/shoppingspree.png', isAchieved: false },
-];
-
-
-// // Mock user stats
-// const getUserStats = (userId) => ({
-//   itemsSold: 102,
-//   itemsBought: 15,
-//   likesReceived: 110,
-//   rating: 5.0,
-//   totalSpent: 600,
-// });
-
-// Get user stats including payment data
-const getUserStats = async (userId) => {
-  try {
-  
-
-    // Fetch purchases and sales directly
-    const purchasesCount = await Payment.countDocuments({ productBuyers: userId });
-  //  console.log("purchaseCount",purchasesCount)
-    const salesCount = await Payment.countDocuments({ productOwner: userId });
-
-    // Extract values from aggregation results
-    const itemsBought =purchasesCount || 0;
-    const itemsSold = salesCount || 0;
-    const likesReceived = 0;
-    //const rating =  0;
-
-    return {
-      itemsSold,
-      itemsBought ,
-      likesReceived,
-    };
-  } catch (error) {
-    console.error('Error getting user stats:', error);
-    return null;
-  }
-  
-};
-
-// Update average rating
-export const updateAverageRating = async (req, res) => {
-  try {
-    // console.log("Request Params:", req.params); // Debugging
-    // console.log("Request Body:", req.body);     // Debugging
-
-    // const { userId } = req.params;
-    let { averageRating } = req.body;
-    averageRating = parseFloat(averageRating);
-
-    if (!userId) {
-      return res.status(400).json({ message: "User ID is required" });
-    }
-
-    if (isNaN(averageRating)) {
-      return res.status(400).json({ message: "Average rating must be a valid number" });
-    }
-
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { $set: { averageRating } }, 
-      { new: true }
-    );
-
+    const user = await User.findById(id).select('-password');
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    res.status(200).json({ message: "Average rating updated", user });
+    // Fetch product stats
+    const totalListed = await Product.countDocuments({ owner: id });
+    const productsSold = await Product.countDocuments({ owner: id, isSold: true });
+
+    // You can also reuse your Payment model logic if needed
+    const itemsBought = await Payment.countDocuments({ productBuyers: id });
+
+    const stats = {
+      productsSold,
+      totalListed,
+      itemsBought,
+      totalSpent: 0, // Add if you track spent amount
+      totalEarned: 0, // Add if you track revenue
+      likesReceived: user.likesReceived || 0
+    };
+
+    res.status(200).json({
+      ...user.toObject(),
+      stats,
+      reviewsData: user.reviewsData,
+      topSellerRank: user.topSellerRank || 0
+    });
   } catch (error) {
-    console.error("Error updating average rating:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error in getUserProfile:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
 
+
+
+
+// Update average rating
+
+export const updateAverageRating = async (req, res) => {
+  try {
+    // Use req.params.id or req.user.id depending on your route
+    const userId = req.params.id || req.user.id;
+    
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID is required' });
+    }
+    
+    const user = await User.findById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Calculate average rating
+    const { fiveStar, fourStar, threeStar, twoStar, oneStar } = user.reviewsData;
+    const totalReviews = fiveStar + fourStar + threeStar + twoStar + oneStar;
+    
+    if (totalReviews === 0) {
+      user.averageRating = 0;
+    } else {
+      const weightedSum = (5 * fiveStar) + (4 * fourStar) + (3 * threeStar) + (2 * twoStar) + (1 * oneStar);
+      user.averageRating = weightedSum / totalReviews;
+    }
+    
+    await user.save();
+    
+    // After updating rating, check if any badges should be awarded
+    if (req.io) {
+      await checkAndUpdateBadges(userId, req.io);
+    }
+    
+    return res.status(200).json({ 
+      message: 'Average rating updated successfully',
+      averageRating: user.averageRating 
+    });
+  } catch (error) {
+    console.error('Error updating average rating:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
 
 export const submitReview = async (req, res) => {
   try {
@@ -375,180 +348,23 @@ export const submitReview = async (req, res) => {
 };
 
 
+
 export const Userbadges = async (req, res) => {
   try {
     const userId = req.user.id;
-    console.log(`Updating badges for user: ${userId}`);
     
-    const userStats = await getUserStats(userId);
+    // Use our refactored function
+    const result = await checkAndUpdateBadges(userId, req.io);
     
-    if (!userStats) {
-      return res.status(500).json({ error: 'Failed to retrieve user statistics' });
-    }
-    
-    const newlyUnlockedBadges = [];
-    
-    // Fetch user with existing badges
-    const User = mongoose.model('User');
-    const user = await User.findById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    console.log('Current user badges:', {
-      sellerBadges: user.sellerBadges || [],
-      userBadges: user.userBadges || []
-    });
-    
-    // Process seller badges - note we're using 'description' (lowercase) to match your model
-    let sellerBadgesChanged = false;
-    user.sellerBadges = user.sellerBadges.map(badge => {
-      const wasAchieved = badge.isAchieved;
-      
-      if (badge.name === 'Starter Seller' && userStats.itemsSold >= 1) badge.isAchieved = true;
-      if (badge.name === 'Rising Star' && userStats.itemsSold >= 50) badge.isAchieved = true;
-      if (badge.name === 'Market Leader' && userStats.itemsSold >= 100) badge.isAchieved = true;
-      if (badge.name === 'Popularity Pro' && userStats.likesReceived >= 100) badge.isAchieved = true;
-      if (badge.name === 'Top Seller' && userStats.likesReceived >= 500) badge.isAchieved = true;
-      if (badge.name === 'Customer Choice' && userStats.rating === 5.0) badge.isAchieved = true;
-      
-      if (!wasAchieved && badge.isAchieved) {
-        sellerBadgesChanged = true;
-        newlyUnlockedBadges.push({
-          name: badge.name,
-          description: badge.description, // Using lowercase to match your model
-          isAchieved: true
-        });
-        
-        // Create notification
-        (async () => {
-          try {
-            const newNotification = new Notification({
-              recipient: userId,
-              title: 'Badge Unlocked!',
-              description: `Congratulations! You've earned the ${badge.name} badge - ${badge.description}`,
-              type: 'badge',
-              data: { badge: badge }
-            });
-            
-            await newNotification.save();
-            
-            if (req.io) {
-              req.io.to(userId.toString()).emit('new_notification', {
-                ...newNotification.toObject(),
-                time: 'Just now'
-              });
-            }
-          } catch (err) {
-            console.error('Failed to create notification:', err);
-          }
-        })();
-      }
-      
-      return badge;
-    });
-    
-    // Process customer badges
-    let customerBadgesChanged = false;
-    user.userBadges = user.userBadges.map(badge => {
-      const wasAchieved = badge.isAchieved;
-      
-      if (badge.name === 'First Purchase' && userStats.itemsBought >= 1) badge.isAchieved = true;
-      if (badge.name === 'Frequent Buyer' && userStats.itemsBought >= 10) badge.isAchieved = true;
-      if (badge.name === 'Loyal Shopper' && userStats.itemsBought >= 25) badge.isAchieved = true;
-      if (badge.name === 'Big Spender' && userStats.itemsBought >= 50) badge.isAchieved = true;
-      if (badge.name === 'Ultimate Collector' && userStats.itemsBought >= 100) badge.isAchieved = true;
-      if (badge.name === 'Shopping Spree' && userStats.totalSpent >= 500) badge.isAchieved = true;
-      
-      if (!wasAchieved && badge.isAchieved) {
-        customerBadgesChanged = true;
-        newlyUnlockedBadges.push({
-          name: badge.name,
-          description: badge.description, // Using lowercase to match your model
-          isAchieved: true
-        });
-        
-        // Create notification
-        (async () => {
-          try {
-            const newNotification = new Notification({
-              recipient: userId,
-              title: 'Badge Unlocked!',
-              description: `Congratulations! You've earned the ${badge.name} badge - ${badge.description}`,
-              type: 'badge',
-              data: { badge: badge }
-            });
-            
-            await newNotification.save();
-            
-            if (req.io) {
-              req.io.to(userId.toString()).emit('new_notification', {
-                ...newNotification.toObject(),
-                time: 'Just now'
-              });
-            }
-          } catch (err) {
-            console.error('Failed to create notification:', err);
-          }
-        })();
-      }
-      
-      return badge;
-    });
-    
-    console.log('Updated badges:', {
-      sellerBadges: user.sellerBadges,
-      userBadges: user.userBadges,
-      newlyUnlocked: newlyUnlockedBadges
-    });
-    
-    // Only save if badges have changed
-    if (sellerBadgesChanged || customerBadgesChanged) {
-      try {
-        // Use markModified to tell Mongoose we've modified the badge arrays
-        user.markModified('sellerBadges');
-        user.markModified('userBadges');
-        
-        const savedUser = await user.save();
-        console.log('Badges saved successfully:', {
-          sellerBadges: savedUser.sellerBadges,
-          userBadges: savedUser.userBadges
-        });
-      } catch (saveError) {
-        console.error('Error saving user badges:', saveError);
-        
-        // Try alternative approach with findByIdAndUpdate
-        try {
-          console.log('Attempting alternative save method...');
-          const updatedUser = await User.findByIdAndUpdate(
-            userId,
-            { 
-              $set: { 
-                sellerBadges: user.sellerBadges,
-                userBadges: user.userBadges 
-              } 
-            },
-            { new: true }
-          );
-          
-          console.log('Alternative save successful:', {
-            sellerBadges: updatedUser.sellerBadges,
-            userBadges: updatedUser.userBadges
-          });
-        } catch (updateError) {
-          console.error('Alternative update also failed:', updateError);
-        }
-      }
-    } else {
-      console.log('No badge changes detected, skipping save.');
+    if (!result.success) {
+      return res.status(500).json({ error: result.error });
     }
     
     // Send response with the processed badge arrays
     res.json({
-      sellerBadges: user.sellerBadges,
-      userBadges: user.userBadges,
-      newlyUnlocked: newlyUnlockedBadges
+      sellerBadges: result.sellerBadges,
+      userBadges: result.userBadges,
+      newlyUnlocked: result.newlyUnlocked
     });
   } catch (error) {
     console.error('Error updating badges:', error);

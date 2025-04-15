@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import io from "socket.io-client";
 import axios from "axios";
-import {jwtDecode} from "jwt-decode";
-import "./ProductChat.css"; // Updated CSS
+import { jwtDecode } from "jwt-decode";
+import "./ProductChat.css";
 
 const socket = io(`${process.env.REACT_APP_LOCAL_URL}`);
 
@@ -13,6 +13,7 @@ const ProductChat = ({ productId, ownerId }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // ✅ Decode Token for User ID
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -25,68 +26,96 @@ const ProductChat = ({ productId, ownerId }) => {
     }
   }, []);
 
+  // ✅ Fetch messages from the backend
   useEffect(() => {
-    if (!productId) return;
+    if (!userId || !ownerId || !productId) return;
 
     const fetchMessages = async () => {
-      const token = localStorage.getItem("token");
-      console.log("Token:", token); // Log the token for debugging
-      if (!token) {
-        setError("You need to log in to use the chat.");
-        return;
-      }
       try {
-        setIsLoading(true);
-        const response = await axios.get(
-          `${process.env.REACT_APP_LOCAL_URL}/api/chats/${productId}`,
-          { headers: { Authorization: token } }
+        const { data } = await axios.get(
+          `${process.env.REACT_APP_LOCAL_URL}/api/chats/${productId}/${userId}/${ownerId}`,
+          {
+            headers: { Authorization: localStorage.getItem("token") },
+          }
         );
-        
-        setMessages(response.data);
+
+        console.log("📥 Chat Data Loaded:", data);
+        setMessages(data.messages || []);
+        setIsLoading(false);
       } catch (error) {
-        console.error("Failed to fetch messages:", error);
-        setError("Unable to load messages. Please try again later.");
-      } finally {
+        console.error("❌ Error fetching messages:", error.response?.data || error.message);
+        setError("Failed to load messages.");
         setIsLoading(false);
       }
     };
-    
 
     fetchMessages();
-    socket.emit("joinChat", { productId });
+  }, [userId, ownerId, productId]);
 
-    socket.on("newMessage", (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+  // ✅ Join chat room (Buyer-Seller specific)
+  useEffect(() => {
+    if (!userId || !ownerId || !productId) return;
+
+    socket.emit("registerUser", userId); // Register user when chat opens
+
+    return () => {
+      socket.off("joinChat");
+    };
+  }, [userId, ownerId, productId]);
+
+  // ✅ Listen for real-time incoming messages
+  useEffect(() => {
+    socket.on("receiveMessage", (message) => {
+      console.log("📥 Received Message:", message);
+
+      if (
+        (String(message.sender) === String(userId) && String(message.receiver) === String(ownerId)) ||
+        (String(message.sender) === String(ownerId) && String(message.receiver) === String(userId))
+      ) {
+        setMessages((prevMessages) => [...prevMessages, message]);
+      }
     });
 
     return () => {
-      socket.disconnect();
+      socket.off("receiveMessage");
     };
-  }, [productId]);
+  }, [userId, ownerId]);
 
+  // ✅ Send Messages with correct sender & receiver info
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
-  
-    const payload = { receiver: ownerId, product: productId, message: newMessage };
-    const token = localStorage.getItem("token");
-    console.log("Token for sending message:", token); // Log the token for debugging
-  
-    if (!token) {
-      setError("You need to log in to send messages.");
-      return;
-    }
-  
+
+    const payload = {
+      sender: userId,
+      receiver: ownerId,
+      product: productId,
+      message: newMessage.trim(),
+    };
+
+    const chatRoom = `chat_${productId}_${userId}_${ownerId}`;
+    socket.emit("sendMessage", { ...payload, room: chatRoom });
+
     try {
-      await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/chats`, payload, {
-        headers: { Authorization: token },
+      const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/chats`, payload, {
+        headers: { Authorization: localStorage.getItem("token") },
       });
-      setNewMessage("");
+
+      console.log("✅ Message sent response:", response.data);
     } catch (error) {
-      console.error("Error sending message:", error);
-      setError("Unable to send the message. Please try again later.");
+      console.error("❌ Error sending message:", {
+        status: error?.response?.status,
+        message: error?.response?.data || error.message,
+      });
+
+      setError(
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        "Unable to send the message. Please try again later."
+      );
     }
+
+    setNewMessage(""); // Clear input after sending
   };
-  
 
   return (
     <div className="product-chat-container">
@@ -103,11 +132,11 @@ const ProductChat = ({ productId, ownerId }) => {
           messages.map((msg, idx) => (
             <div
               key={idx}
-              className={`chat-message ${msg.sender._id === userId ? "self" : "other"}`}
+              className={`chat-message ${String(msg.sender) === String(userId) ? "self" : "other"}`}
             >
               <div className="message-content">
                 <strong>
-                  {msg.sender._id === userId ? "You" : msg.sender.username}:
+                  {String(msg.sender) === String(userId) ? "You" : msg.sender.username}:
                 </strong>
                 <p>{msg.message}</p>
                 <span className="timestamp">

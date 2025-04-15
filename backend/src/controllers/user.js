@@ -10,7 +10,7 @@ import { sendVerificationEmail } from "../utils/emailVerificationUtils.js";
 import { checkAndUpdateBadges } from '../utils/badgeService.js';
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
-
+import Product from "../models/product.js"; // Make sure this import exists
 
 export const registerUser = async (req, res) => {
   console.log("Registration request body:", req.body);

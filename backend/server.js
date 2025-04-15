@@ -7,6 +7,9 @@ import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
 import session from 'express-session';
+import User from './src/models/user.js';
+import Notification from './src/models/notifications.js';
+
 
 import FormData from 'form-data';
 
@@ -22,6 +25,8 @@ import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
 import notificationRoutes from './src/routes/notifications.js';
 
 import { createServer } from 'http'; // Import to create HTTP server
+import chatbotRoutes from './src/routes/chatbot.js'; // ✅ keep .js
+
 
 const app = express();
 
@@ -92,18 +97,40 @@ const io = new Server(httpServer, {
    withCredentials: true, 
 });
 
+<<<<<<< Updated upstream
 
 
+=======
+const users = {}; // Key: userId, Value: socketId
+>>>>>>> Stashed changes
 io.on('connection', (socket) => {
-  //console.log('A user connected');
+  console.log('A user connected:', socket.id);
 
-  // Handle incoming chat messages
-  // socket.on('sendMessage', (message) => {
-  //     // Broadcast message to all connected clients including the sender
-  //     io.emit('receiveMessage', message);
-  //   //  console.log('Message sent:', message);
-  // });
+  // Store user's socket ID when they connect
+  socket.on('registerUser', (userId) => {
+    users[userId] = socket.id;
+    console.log(`User ${userId} registered with socket ID: ${socket.id}`);
+  });
+
+  // ✅ Join a unique chat room for sender & receiver
+  socket.on('joinChat', ({ sender, receiver, product }) => {
+    if (!sender || !receiver || !product) return;
+
+    const chatRoom = `chat_${product}_${sender}_${receiver}`;
+    socket.join(chatRoom);
+    console.log(`User ${sender} joined chat room: ${chatRoom}`);
+  });
+
+  // ✅ Send messages ONLY between sender & receiver
+  socket.on("sendMessage", async (message) => {
+    const { sender, receiver, product, message: messageText } = message;
   
+    if (!sender || !receiver || !messageText || !product) {
+      console.error("❌ Error: Missing sender, receiver, or message content.");
+      return;
+    }
+  
+<<<<<<< Updated upstream
 
    socket.on('authenticate', (userId) => {
     if (userId) {
@@ -119,48 +146,26 @@ io.on('connection', (socket) => {
     // Broadcast message to all connected clients including the sender
     io.emit('receiveMessage', message);
     
+=======
+>>>>>>> Stashed changes
     try {
-      // Find or create a notification for this message
-      const sender = await User.findById(message.sender, 'username');
-      
-      let existingNotification = await Notification.findOne({
-        recipient: message.receiver,
-        sender: message.sender,
-        product: message.product,
-        type: 'message',
-        isRead: false
+      let chat = await Chat.findOne({
+        product: product,
+        $or: [
+          { buyer: sender, seller: receiver },
+          { buyer: receiver, seller: sender }
+        ]
       });
-      
-      if (existingNotification) {
-        existingNotification.count += 1;
-        existingNotification.description = `You have received ${existingNotification.count} new messages from ${sender.username}`;
-        existingNotification.timestamp = Date.now();
-        await existingNotification.save();
-        
-        io.emit('new_notification', {
-          ...existingNotification.toObject(),
-          title: 'New Message',
-          time: 'Just now'
-        });
-      } else {
-        const newNotification = new Notification({
-          recipient: message.receiver,
-          sender: message.sender,
-          product: message.product,
-          title: 'New Message',
-          description: `You have received a new message from ${sender.username}`,
-          type: 'message',
-          count: 1
-        });
-        
-        await newNotification.save();
-        
-        io.emit('new_notification', {
-          ...newNotification.toObject(),
-          title: 'New Message',
-          time: 'Just now'
+  
+      if (!chat) {
+        chat = new Chat({
+          product: product,
+          buyer: sender, 
+          seller: receiver,
+          messages: [],
         });
       }
+<<<<<<< Updated upstream
     } catch (error) {
       console.error('Error creating notification:', error);
     }
@@ -238,17 +243,58 @@ io.on('connection', (socket) => {
 
 
 
+=======
+  
+      const newMessage = {
+        sender,
+        message: messageText,
+        timestamp: new Date(),
+      };
+  
+      chat.messages.push(newMessage);
+      await chat.save();
+  
+      // Emit message to **BOTH** sender and receiver
+      // ✅ Emit message directly to sender and receiver sockets
+const receiverSocketId = users[receiver];
+const senderSocketId = users[sender];
+>>>>>>> Stashed changes
 
+const fullMessage = {
+  sender,
+  receiver,
+  product,
+  message: messageText,
+  timestamp: new Date(),
+};
 
+// Send to receiver (if online)
+if (receiverSocketId) {
+  io.to(receiverSocketId).emit("receiveMessage", fullMessage);
+  console.log(`📤 Sent message to receiver (socket: ${receiverSocketId})`);
+}
 
+// Send to sender (for confirmation)
+if (senderSocketId) {
+  io.to(senderSocketId).emit("receiveMessage", fullMessage);
+  console.log(`📤 Sent message to sender (socket: ${senderSocketId})`);
+}
 
   
+    } catch (error) {
+      console.error("❌ Error sending message:", error);
+    }
+  });  
+
+  // ✅ Disconnect and remove user mapping
   socket.on('disconnect', () => {
-    console.log('User disconnected');
+    console.log('User disconnected:', socket.id);
+    Object.keys(users).forEach((key) => {
+      if (users[key] === socket.id) delete users[key];
+    });
   });
-
-
 });
+
 
 
 
@@ -266,7 +312,8 @@ app.use('/api/product', productRoute);
 app.use('/api/biddingProduct', bidRoute);
 app.use('/api/bid', biddingRoute);
 app.use('/api/payment', paymentRoute);
-app.use('/api/chats', chatRoutes); // Add chat routes here
+app.use('/api/chats', chatRoutes);
+app.use('/api/chat', chatbotRoutes);
 
 app.use('/api/notifications', notificationRoutes);
 //app.use(trackUserActivity);

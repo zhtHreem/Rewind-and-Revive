@@ -7,6 +7,10 @@ const ProductSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
+  isSold: {
+    type: Boolean,
+    default: false
+  },
   price: { 
     type: Number, 
     required: true 

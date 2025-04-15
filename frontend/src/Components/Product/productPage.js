@@ -5,7 +5,7 @@ import { Grid, Box, Typography, Button, Stack } from '@mui/material';
 import { Table, TableBody, TableCell, TableContainer, TableRow, Paper,  Modal } from '@mui/material';
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import { ArrowForward } from "@mui/icons-material";
-
+import { useLocation } from 'react-router-dom';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Rating, TextField, IconButton } from '@mui/material';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 
@@ -77,7 +77,6 @@ const ProductPage = () => {
   const [mainImage, setMainImage] = useState('');
   const [slidesPerView, setSlidesPerView] = useState(4);
   const [shoppingCart, setShoppingCart] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false); // State for chat visibility
   
   const { productId }= useParams();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -102,6 +101,15 @@ const ProductPage = () => {
     resetReviewForm();
     setOpenReviewDialog(false);
   };
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const openChat = queryParams.get('openChat') === 'true';
+  const buyerId = queryParams.get('buyer'); // ✅ Get the buyer ID from the URL
+
+
+
+  const [isChatOpen, setIsChatOpen] = useState(openChat); // Open chat if openChat=true
+
   useEffect(() => {
 
     const fetchProduct = async () => {
@@ -403,24 +411,29 @@ const ProductPage = () => {
       </div>
 
       {/* Chatbox Visibility */}
-      {isChatOpen && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: '80px',
-            right: '20px',
-            width: '350px',
-            height: '500px',
-            backgroundColor: 'white',
-            boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-            borderRadius: '10px',
-            zIndex: 1000,
-            overflow: 'hidden',
-          }}
-        >
-          <ProductChat productId={productId} ownerId={product.owner._id} />
-        </div>
-      )}
+      {/* Chatbox Visibility */}
+      {isChatOpen && product && product.owner && (
+  <div
+    style={{
+      position: 'fixed',
+      bottom: '80px',
+      right: '20px',
+      width: '350px',
+      height: '500px',
+      backgroundColor: 'white',
+      boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+      borderRadius: '10px',
+      zIndex: 1000,
+      overflow: 'hidden',
+    }}
+  >
+    <ProductChat productId={productId} ownerId={product.owner._id} buyerId={buyerId} />
+
+    
+
+  </div>
+)}
+
        <Modal open={shoppingCart} onClose={handleCartOpenClose}>
           <AddCart />
       </Modal>

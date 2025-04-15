@@ -38,6 +38,7 @@ export const addPayment = async (req, res) => {
     
     await newPayment.save();
     
+<<<<<<< Updated upstream
     // Create notification for the buyer
     const buyerNotification = new Notification({
       recipient: buyerId,
@@ -81,6 +82,22 @@ export const addPayment = async (req, res) => {
       // For the seller
       const sellerBadgeResult = await checkAndUpdateBadges(product.owner, req.io);
     }
+=======
+    await User.findByIdAndUpdate(product.owner, {
+      $inc: {
+        "stats.productsSold": 1,
+        "stats.totalEarned": product.price
+      }
+    });
+    
+    // Update buyer stats
+    await User.findByIdAndUpdate(user, {
+      $inc: {
+        "stats.itemsBought": 1,
+        "stats.totalSpent": product.price
+      }
+    });
+>>>>>>> Stashed changes
     
     res.status(201).json({
       message: 'Payment placed successfully',

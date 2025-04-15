@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+pandas
+numpy
+torch
+Pillow
+faiss-cpu
+clip-anytorch
+scikit-learn
+requests
+google-generativeai
+openpyxl
+python-multipart
+

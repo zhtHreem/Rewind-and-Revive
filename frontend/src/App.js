@@ -6,6 +6,7 @@ import Layout from './Components/Layout/layout';
 import LimitedTimeDeals from './Components/LimitedTimeDeals/limitedtimedeals';
 import robotIcon from './assets/robot-svgrepo-com.svg'; // Import robot SVG
 import RecommendedProductsSection from './Components/MostPopularItem/exploreRecommendation';
+
 function App() {
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
@@ -30,7 +31,6 @@ function App() {
             <p>I'm your fashion assistant</p>
           </div>
         </div>
-
  
       </Layout>
     </div>

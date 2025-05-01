@@ -18,7 +18,6 @@ import Badges from './Components/User/badges';
 import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
-import Confirmation from './Components/Payment/Confirmation';
 import ContactUs from './Components/ContactUs/ContactUs'; // Correct import for ContactUs
 import Cart from './Components/ShoppingCart/AddCart';
 import Payment from './Components/Payment/payment'; 
@@ -26,6 +25,8 @@ import Create from './Components/BidProduct/createProduct';
 import ChatFeature from './Components/ProductChat/ProductChat'; // Import for ChatFeature
 import Celeb from './Components/celebBidders/AuctionList';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import ConfirmationWrapper from './Components/Payment/ConfirmationWrapper';
+
 const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
 
 const router = createBrowserRouter([
@@ -94,7 +95,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/confirmation/:productId",
-    element: <Confirmation />,
+    element: <ConfirmationWrapper />,
   },
   {
     path: "/verify-email",

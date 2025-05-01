@@ -1,95 +1,102 @@
-// // **chatRoutes.js**
-// import express from 'express';
-// import Chat from '../models/chat.js';
-// import authMiddleware from '../middleware/authMiddleware.js';
-
-// const router = express.Router();
-
-// // Fetch messages for a specific product
-// router.get('/:productId', authMiddleware, async (req, res) => {
-//   const { productId } = req.params;
-//   try {
-//     const messages = await Chat.find({ product: productId })
-//       .populate('sender', 'username')
-//       .populate('receiver', 'username')
-//       .sort({ timestamp: 1 });
-//     res.status(200).json(messages);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Failed to fetch messages' });
-//   }
-// });
-
-// // Send a message
-// router.post('/', authMiddleware, async (req, res) => {
-//   const { receiver, product, message } = req.body;
-//   const sender = req.user.id;
-
-//   if (!receiver || !product || !message) {
-//     return res.status(400).json({ error: "Receiver, product, and message are required" });
-//   }
-
-//   try {
-//     const newMessage = new Chat({ sender, receiver, product, message });
-//     await newMessage.save();
-//     res.status(201).json(newMessage);
-//   } catch (error) {
-//     res.status(500).json({ error: 'Failed to send message' });
-//   }
-// });
-
-// export default router;
-
-
-
-// src/routes/chatRoutes.js
+// **chatRoutes.js**
 import express from 'express';
 import Chat from '../models/chat.js';
-import Notification from '../models/notifications.js'; // Import the Notification model
-import User from '../models/user.js'; // Import User model if not already imported
+import Notification from '../models/notifications.js';
+import User from '../models/user.js';
 import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Fetch messages for a specific product
-router.get('/:productId', authMiddleware, async (req, res) => {
+// **Fetch messages for a specific product, specific to a buyer**
+/*router.get('/:productId', authMiddleware, async (req, res) => {
   const { productId } = req.params;
+  const userId = req.user.id; // Authenticated user (either buyer or seller)
+
   try {
-    const messages = await Chat.find({ product: productId })
-      .populate('sender', 'username')
-      .populate('receiver', 'username')
-      .sort({ timestamp: 1 });
-    res.status(200).json(messages);
+    // Find chats where the user is either the seller or a buyer
+    const chats = await Chat.find({
+      product: productId,
+      $or: [{ buyer: userId }, { seller: userId }]
+    })
+      .populate('buyer', 'username')
+      .populate('seller', 'username')
+      .populate('messages.sender', 'username')
+      .sort({ 'messages.timestamp': 1 });
+
+    res.status(200).json(chats);
   } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch messages' });
+  }
+});*/
+
+router.get('/:productId/:buyerId/:sellerId', authMiddleware, async (req, res) => {
+  const { productId, buyerId, sellerId } = req.params;
+
+  try {
+    // ✅ Find the chat for the specific buyer-seller pair
+    const chat = await Chat.findOne({
+      product: productId,
+      buyer: buyerId,
+      seller: sellerId
+    })
+    .populate('buyer', 'username')
+    .populate('seller', 'username')
+    .populate({
+      path: 'messages.sender',
+      select: 'username'
+    });
+
+    if (!chat) {
+      console.log(`❌ Chat not found for product ${productId} between ${buyerId} and ${sellerId}`);
+      return res.status(200).json({ messages: [] }); // Return empty messages instead of error
+    }
+
+    console.log(`✅ Chat found for product ${productId} between ${buyerId} and ${sellerId}`);
+    res.status(200).json(chat);
+  } catch (error) {
+    console.error("❌ Error fetching chat:", error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
 
-// Send a message
+
+// **Send a message**
 router.post('/', authMiddleware, async (req, res) => {
   const { receiver, product, message } = req.body;
-  // console.log('Message:', message); // Debug
-  // console.log('Sender:', req.user.id); // Debug
-  // console.log('Receiver:', receiver); // Debug
   const sender = req.user.id;
-  // console.log('Product:', product); // Debug
-  // console.log('Sender:', sender); // Debug
 
   if (!receiver || !product || !message) {
     return res.status(400).json({ error: "Receiver, product, and message are required" });
   }
 
   try {
-    // Create and save the new message
-    const newMessage = new Chat({ sender, receiver, product, message });
-    await newMessage.save();
-    
+    // Find or create a chat conversation between buyer and seller for the product
+    let chat = await Chat.findOne({
+      product: product,
+      $or: [
+        { buyer: sender, seller: receiver },
+        { buyer: receiver, seller: sender }
+      ]
+    });
+
+    if (!chat) {
+      chat = new Chat({
+        product: product,
+        buyer: sender,  // Assuming the sender is the buyer
+        seller: receiver, // Receiver is the seller
+        messages: []
+      });
+    }
+
+    // Add the new message to the chat
+    chat.messages.push({ sender, message });
+    await chat.save();
+
     // Get sender information for notification
     const senderUser = await User.findById(sender, 'username');
-  //  console.log('Sender user:', senderUser); // Debug
     const receiverUser = await User.findById(receiver, 'username');
-   // console.log('Receiver user:', receiverUser); // Debug
-    
-    // Check if there's an existing unread message notification from this sender for this product
+
+    // **Notification Logic (Unchanged)**
     let existingNotification = await Notification.findOne({
       recipient: receiver,
       sender: sender,
@@ -97,15 +104,13 @@ router.post('/', authMiddleware, async (req, res) => {
       type: 'message',
       isRead: false
     });
-    
+
     if (existingNotification) {
-      // Update existing notification count
       existingNotification.count += 1;
       existingNotification.description = `You have received ${existingNotification.count} new messages from ${senderUser.username}`;
-      existingNotification.timestamp = Date.now(); // Update timestamp
+      existingNotification.timestamp = Date.now();
       await existingNotification.save();
-      
-      // Emit updated notification through socket if available
+
       if (req.io) {
         req.io.emit('new_notification', {
           ...existingNotification.toObject(),
@@ -114,7 +119,6 @@ router.post('/', authMiddleware, async (req, res) => {
         });
       }
     } else {
-      // Create new notification
       const newNotification = new Notification({
         recipient: receiver,
         sender: sender,
@@ -124,10 +128,9 @@ router.post('/', authMiddleware, async (req, res) => {
         type: 'message',
         count: 1
       });
-      
+
       await newNotification.save();
-      
-      // Emit notification through socket if available
+
       if (req.io) {
         req.io.emit('new_notification', {
           ...newNotification.toObject(),
@@ -135,8 +138,8 @@ router.post('/', authMiddleware, async (req, res) => {
         });
       }
     }
-    
-    res.status(201).json(newMessage);
+
+    res.status(201).json(chat);
   } catch (error) {
     console.error('Message sending error:', error);
     res.status(500).json({ error: 'Failed to send message' });

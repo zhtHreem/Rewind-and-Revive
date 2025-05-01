@@ -132,7 +132,7 @@ class ProductMatcher {
             // If no feature vector, extract it now and save it
             await this.loadFeatureExtractor();
             const features = await this.extractFeatures(baseProduct.images[0]);
-            console.log('features:');
+            // console.log('features:');
             // Update the product with the feature vector
             await Product.findByIdAndUpdate(productId, {
                 featureVector: Array.from(features)
@@ -167,7 +167,7 @@ class ProductMatcher {
             }
 
             const compatibleProducts = await Product.find(query);
-                    console.log(`Found ${compatibleProducts.length} compatible products`);
+                    // console.log(`Found ${compatibleProducts.length} compatible products`);
 
             const similarities = [];
 
@@ -199,7 +199,7 @@ class ProductMatcher {
             for (const product of compatibleProducts) {
                 
                 if (!product.featureVector || !Array.isArray(product.featureVector) || product.featureVector.length === 0) {
-                console.warn(`Product ${product._id} has invalid feature vector, skipping`);
+                // console.warn(`Product ${product._id} has invalid feature vector, skipping`);
                 continue;
             }
             const similarity = this.cosineSimilarity(baseProduct.featureVector, product.featureVector);
@@ -215,7 +215,7 @@ class ProductMatcher {
                 .slice(0, topK);
 
         } catch (error) {
-            console.error('Error in recommendProducts:', error);
+            // console.error('Error in recommendProducts:', error);
             throw error;
         }
     }

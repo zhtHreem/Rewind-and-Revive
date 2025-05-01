@@ -25,6 +25,7 @@ import Create from './Components/BidProduct/createProduct';
 import ChatFeature from './Components/ProductChat/ProductChat'; // Import for ChatFeature
 import Celeb from './Components/celebBidders/AuctionList';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import Chatbot from './Components/Chatbot/Chatbot';
 import ConfirmationWrapper from './Components/Payment/ConfirmationWrapper';
 
 const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
   {
     path: "/nav",
     element: <Navbar />,
+  },
+  {
+    path: "/chatbot",
+    element: <Chatbot />,
   },
   {
     path: "/header",

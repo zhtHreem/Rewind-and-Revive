@@ -9,16 +9,16 @@ import ProductMatcher from '../utils/productMatcher.js';
 
 export const createProduct = async (req, res) => {
   try {
-    const user=req.user.id
+    const user = req.user.id;
     const price = parseFloat(req.body.price);
     if (isNaN(price) || price <= 0) {
       return res.status(400).json({
         message: 'Invalid price. Must be a positive number.'
       });
     }
-    
-    const categories = req.body.categories  ? JSON.parse(req.body.categories) : [];
-    const materials = req.body.materials  ? JSON.parse(req.body.materials) : [];
+
+    const categories = req.body.categories ? JSON.parse(req.body.categories) : [];
+    const materials = req.body.materials ? JSON.parse(req.body.materials) : [];
 
     let topSizes = {};
     let bottomSizes = {};
@@ -31,25 +31,21 @@ export const createProduct = async (req, res) => {
       bottomSizes = JSON.parse(req.body.bottomSizes);
     }
 
-    const images = req.files; // Multiple files uploaded here
+    const images = req.files;
     if (!images || images.length === 0) {
       return res.status(400).json({ error: 'No files uploaded' });
     }
 
-    // Limit the number of images to 5
     if (images.length > 5) {
       return res.status(400).json({ error: 'You can only upload up to 5 images' });
     }
 
-    // Array to store image URLs
     const imageUrls = [];
 
-    // Loop through each file, upload it to ImgBB, and collect the URLs
     for (let i = 0; i < images.length; i++) {
       const image = images[i];
-      const filePath = image.path; // Get the path to the file
+      const filePath = image.path;
 
-      // Prepare form data for ImgBB API
       const formData = new FormData();
       formData.append('key', process.env.IMGBB_API_KEY);
       formData.append('image', fs.createReadStream(filePath), {
@@ -57,15 +53,14 @@ export const createProduct = async (req, res) => {
         contentType: image.mimetype
       });
 
-      // Upload image to ImgBB
       try {
         const imgBBResponse = await axios.post('https://api.imgbb.com/1/upload', formData, {
           headers: formData.getHeaders()
         });
         const imageUrl = imgBBResponse.data.data.url;
-        imageUrls.push(imageUrl); // Add the URL to the imageUrls array
+        imageUrls.push(imageUrl);
         console.log('Image uploaded to ImgBB:', imageUrl);
-        
+
       } catch (error) {
         return res.status(500).json({
           message: 'Error uploading image to ImgBB',
@@ -74,59 +69,47 @@ export const createProduct = async (req, res) => {
       }
     }
 
-    // Create new product with image URLs
     const newProduct = new Product({
-      owner:user,
+      owner: user,
       name: req.body.name,
       price: parseFloat(req.body.price),
       color: req.body.color,
-      category:req.body.category,
+      category: req.body.category,
       description: req.body.description || '',
       type: req.body.type,
       categories,
       materials,
-      topSizes, bottomSizes,  images: imageUrls 
+      topSizes,
+      bottomSizes,
+      images: imageUrls
     });
 
-    // Save product to database
     const savedProduct = await newProduct.save();
-  
 
-
-
-    
+    // ✅ Increment totalListed for the user
+    await User.findByIdAndUpdate(user, {
+      $inc: { 'stats.totalListed': 1 }
+    });
 
     res.status(201).json({
       message: 'Product created successfully',
       product: savedProduct
     });
 
-
-  // AFTER sending response, try to queue the feature extraction job
-  //  global.console.log('Queuing feature extraction job for product:', savedProduct._id);
-     if (savedProduct.images && savedProduct.images.length > 0) {
-      // global.console.log("entered")
-      // This runs asynchronously without blocking
+    if (savedProduct.images && savedProduct.images.length > 0) {
       (async () => {
         try {
-          // global.console.log("entered1 ")
           const matcher = new ProductMatcher();
           await matcher.loadFeatureExtractor();
           const features = await matcher.extractFeatures(savedProduct.images[0]);
-          //  global.console.log("entered2")
-          // Update the product with the feature vector
           await Product.findByIdAndUpdate(savedProduct._id, {
             featureVector: Array.from(features)
           });
-          
-          //  global.console.log(`Features extracted for product ${savedProduct._id}`);
         } catch (extractionError) {
-          //  global.console.error('Feature extraction error (non-critical):', extractionError);
+          console.error('Feature extraction error (non-critical):', extractionError);
         }
       })();
     }
-     
-
 
   } catch (error) {
     console.error('Product creation error:', error);
@@ -138,7 +121,16 @@ export const createProduct = async (req, res) => {
 };
 
 
-
+export const getOwnedProducts = async (req, res) => {
+  try {
+    const userId = req.user.id; // comes from authMiddleware
+    const products = await Product.find({ owner: userId });
+    res.status(200).json(products);
+  } catch (err) {
+    console.error("Error fetching owned products:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
 
 
 // Endpoint to fetch products

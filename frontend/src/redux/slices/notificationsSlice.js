@@ -7,6 +7,7 @@ import DiscountIcon from '@mui/icons-material/Discount';
 import BugReportIcon from '@mui/icons-material/BugReport';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import MessageIcon from '@mui/icons-material/Message';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 
 const API_URL = process.env.REACT_APP_LOCAL_URL;
 
@@ -30,6 +31,10 @@ const getNotificationIcon = (title) => {
       return <LocalPoliceIcon color="orange" />; 
     case 'New Message':
       return <MessageIcon color="info" />;
+      case 'Purchase Confirmed':
+      return <ShoppingCartIcon color="success" />;
+    case 'Product Sold':
+      return <ShoppingCartIcon color="primary" />;
     default:
       return null;
   }

@@ -80,12 +80,22 @@ function Navbar() {
     handleClose();
     setDrawerOpen(false);
   };
+  const handleMarkAsRead = (notification) => {
+    dispatch(markNotificationAsRead(notification.id));
+  
+    // ✅ Ensure we navigate to the correct chat for the specific buyer
+    if (notification.title === 'New Message' && notification.product && notification.sender) {
+      navigate(`/product/${notification.product}?openChat=true&buyer=${notification.sender}`);
 
+    }
+  };
+  
   // Set up socket connection for real-time notifications
   useEffect(() => {
+    if (!user ) return; 
     // Create socket connection
     const socket = io(`${process.env.REACT_APP_LOCAL_URL}`);
-    
+     socket.emit('authenticate', user.id);
     // Listen for new notifications
     socket.on('new_notification', (notification) => {
       console.log('Received notification:', notification);
@@ -112,7 +122,7 @@ function Navbar() {
     return () => {
       socket.disconnect();
     };
-  }, [dispatch]);
+  }, [user,dispatch]);
 
   // Fetch notifications when component mounts and user is logged in
   useEffect(() => {
@@ -123,16 +133,6 @@ function Navbar() {
       console.log("Fetching notifications for user:", user.id); // Add debugging
     }
   }, [user, dispatch]);
-
-  // Handle marking notifications as read
-  const handleMarkAsRead = (notification) => {
-    dispatch(markNotificationAsRead(notification.id));
-    
-    // If it's a message notification, navigate to the chat for that product
-    if (notification.title === 'New Message' && notification.product) {
-      navigate(`/product/${notification.product}/chat`);
-    }
-  };
   
   const handleNotificationsToggle = () => {
     dispatch(toggleNotifications());

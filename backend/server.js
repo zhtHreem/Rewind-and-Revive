@@ -97,12 +97,7 @@ const io = new Server(httpServer, {
    withCredentials: true, 
 });
 
-<<<<<<< Updated upstream
-
-
-=======
 const users = {}; // Key: userId, Value: socketId
->>>>>>> Stashed changes
 io.on('connection', (socket) => {
   console.log('A user connected:', socket.id);
 
@@ -130,24 +125,6 @@ io.on('connection', (socket) => {
       return;
     }
   
-<<<<<<< Updated upstream
-
-   socket.on('authenticate', (userId) => {
-    if (userId) {
-      // Add this socket to a room named after the user ID
-      socket.join(userId);
-      console.log(`User ${userId} authenticated and joined room ${userId}`);
-    }
-  });
-
-
-
-   socket.on('sendMessage', async (message) => {
-    // Broadcast message to all connected clients including the sender
-    io.emit('receiveMessage', message);
-    
-=======
->>>>>>> Stashed changes
     try {
       let chat = await Chat.findOne({
         product: product,
@@ -165,85 +142,6 @@ io.on('connection', (socket) => {
           messages: [],
         });
       }
-<<<<<<< Updated upstream
-    } catch (error) {
-      console.error('Error creating notification:', error);
-    }
-
-
-
-
-    // Add this to your existing Socket.io connection handler
-  socket.on('product_purchased', async (data) => {
-  const { buyerId, sellerId, productId } = data;
-  
-  try {
-    // Find product and user information
-    const product = await Product.findById(productId);
-    const buyer = await User.findById(buyerId);
-    const seller = await User.findById(sellerId);
-    
-    if (product && buyer && seller) {
-      // Create and emit notifications
-      // (this logic is now handled in the addPayment controller)
-      console.log(`Product ${product.name} purchased: buyer=${buyer.username}, seller=${seller.username}`);
-    }
-  } catch (error) {
-    console.error('Error handling product purchase event:', error);
-  }
-});
-
-  });
-
-
-  // Example of sending a test notification
-  socket.on('request_test_notification', () => {
-    // This is a sample notification structure matching your Redux slice
-    const testNotification = {
-      id: Date.now(), // unique id
-    //  icon: 'CheckCircleOutlineIcon', // you might want to pass icon name or component
-      title: 'Test Notification',
-      description: 'This is a test notification from the backend',
-      time: new Date().toLocaleTimeString(),
-      isRead: false
-    };
-
-
-
-
-    // Broadcast the notification to all connected clients
-    io.emit('new_notification', testNotification);
-   // console.log('Test notification sent'); // Add this for debugging
-
-  });
-
-
-
-
-
-   // Handle badge notifications
-  socket.on('badge_unlocked', async (data) => {
-    try {
-      const notification = await createNotification({
-        userId: data.userId,
-        title: 'Badge Unlocked!',
-        description: `Congratulations! You've earned the ${data.badge.name} badge`,
-        type: 'badge',
-        badgeData: data.badge
-      });
-      
-      // Emit to specific user's room
-      socket.emit('new_notification', notification);
-    } catch (error) {
-      console.error('Error creating badge notification:', error);
-    }
-  });
-
- 
-
-
-
-=======
   
       const newMessage = {
         sender,
@@ -258,7 +156,6 @@ io.on('connection', (socket) => {
       // ✅ Emit message directly to sender and receiver sockets
 const receiverSocketId = users[receiver];
 const senderSocketId = users[sender];
->>>>>>> Stashed changes
 
 const fullMessage = {
   sender,

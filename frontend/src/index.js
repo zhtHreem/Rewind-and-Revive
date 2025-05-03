@@ -15,19 +15,17 @@ import ProductPage from './Components/Product/productPage';
 import CataloguePage from './Components/Product/catalogue';
 import UserProfilePage from './Components/User/profile';
 import Badges from './Components/User/badges';
-import { LoginProvider } from './Components/Login/logincontext';
 import Login from './Components/Login/login';
 import CollaboratorsSection from './Components/Collaborators/collaborators';
-import ContactUs from './Components/ContactUs/ContactUs'; // Correct import for ContactUs
+import ContactUs from './Components/ContactUs/ContactUs'; 
 import Cart from './Components/ShoppingCart/AddCart';
 import Payment from './Components/Payment/payment'; 
 import Create from './Components/BidProduct/createProduct';
-import ChatFeature from './Components/ProductChat/ProductChat'; // Import for ChatFeature
+import ChatFeature from './Components/ProductChat/ProductChat';
 import Celeb from './Components/celebBidders/AuctionList';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 import Chatbot from './Components/Chatbot/Chatbot';
 import ConfirmationWrapper from './Components/Payment/ConfirmationWrapper';
-
 const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
 
 const router = createBrowserRouter([
@@ -121,10 +119,7 @@ root.render(
   <React.StrictMode>
       <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
        <Provider store={store}>
-        <LoginProvider>
           <RouterProvider router={router} />
-          
-        </LoginProvider>
         </Provider>
       </GoogleOAuthProvider>
   </React.StrictMode>

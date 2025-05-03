@@ -110,6 +110,27 @@ const CataloguePage = () => {
             setPriceRange('');
         }
     };
+    const getSortedProducts = (products, sortBy) => {
+  // Create a new array to avoid mutating the original
+  const sortedProducts = [...products];
+  
+  switch(sortBy) {
+    case 'newest':
+      // Sort by creation date (assuming products have a createdAt field)
+      return sortedProducts.sort((a, b) => 
+        new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+      );
+    case 'price-high':
+      // Sort by price high to low
+      return sortedProducts.sort((a, b) => b.price - a.price);
+    case 'price-low':
+      // Sort by price low to high
+      return sortedProducts.sort((a, b) => a.price - b.price);
+    default:
+      // Default case, return unsorted
+      return sortedProducts;
+  }
+};
 
   // Helper function to check if measurements fall within size range
 const isWithinSizeRange = (product, category, size) => {
@@ -184,13 +205,16 @@ const getFilteredProducts = (products, filters) => {
     return categoryMatch && typeMatch && sizeMatch && priceMatch;
   });
 };
-   const filteredProducts = useMemo(() => 
-  getFilteredProducts(products, {
+   const filteredProducts = useMemo(() => {
+       const filtered = getFilteredProducts(products, {
     category,
     selectedTypes,
     selectedSizes,
     priceRange
-  }), [products, category, selectedTypes, selectedSizes, priceRange]
+    
+  });
+   return getSortedProducts(filtered, sortBy);}
+  , [products, category, selectedTypes, selectedSizes, priceRange, sortBy]
 );
 
 

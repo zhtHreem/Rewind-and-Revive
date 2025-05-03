@@ -2,7 +2,6 @@ import React, { useState,useEffect } from "react";
 import { useNavigate } from 'react-router-dom'; 
 import { Paper, Box, TextField, IconButton, Typography, Stack, Button, useMediaQuery, useTheme } from "@mui/material"; 
 import { GoogleLogin } from '@react-oauth/google';
-
 import EmailIcon from '@mui/icons-material/Email'; 
 import LockIcon from '@mui/icons-material/Lock'; 
 import CloseIcon from '@mui/icons-material/Close'; 
@@ -55,7 +54,7 @@ function Login({ setLogin }) {
         setOpenSnackbar(false); 
     };
 
-    // Login Handler 
+   
     const handleLogin = async () => { 
         const loginData = { email: loginEmail, password: loginPassword }; 
         try { 
@@ -65,6 +64,7 @@ function Login({ setLogin }) {
             setSnackbarMessage('Login successful!'); 
             setSnackbarSeverity('success'); 
             setOpenSnackbar(true); 
+            setLogin(false); 
         } catch (err) { 
             setErrorMessage('Invalid email or password'); 
             setSnackbarMessage(err.response?.data?.message || 'Login error'); 
@@ -85,9 +85,8 @@ function Login({ setLogin }) {
             setSnackbarMessage('Google Login successful!');
             setSnackbarSeverity('success');
             setOpenSnackbar(true);
-            
-            // Optional: Redirect or update app state
-            // navigate('/dashboard');
+            setLogin(false); 
+       
         } catch (err) {
             setSnackbarMessage('Google Login failed');
             setSnackbarSeverity('error');

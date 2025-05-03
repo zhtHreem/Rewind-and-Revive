@@ -10,8 +10,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import 'swiper/css';
 import { Navigation,Pagination } from 'swiper/modules'; // Import Swiper modules
 import Swipe from './Swiper/pagination';
-import { useLogin } from '../Login/logincontext';
-import Login from '../Login/login';
 
 const styles = {
   container: {
@@ -67,16 +65,12 @@ const styles = {
   },
 };
 function Header() {
-  const { isLoginOpen, setLoginOpen } = useLogin();
+
   return (
     <>
     
     <Box marginLeft={4}  p={{ xs: 1, md: 5 }} marginTop={{xs:2,sm:0}} >
-     {isLoginOpen && (
-        <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
-          <Login setLogin={setLoginOpen} />
-        </Box>
-      )}
+    
       <Grid container spacing={{ xs: 3, md: 8 }}  >
         <Grid item xs={12} md={5}>
           <Typography variant='h2' fontFamily={"'Times New Roman', serif"}fontSize={{xs: '2rem', sm: '2.5rem',   md: '3rem',lg: '3.5rem',  }}>

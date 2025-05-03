@@ -1,37 +1,12 @@
 import React, { useState, useEffect } from "react";
 import io from 'socket.io-client';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-import { useLogin } from "../Login/logincontext";
-import { useDispatch, useSelector } from 'react-redux';
-import { 
-  toggleNotifications, 
-  addNotification, 
-  fetchNotifications, 
-  closeNotifications, 
-  markNotificationAsRead, 
-  markAllNotificationsAsRead 
-} from '../../redux/slices/notificationsSlice.js';
 
-import { 
-  Stack, 
-  Link, 
-  Box, 
-  IconButton, 
-  Typography, 
-  Button, 
-  Badge, 
-  Drawer, 
-  Divider, 
-  Paper, 
-  Menu, 
-  ListItemIcon, 
-  ListItemText, 
-  MenuItem,
-  List,
-  ListItem,
-  ListSubheader,
-  Avatar
-} from "@mui/material";
+import { useDispatch, useSelector } from 'react-redux';
+import Login from "../Login/login.js";
+import {  toggleNotifications,  addNotification,  fetchNotifications,  closeNotifications,  markNotificationAsRead,  markAllNotificationsAsRead } from '../../redux/slices/notificationsSlice.js';
+
+import {  Stack,  Link,  Box,  IconButton,  Typography,  Button,  Badge,  Drawer,  Divider,  Paper,  Menu,  ListItemIcon,  ListItemText,  MenuItem, List,ListItem,ListSubheader,Avatar} from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
 import PersonIcon from '@mui/icons-material/Person';
@@ -55,8 +30,10 @@ function Navbar() {
 
   const [shoppingCart, setShoppingCart] = useState(false);
   const [login, setLogin] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { setLoginOpen } = useLogin();
+  
   const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
@@ -146,9 +123,18 @@ function Navbar() {
     setShoppingCart(false);
   };
 
+   useEffect(() => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    setIsLoggedIn(true);
+  } else {
+    setIsLoggedIn(false);
+  }
+}, [localStorage.getItem('token')]); 
+
   const handleLogin = () => {
-    setLogin(prevState => !prevState);
-    setLoginOpen(false);
+    setLogin(true);
+    
   };
 
   const handleDrawerToggle = () => {
@@ -185,8 +171,9 @@ function Navbar() {
   };
 
   const handleLogout = () => {
-    setLoginOpen(true);
-    setDrawerOpen(false);
+     localStorage.removeItem('token'); 
+     setIsLoggedIn(false);  
+     setDrawerOpen(false);
   };
 
   const NotificationsDropdown = () => (
@@ -307,9 +294,18 @@ function Navbar() {
         <Box sx={{ flexGrow: 1 }} />
         
         {/* Logout Button */}
-        <Button   variant="contained"   color="primary"  fullWidth onClick={handleLogout}  startIcon={<LogoutIcon />} sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }} >
+        {/* <Button   variant="contained"   color="primary"  fullWidth onClick={handleLogout}  startIcon={<LogoutIcon />} sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }} >
           Logout
-        </Button>
+        </Button> */}
+        {!isLoggedIn ? (
+    <Button variant="contained" color="primary" onClick={handleLogin}  sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }}>
+      Login
+    </Button>
+  ) : (
+    <Button variant="contained"   color="primary"  fullWidth onClick={handleLogout}   startIcon={<LogoutIcon />} sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }}>
+      Logout
+    </Button>
+  )}
       </Box>
     </Drawer>
   );
@@ -317,6 +313,14 @@ function Navbar() {
   return (
     <>
       <Box component="navbar" marginBottom={10} sx={{ position: "fixed", zIndex: 2, width: "100%", backgroundColor: "white", display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
+     {login && (<Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
+          {/* <Login setLogin={setLoginOpen} /> */}
+           {login && <Login setLogin={setLogin} />}
+           
+
+        </Box> )}
+   
+
         <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
           <Typography variant="h4" className="logo">
             <span>
@@ -386,9 +390,20 @@ function Navbar() {
             <SearchIcon fontSize="medium" />
           </IconButton>
 
-          <Button   onClick={() => setLoginOpen(true)}   variant="contained"   color="primary"   sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
+          {/* <Button   onClick={() => setLoginOpen(true)}   variant="contained"   color="primary"   sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
             {login ? "Logout" : "Login"}
-          </Button>
+          </Button> */}
+  {!isLoggedIn ? (
+    <Button variant="contained" color="primary" onClick={handleLogin}  sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
+      Login
+    </Button>
+  ) : (
+    <Button variant="contained" color="secondary" onClick={handleLogout}  sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
+      Logout
+    </Button>
+  )}
+
+
           
           <IconButton sx={{ display: { xs: 'flex', md: 'none' } }} onClick={handleDrawerToggle}>
             <MenuIcon />

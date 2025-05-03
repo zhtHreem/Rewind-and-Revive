@@ -23,7 +23,6 @@ import Chat from './src/models/chat.js';
 import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
 // Add this import at the top with your other route imports
 import notificationRoutes from './src/routes/notifications.js';
-
 import { createServer } from 'http'; // Import to create HTTP server
 import chatbotRoutes from './src/routes/chatbot.js'; // ✅ keep .js
 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 
 import io from 'socket.io-client';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
-
+import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import Login from "../Login/login.js";
 import {  toggleNotifications,  addNotification,  fetchNotifications,  closeNotifications,  markNotificationAsRead,  markAllNotificationsAsRead } from '../../redux/slices/notificationsSlice.js';
@@ -39,6 +39,7 @@ function Navbar() {
   
   const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
   const [anchorEl, setAnchorEl] = useState(null);
+
   const open = Boolean(anchorEl);
    const dropdownRef = useRef(null);
   useEffect(() => {
@@ -131,6 +132,7 @@ function Navbar() {
       console.log("Fetching notifications for user:", user.id); // Add debugging
     }
   }, [user, dispatch]);
+
   
   const handleNotificationsToggle = () => {
     dispatch(toggleNotifications());
@@ -187,14 +189,133 @@ function Navbar() {
     }
   };
 
-  const performSearch = () => {
-    // Your search functionality here
-  };
 
   const handleLogout = () => {
      localStorage.removeItem('token'); 
      setIsLoggedIn(false);  
      setDrawerOpen(false);
+  };
+
+// In your Navbar component
+const [searchOpen, setSearchOpen] = useState(false);
+const [searchQuery, setSearchQuery] = useState('');
+const searchInputRef = useRef(null);
+const searchContainerRef = useRef(null);
+
+// Close search when clicking outside
+useEffect(() => {
+  function handleClickOutside(event) {
+    if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+      setSearchOpen(false);
+    }
+  }
+
+  if (searchOpen) {
+    document.addEventListener('mousedown', handleClickOutside);
+  } else {
+    document.removeEventListener('mousedown', handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [searchOpen]);
+
+// Focus input when search opens
+useEffect(() => {
+  if (searchOpen && searchInputRef.current) {
+    searchInputRef.current.focus();
+  }
+}, [searchOpen]);
+
+const performSearch = () => {
+  setSearchOpen(true);
+};
+
+
+const handleSearchSubmit = (e) => {
+  e.preventDefault();
+  if (searchQuery.trim()) {
+    navigate(`/c?search=${encodeURIComponent(searchQuery.trim())}`);
+    setSearchOpen(false);
+    setSearchQuery('');
+  }
+};
+
+// In Navbar.js - Add these state variables
+const [searchSuggestions, setSearchSuggestions] = useState([]);
+const [showSuggestions, setShowSuggestions] = useState(false);
+
+// Add this function to fetch suggestions as user types
+const handleSearchInputChange = (e) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    
+    // Only fetch suggestions if there's actual input
+    if (value && value.length >= 2) {
+      generateSearchSuggestions(value);
+    } else {
+      setShowSuggestions(false);
+      setSearchSuggestions([]);
+    }
+  };
+
+  // Function to fetch search suggestions
+
+  const generateSearchSuggestions = async (query) => {
+    if (!query || query.length <= 0) {
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    
+    try {
+      // Fetch all products from catalogue
+      const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`);
+      console.log("Fetched products:", response.data);
+      
+      if (response.data && response.data.length > 0) {
+        // Filter products that match the query (case-insensitive)
+        const lowerQuery = query.toLowerCase();
+        const filteredProducts = response.data.filter(product => {
+          // Check if the query matches product name, description, or category
+          return (
+              (product.name && product.name.toLowerCase() === lowerQuery) ||
+              (product.name && product.name.toLowerCase().includes(lowerQuery))
+          );
+        });
+        
+        // Convert filtered products to suggestion format
+        const suggestions = filteredProducts.map(product => ({
+          id: product._id,
+          text: product.name,
+          category: product.category,
+          images: product.images,
+        }));
+        
+        console.log("Filtered suggestions:", suggestions);
+        
+        // Limit to 5 suggestions
+        setSearchSuggestions(suggestions.slice(0, 5));
+        setShowSuggestions(suggestions.length > 0);
+      } else {
+        setSearchSuggestions([]);
+        setShowSuggestions(false);
+      }
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+      // Fallback to empty suggestions
+      setSearchSuggestions([]);
+      setShowSuggestions(false);
+    }
+  };
+
+  // Handle suggestion selection
+  const handleSuggestionClick = (suggestion) => {
+    setSearchQuery(suggestion.text);
+    setShowSuggestions(false);
+    navigate(`/c?search=${encodeURIComponent(suggestion.text)}`);
+    setSearchOpen(false);
   };
 
   const NotificationsDropdown = () => (
@@ -241,6 +362,43 @@ function Navbar() {
   // Enhanced Mobile Sidebar Menu
   const MobileSidebar = () => (
     <Drawer  PaperProps={{  sx: {  width: 240, bgcolor: '#f9f5f7' } }}  anchor="left"   open={drawerOpen}  onClose={handleDrawerToggle}>
+      
+       <Box ref={searchContainerRef}>
+          {searchOpen && (
+            <Box
+              component="form"  onSubmit={handleSearchSubmit}    sx={{    position: 'absolute',   top: '0',    left: '0',  right: '0',  width: "100vw", backgroundColor: '#f9f5f7', boxShadow: 3,  borderRadius: 1,   py: 2,  px: {xs: 5, sm: 10},  zIndex: 10000   }}  >
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>Search Products</Typography>
+              <Box sx={{ display: 'flex', width: '90%', position: 'relative' }}>
+                <input  ref={searchInputRef}  type="text"    value={searchQuery}   onChange={handleSearchInputChange}   placeholder="Search for products..." style={{   flex: 1,    padding: '10px',  fontSize: '16px',border: '1px solid #ccc',      borderRadius: '4px 0 0 4px',  outline: 'none' }}   />
+                <Button   type="submit"    variant="contained"  sx={{  marginLeft: '2%',   borderRadius: '0 4px 4px 0',   backgroundColor: '#85586F',   '&:hover': { backgroundColor: '#6d4659' }  }}>
+                  <SearchIcon />
+                </Button>
+                
+                {/* Suggestions Dropdown */}
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <Box sx={{
+                    position: 'absolute',  top: '100%', left: 0,   width: '100%',    maxHeight: '300px', overflowY: 'auto', backgroundColor: 'white',  boxShadow: 3,  borderRadius: '0 0 4px 4px',   zIndex: 10001,  mt: 0.5}}>
+                    {searchSuggestions.map((suggestion, index) => (
+                      <Box key={suggestion.id || index}  onClick={() => handleSuggestionClick(suggestion)}  sx={{    p: 1.5,  borderBottom: index < searchSuggestions.length - 1 ? '1px solid #eee' : 'none', cursor: 'pointer',  '&:hover': {   backgroundColor: '#f5f5f5' },  display: 'flex',  alignItems: 'center' }}  >
+                        <SearchIcon sx={{ mr: 1, color: '#85586F', fontSize: '1rem' }} />
+                        <Box  component="img" src={suggestion?.images?.[0] || '/placeholder.jpg'} alt={suggestion.text} sx={{ width: '40px',  height: '40px', objectFit: 'cover', borderRadius: '4px', marginRight: '10px' }}/>
+
+                        <Box>
+                          <Typography variant="body1">{suggestion.text}</Typography>
+                          {suggestion.category && (
+                            <Typography variant="caption" color="text.secondary">
+                              in {suggestion.category}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          )}
+        </Box>
       <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
         {/* Logo & Brand */}
         <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
@@ -332,6 +490,44 @@ function Navbar() {
   return (
     <>
       <Box component="navbar" marginBottom={10} sx={{ position: "fixed", zIndex: 2, width: "100%", backgroundColor: "white", display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
+      
+      <Box ref={searchContainerRef}>
+          {searchOpen && (
+            <Box
+              component="form"  onSubmit={handleSearchSubmit}    sx={{    position: 'absolute',   top: '0',    left: '0',  right: '0',  width: "100vw", backgroundColor: '#f9f5f7', boxShadow: 3,  borderRadius: 1,   py: 2,  px: {xs: 5, sm: 10},  zIndex: 10000   }}  >
+              <Typography variant="subtitle1" sx={{ mb: 1 }}>Search Products</Typography>
+              <Box sx={{ display: 'flex', width: '90%', position: 'relative' }}>
+                <input  ref={searchInputRef}  type="text"    value={searchQuery}   onChange={handleSearchInputChange}   placeholder="Search for products..." style={{   flex: 1,    padding: '10px',  fontSize: '16px',border: '1px solid #ccc',      borderRadius: '4px 0 0 4px',  outline: 'none' }}   />
+                <Button   type="submit"    variant="contained"  sx={{  marginLeft: '2%',   borderRadius: '0 4px 4px 0',   backgroundColor: '#85586F',   '&:hover': { backgroundColor: '#6d4659' }  }}>
+                  <SearchIcon />
+                </Button>
+                
+                {/* Suggestions Dropdown */}
+                {showSuggestions && searchSuggestions.length > 0 && (
+                  <Box sx={{
+                    position: 'absolute',  top: '100%', left: 0,   width: '100%',    maxHeight: '300px', overflowY: 'auto', backgroundColor: 'white',  boxShadow: 3,  borderRadius: '0 0 4px 4px',   zIndex: 10001,  mt: 0.5}}>
+                    {searchSuggestions.map((suggestion, index) => (
+                      <Box key={suggestion.id || index}  onClick={() => handleSuggestionClick(suggestion)}  sx={{    p: 1.5,  borderBottom: index < searchSuggestions.length - 1 ? '1px solid #eee' : 'none', cursor: 'pointer',  '&:hover': {   backgroundColor: '#f5f5f5' },  display: 'flex',  alignItems: 'center' }}  >
+                        <SearchIcon sx={{ mr: 1, color: '#85586F', fontSize: '1rem' }} />
+                        <Box  component="img" src={suggestion?.images?.[0] || '/placeholder.jpg'} alt={suggestion.text} sx={{ width: '40px',  height: '40px', objectFit: 'cover', borderRadius: '4px', marginRight: '10px' }}/>
+
+                        <Box>
+                          <Typography variant="body1">{suggestion.text}</Typography>
+                          {suggestion.category && (
+                            <Typography variant="caption" color="text.secondary">
+                              in {suggestion.category}
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    ))}
+                  </Box>
+                )}
+              </Box>
+            </Box>
+          )}
+        </Box>
+     
      {login && (<Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
           {/* <Login setLogin={setLoginOpen} /> */}
            {login && <Login setLogin={setLogin} />}

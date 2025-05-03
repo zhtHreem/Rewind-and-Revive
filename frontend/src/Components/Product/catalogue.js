@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, Suspense } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Box, Grid, Typography, Button, Checkbox, Link, FormControlLabel, useMediaQuery, Card, CardMedia, CardContent, FormControl, Select, InputLabel, MenuItem, IconButton, Skeleton } from "@mui/material";
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -39,6 +40,9 @@ const FiltersSkeleton = () => (
 );
 
 const CataloguePage = () => {
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [searchQuery, setSearchQuery] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [imagesLoaded, setImagesLoaded] = useState({});
@@ -92,12 +96,24 @@ const CataloguePage = () => {
         if (selectedTypes.length > 0) filters.push(`Types: ${selectedTypes.join(', ')}`);
         if (selectedSizes.length > 0) filters.push(`Sizes: ${selectedSizes.join(', ').toUpperCase()}`);
         if (priceRange) filters.push(`Price Up to $${priceRange}`);
+        if (searchQuery) filters.push(`Search: "${searchQuery}"`);
         return filters.length > 0 ? filters : ['No filters applied'];
     };
 
+
+  useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const searchParam = params.get('search');
+        if (searchParam) {
+            setSearchQuery(searchParam);
+        } else {
+            setSearchQuery('');
+        }
+    }, [location.search]);
+
     useEffect(() => {
         setShowFilters(getAppliedFiltersSummary());
-    }, [category, selectedTypes, selectedSizes, priceRange]);
+    }, [category, selectedTypes, selectedSizes, priceRange, searchQuery]);
 
     const handleRemoveFilter = (filterToRemove) => {
         if (filterToRemove.startsWith('Category:')) {
@@ -108,7 +124,12 @@ const CataloguePage = () => {
             setSelectedSizes([]);
         } else if (filterToRemove.startsWith('Price Up to Rs.')) {
             setPriceRange('');
-        }
+        }else if (filterToRemove.startsWith('Search:')) {
+          setSearchQuery('');
+            const currentParams = new URLSearchParams(location.search);
+            currentParams.delete('search');
+            navigate(`/c?${currentParams.toString()}`, { replace: true });
+}
     };
     const getSortedProducts = (products, sortBy) => {
   // Create a new array to avoid mutating the original
@@ -201,8 +222,14 @@ const getFilteredProducts = (products, filters) => {
     // Size filtering - only apply if sizes are selected and the product has measurements
     const sizeMatch = selectedSizes.length === 0 || 
       selectedSizes.some(size => isWithinSizeRange(product, product.category, size));
+    
+    // Search filtering - new
+    const searchMatch = !searchQuery || 
+      product.name.toLowerCase() === searchQuery.toLowerCase()||
 
-    return categoryMatch && typeMatch && sizeMatch && priceMatch;
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) 
+
+    return categoryMatch && typeMatch && sizeMatch && priceMatch  && searchMatch;
   });
 };
    const filteredProducts = useMemo(() => {
@@ -214,7 +241,7 @@ const getFilteredProducts = (products, filters) => {
     
   });
    return getSortedProducts(filtered, sortBy);}
-  , [products, category, selectedTypes, selectedSizes, priceRange, sortBy]
+  , [products, category, selectedTypes, selectedSizes, priceRange, sortBy, searchQuery]
 );
 
 

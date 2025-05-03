@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+
 import io from 'socket.io-client';
 import { useNavigate, Link as RouterLink } from 'react-router-dom';
 
@@ -23,6 +24,8 @@ import InfoIcon from '@mui/icons-material/Info';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import LogoutIcon from '@mui/icons-material/Logout';
 
+
+
 function Navbar() {
   const user = localStorage.getItem('token');
   const navigate = useNavigate();
@@ -37,6 +40,24 @@ function Navbar() {
   const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+   const dropdownRef = useRef(null);
+  useEffect(() => {
+  function handleClickOutside(event) {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      dispatch(closeNotifications());
+    }
+  }
+
+  if (isOpen) {
+    document.addEventListener('mousedown', handleClickOutside);
+  } else {
+    document.removeEventListener('mousedown', handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener('mousedown', handleClickOutside);
+  };
+}, [isOpen, dispatch]);
 
   const handleAddClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -177,7 +198,7 @@ function Navbar() {
   };
 
   const NotificationsDropdown = () => (
-    <Paper sx={{ position: 'absolute', boxShadow: 3, borderRadius: 2, top: '100%', right: 200, width: 300, maxHeight: '75vh', overflow: 'auto', zIndex: 10, p: 2 }}>
+    <Paper ref={dropdownRef} sx={{ position: 'absolute', boxShadow: 3, borderRadius: 2, top: '100%', right: 200, width: 300, maxHeight: '75vh', overflow: 'auto', zIndex: 10, p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h6" sx={{ mb: 2 }}>
           Notifications ({unreadCount} unread)

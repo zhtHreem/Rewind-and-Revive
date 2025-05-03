@@ -228,6 +228,7 @@ function Navbar() {
         <Divider sx={{ mb: 2 }} />
 
         {/* My Account Section */}
+        {isLoggedIn && (
         <List subheader={
             <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
               MY ACCOUNT
@@ -239,7 +240,7 @@ function Navbar() {
             </ListItemIcon>
             <ListItemText primary="My Profile" />
           </ListItem>
-        </List>
+        </List>)}
         
         {/* Add Products Section */}
         <List  subheader={
@@ -293,10 +294,7 @@ function Navbar() {
         {/* Spacer to push logout to bottom */}
         <Box sx={{ flexGrow: 1 }} />
         
-        {/* Logout Button */}
-        {/* <Button   variant="contained"   color="primary"  fullWidth onClick={handleLogout}  startIcon={<LogoutIcon />} sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }} >
-          Logout
-        </Button> */}
+    
         {!isLoggedIn ? (
     <Button variant="contained" color="primary" onClick={handleLogin}  sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }}>
       Login
@@ -368,7 +366,7 @@ function Navbar() {
             </MenuItem>
           </Menu>
           
-          {!login && (
+          {isLoggedIn && (
             <>
               <IconButton   onClick={navigateToProfile}  sx={{ display: { xs: 'none', md: 'flex' } }}  >
                 <PersonIcon />
@@ -390,9 +388,7 @@ function Navbar() {
             <SearchIcon fontSize="medium" />
           </IconButton>
 
-          {/* <Button   onClick={() => setLoginOpen(true)}   variant="contained"   color="primary"   sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
-            {login ? "Logout" : "Login"}
-          </Button> */}
+        
   {!isLoggedIn ? (
     <Button variant="contained" color="primary" onClick={handleLogin}  sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
       Login

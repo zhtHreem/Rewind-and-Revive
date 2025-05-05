@@ -88,10 +88,12 @@ const BiddingProduct = () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+             'Content-Type': 'application/json',
+              Authorization: localStorage.getItem('token'),
+            },
           body: JSON.stringify({
             productId: id,
-            name: 'You',
             bidAmount: Number(bidAmount),
           }),
         });

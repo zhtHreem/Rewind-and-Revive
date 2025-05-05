@@ -22,14 +22,30 @@ router.post('/', upload.single('image'), async (req, res) => {
       formData.append('image', fs.createReadStream(req.file.path));
     }
 
-    const response = await axios.post('http://localhost:8000/chat', formData, {
+    const response = await axios.post('http://localhost:8001/chat', formData, {
       headers: formData.getHeaders(),
     });
 
-    return res.json({ reply: response.data.reply });
+    return res.json(response.data);
+
   } catch (err) {
     console.error("❌ Chatbot API error:", err.message);
+
+    if (err.response) {
+      console.error("🧠 Error status:", err.response.status);
+      console.error("👉 Response data:", err.response.data);
+    } else {
+      console.error("❗ Unexpected error:", err.stack);
+    }
+
     return res.status(500).json({ error: "Failed to get response from AI" });
+  } finally {
+    // Clean up uploaded file
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlink(req.file.path, (unlinkErr) => {
+        if (unlinkErr) console.warn("⚠️ Failed to delete temp image:", unlinkErr.message);
+      });
+    }
   }
 });
 

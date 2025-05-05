@@ -1,164 +1,128 @@
-import pandas as pd
-import google.generativeai as genai
-from PIL import Image
 import os
-import faiss
+import google.generativeai as genai
 import numpy as np
-import clip
-import torch
+from pymongo import MongoClient
+from bson.objectid import ObjectId
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-import requests
-from io import BytesIO
 
-# Set up Gemini API Key
-genai.configure(api_key="AIzaSyA-MGyfJ3lmiXS-iqfeYFNrBll6lw9YtOU")  # Replace this with env variable in production
+# Setup Gemini
+genai.configure(api_key="AIzaSyA-MGyfJ3lmiXS-iqfeYFNrBll6lw9YtOU")
 
-# Globals to be filled during setup
-model = None
-preprocess = None
+# MongoDB setup
+client = MongoClient("mongodb+srv://admin:123@eventify.dkeujvr.mongodb.net/RewindAndRevive?retryWrites=true&w=majority")
+db = client["RewindAndRevive"]
+collection = db["products"]
+
+# Globals
+conversation_history = []
 vectorizer = None
 tfidf_matrix = None
-image_embeddings = None
-index = None
-df = None
-valid_indices = []
+products_data = []
 
-conversation_history = []
-retrieved_context_memory = []
+def load_data_from_mongo():
+    global products_data, vectorizer, tfidf_matrix
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
+    # Fetch all product documents
+    products = list(collection.find())
+    if not products:
+        raise Exception("❌ No products found in MongoDB.")
 
-def encode_image(image_path):
-    try:
-        if image_path.startswith("http://") or image_path.startswith("https://"):
-            response = requests.get(image_path, timeout=10)
-            response.raise_for_status()
-            image = Image.open(BytesIO(response.content))
-        elif os.path.exists(image_path):
-            image = Image.open(image_path)
-        else:
-            return None
+    products_data = products
 
-        image = preprocess(image).unsqueeze(0).to(device)
-        with torch.no_grad():
-            image_features = model.encode_image(image)
-        return image_features.cpu().numpy().flatten()
-    except Exception as e:
-        print(f"❌ Error processing image {image_path}: {e}")
-        return None
+    # Prepare text data for TF-IDF
+    texts = []
+    for doc in products:
+        combined = ' '.join([str(doc.get(field, '')) for field in ['name', 'description', 'category', 'color', 'material', 'type']])
+        texts.append(combined)
 
-def detect_type_from_text(text):
-    text = text.lower()
-    if any(word in text for word in ["shirt", "top", "blouse", "t-shirt", "tee", "sweater"]):
-        return "top"
-    elif any(word in text for word in ["pants", "trousers", "bottom", "skirt", "jeans", "shorts"]):
-        return "bottom"
-    return None
+    vectorizer = TfidfVectorizer(max_features=300)
+    tfidf_matrix = vectorizer.fit_transform(texts)
 
-def get_opposite_type(clothing_type):
-    return "bottom" if clothing_type == "top" else "top"
+    print(f"✅ Loaded {len(products)} products from MongoDB (text only mode).")
 
 def chat_with_bot(user_query, image_path=None):
-    global conversation_history, retrieved_context_memory
+    global conversation_history
 
-    followup_keywords = ["like that", "something", "those", "similar", "lighter", "darker", "match", "another"]
-    is_followup = any(keyword in user_query.lower() for keyword in followup_keywords)
+    # Step 1: TF-IDF similarity
+    query_vector = vectorizer.transform([user_query])
+    similarities = cosine_similarity(query_vector, tfidf_matrix).flatten()
+    top_indices = similarities.argsort()[-10:][::-1]  # increase pool for better filtering
 
-    image_context = pd.DataFrame()
-    if image_path:
-        image_features = encode_image(image_path)
-        if image_features is not None and image_embeddings is not None:
-            D, I = index.search(np.expand_dims(image_features, axis=0), 3)
-            image_context = df.iloc[[valid_indices[i] for i in I[0]]]
+    # Step 2: Smart keyword-to-type mapping
+    keyword_to_type = {
+    # Bottoms
+    "pants": "bottom", "trousers": "bottom", "jeans": "bottom", "bottom": "bottom", "shorts": "bottom",
+    "skirt": "bottom", "culottes": "bottom", "capris": "bottom", "leggings": "bottom", "palazzos": "bottom",
+    "joggers": "bottom", "slacks": "bottom", "denims": "bottom",
 
-    retrieved_text_context = pd.DataFrame()
-    if not is_followup:
-        query_tfidf = vectorizer.transform([user_query])
-        text_similarities = cosine_similarity(query_tfidf, tfidf_matrix).flatten()
-        top_text_indices = text_similarities.argsort()[::-1][:5]
-        retrieved_text_context = df.iloc[top_text_indices]
+    # Tops
+    "shirt": "top", "tshirt": "top", "t-shirt": "top", "tee": "top", "top": "top", "blouse": "top", "crop top": "top",
+    "tank": "top", "tanktop": "top", "camisole": "top", "kurta": "top", "sweater": "top", "hoodie": "top",
+    "sweatshirt": "top", "polo": "top", "bodysuit": "top",
 
-    if is_followup and retrieved_context_memory:
-        context_df = pd.DataFrame(retrieved_context_memory)
-    else:
-        context_df = pd.concat([retrieved_text_context, image_context]).drop_duplicates()
-        retrieved_context_memory.clear()
-        retrieved_context_memory.extend(context_df.to_dict(orient="records"))
+    # Layering pieces
+    "jacket": "layer", "blazer": "layer", "coat": "layer", "shrug": "layer", "cardigan": "layer",
+    "overcoat": "layer", "trench": "layer", "waistcoat": "layer",
 
-    image_detected_type = image_context.iloc[0]['type'] if not image_context.empty else None
-    text_detected_type = detect_type_from_text(user_query)
-    identified_type = image_detected_type or text_detected_type
-    opposite_type = get_opposite_type(identified_type) if identified_type else None
+    # Footwear
+    "shoes": "footwear", "boots": "footwear", "heels": "footwear", "sneakers": "footwear",
+    "loafers": "footwear", "sandals": "footwear", "slippers": "footwear", "mules": "footwear", "flats": "footwear",
 
-    if opposite_type and not context_df.empty:
-        filtered_df = context_df[context_df['type'].str.lower() == opposite_type]
-        if not filtered_df.empty:
-            context_df = filtered_df
-
-    if context_df.empty:
-        rag_context = "No relevant product information found."
-    else:
-        rag_context = "\n\n".join(
-            context_df[['name', 'description', 'category', 'color', 'material', 'type']]
-            .astype(str)
-            .agg(' | '.join, axis=1)
-            .tolist()
-        )
-
-    history_str = "\n".join(
-        [f"{msg['role'].capitalize()}: {msg['content']}" for msg in conversation_history]
-    )
-
-    prompt = (
-        "You are a helpful fashion assistant. Based on the conversation so far and the products below, give the best response to the user's query.\n\n"
-        f"Conversation so far:\n{history_str}\n\n"
-        f"Product Information:\n{rag_context}\n\n"
-        f"User: {user_query}"
-    )
-
-    gemini_model = genai.GenerativeModel("gemini-1.5-pro")
-    response = gemini_model.generate_content(prompt)
-    bot_reply = response.text.strip()
-
-    conversation_history.append({"role": "user", "content": user_query})
-    conversation_history.append({"role": "assistant", "content": bot_reply})
-
-    return {
-    "reply": bot_reply,
-    "products": context_df.to_dict(orient="records")  # 👈 this must be present
+    # Accessories
+    "scarf": "accessory", "hat": "accessory", "belt": "accessory", "watch": "accessory",
+    "bracelet": "accessory", "necklace": "accessory", "bag": "accessory", "handbag": "accessory", "clutch": "accessory",
+    "sunglasses": "accessory", "glasses": "accessory", "earrings": "accessory", "ring": "accessory"
 }
 
 
-def setup_bot(file_path="products.xlsx"):
-    global model, preprocess, vectorizer, tfidf_matrix, image_embeddings, index, df, valid_indices
+    query_lower = user_query.lower()
+    exclude_type = None
+    for keyword, mapped_type in keyword_to_type.items():
+        if keyword in query_lower:
+            exclude_type = mapped_type
+            break
 
-    xls = pd.ExcelFile(file_path)
-    df = pd.read_excel(xls, sheet_name="products.csv")
-    df.rename(columns={"materials.0": "material", "images.0": "image"}, inplace=True)
-    df.columns = df.columns.str.lower()
+    print(f"🕵️ Excluding type: {exclude_type}")
 
-    model, preprocess = clip.load("ViT-B/32", device=device)
+    # Step 3: Filter logic
+    def normalize_type(p):
+        return p.get("type", "").lower().strip()
 
-    text_data = df[['name', 'description', 'category', 'color', 'material', 'type']].astype(str).agg(' '.join, axis=1)
-    vectorizer = TfidfVectorizer(max_features=300)
-    tfidf_matrix = vectorizer.fit_transform(text_data)
+    def contains_keyword_in_name(p):
+        name = p.get("name", "").lower()
+        return any(k in name for k in keyword_to_type if keyword_to_type[k] == exclude_type)
 
-    image_embeddings = []
-    valid_indices = []
-    for idx, img_path in enumerate(df['image']):
-        image_features = encode_image(img_path)
-        if image_features is not None:
-            image_embeddings.append(image_features)
-            valid_indices.append(idx)
+    filtered = [
+        products_data[i] for i in top_indices
+        if normalize_type(products_data[i]) != exclude_type and not contains_keyword_in_name(products_data[i])
+    ]
 
-    if image_embeddings:
-        image_embeddings = np.vstack(image_embeddings)
-        index = faiss.IndexFlatL2(image_embeddings.shape[1])
-        index.add(image_embeddings)
-    else:
-        image_embeddings = None
-        index = None
+    recommended = filtered[:3] if filtered else [products_data[i] for i in top_indices[:3]]
 
-    print("✅ Chatbot initialized.")
-    return chat_with_bot
+    # Step 4: Gemini reply
+    chat = genai.GenerativeModel("gemini-1.5-pro").start_chat(history=conversation_history)
+    response = chat.send_message(f"{user_query}. Reply with a one-line fashion suggestion only.")
+    bot_reply = response.text.strip()
+
+    print("🧠 Suggestion:", bot_reply)
+
+    # Step 5: Update history
+    conversation_history.append({ "role": "user", "parts": [{"text": user_query}] })
+    conversation_history.append({ "role": "model", "parts": [{"text": bot_reply}] })
+
+    # Step 6: Format products
+    def format_product(p):
+        return {
+            "name": p.get("name"),
+            "description": p.get("description"),
+            "price": p.get("price"),
+            "color": p.get("color"),
+            "image": p.get("images", [""])[0] if isinstance(p.get("images"), list) else "",
+            "product_link": f"http://localhost:3000/product/{str(p['_id'])}"
+        }
+
+    return {
+        "reply": bot_reply,
+        "products": [format_product(p) for p in recommended]
+    }

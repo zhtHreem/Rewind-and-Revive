@@ -8,6 +8,9 @@ import BugReportIcon from '@mui/icons-material/BugReport';
 import LocalPoliceIcon from '@mui/icons-material/LocalPolice';
 import MessageIcon from '@mui/icons-material/Message';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+// Add this import at the top of notificationSlice.js
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+
 
 const API_URL = process.env.REACT_APP_LOCAL_URL;
 
@@ -35,6 +38,11 @@ const getNotificationIcon = (title) => {
       return <ShoppingCartIcon color="success" />;
     case 'Product Sold':
       return <ShoppingCartIcon color="primary" />;
+     // In your getNotificationIcon function, add:
+    case 'Auction Won!':
+       return <EmojiEventsIcon color="warning" />;
+    // case 'Auction Ended':
+    //    return <GavelIcon color="info" />; 
     default:
       return null;
   }

@@ -366,13 +366,22 @@ const handleSearchInputChange = (e) => {
   const NotificationsDropdown = () => (
     <Paper ref={dropdownRef} sx={{ position: 'absolute', boxShadow: 3, borderRadius: 2, top: '100%', right: 200, width: 300, maxHeight: '75vh', overflow: 'auto', zIndex: 10, p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Typography variant="h6" sx={{ mb: 2 }}>
-          Notifications ({unreadCount} unread)
+         <Box>
+         <Typography variant="h6" sx={{ mb: 0 }}>
+             Notifications
+         </Typography>
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+           {unreadCount} unread
         </Typography>
+         </Box>
         <Button size="small" onClick={() => dispatch(markAllNotificationsAsRead())}>
-          Mark All as Read
+           Mark All as Read
         </Button>
+
       </Box>
+
+
+
   
       {notifications.length > 0 ? (
         notifications.map((notification) => (

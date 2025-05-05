@@ -27,6 +27,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage }).array("image", 5); // Allow multiple file uploads
 
 export const createProduct = async (req, res) => {
+  const userId = req.user.id;
   upload(req, res, async (err) => {
     if (err) {
       return res.status(500).json({ error: "Image upload failed." });
@@ -63,6 +64,7 @@ export const createProduct = async (req, res) => {
   
     try {
       const product = new Product({
+        owner: userId,
         name: req.body.name,
         startingPrice: req.body.startingPrice,
         description: req.body.description,

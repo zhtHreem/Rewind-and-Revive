@@ -12,6 +12,8 @@ import {
   FormControl,
   InputLabel,
   Tooltip,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import Layout from "../Layout/layout";
 
@@ -22,47 +24,85 @@ const CreateProductForm = () => {
     description: "",
     bidStartTime: "",
     bidEndTime: "",
-    biddingModel: "Top 3 Bidders", 
-    image: null,
+    biddingModel: "Top 3 Bidders",
   });
+  const [image, setImage] = useState(null);
+  const [error, setError] = useState("");
+  const [openSnackbar, setOpenSnackbar] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Updating ${name} with value:`, value); // Debugging log
+    console.log(`Updating ${name} with value:`, value);
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  
 
   const handleImageChange = (e) => {
-    setFormData((prev) => ({ ...prev, image: e.target.files[0] }));
+    if (e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validate form
+    if (!image) {
+      setError("Please upload an image");
+      setOpenSnackbar(true);
+      return;
+    }
 
+    // Create a new FormData object
     const data = new FormData();
-    Object.keys(formData).forEach((key) => {
-      data.append(key, formData[key]);
-    });
+    
+    // Append form data correctly
+    data.append("name", formData.name);
+    data.append("startingPrice", formData.startingPrice);
+    data.append("description", formData.description);
+    data.append("bidStartTime", formData.bidStartTime);
+    data.append("bidEndTime", formData.bidEndTime);
+    data.append("biddingModel", formData.biddingModel);
+    
+    // Append the image with the key "image" (this must match your backend expectation)
+    data.append("image", image);
 
     try {
-      await axios.post(
+  
+
+       console.log("Submitting form data:", Object.fromEntries(data));
+      
+      // Fix the URL - remove /create from the endpoint
+      const response = await axios.post(
         `${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/create`,
         data,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
-          },
+              Authorization: localStorage.getItem('token')
+          }
         }
       );
+
+      console.log("Product created:", response.data);
       alert("Product created successfully!");
       navigate("/bidProduct");
     } catch (error) {
       console.error("Error creating product:", error);
-      alert("Failed to create product.");
+      
+      // Better error handling
+      let errorMessage = "Failed to create product.";
+      if (error.response && error.response.data && error.response.data.error) {
+        errorMessage = error.response.data.error;
+      }
+      
+      setError(errorMessage);
+      setOpenSnackbar(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
   return (
@@ -87,9 +127,21 @@ const CreateProductForm = () => {
         <Typography variant="h4" align="center" gutterBottom>
           Create Product
         </Typography>
+        
+        <Snackbar
+          open={openSnackbar}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+            {error}
+          </Alert>
+        </Snackbar>
+        
         <TextField
           label="Product Name"
           name="name"
+          value={formData.name}
           onChange={handleChange}
           required
           fullWidth
@@ -119,45 +171,44 @@ const CreateProductForm = () => {
           required
         />
         <TextField
-        label="Bid Start Time"
-        name="bidStartTime"
-        type="datetime-local"
-        value={formData.bidStartTime}
-        onChange={handleChange}
-        required
-        InputLabelProps={{
-          shrink: true,
-        }}
-        fullWidth
-      />
-      <TextField
-        label="Bid End Time"
-        name="bidEndTime"
-        type="datetime-local"
-        value={formData.bidEndTime}
-        onChange={handleChange}
-        required
-        InputLabelProps={{
-          shrink: true,
-        }}
-        fullWidth
-      />
+          label="Bid Start Time"
+          name="bidStartTime"
+          type="datetime-local"
+          value={formData.bidStartTime}
+          onChange={handleChange}
+          required
+          InputLabelProps={{
+            shrink: true,
+          }}
+          fullWidth
+        />
+        <TextField
+          label="Bid End Time"
+          name="bidEndTime"
+          type="datetime-local"
+          value={formData.bidEndTime}
+          onChange={handleChange}
+          required
+          InputLabelProps={{
+            shrink: true,
+          }}
+          fullWidth
+        />
 
-        {/* Dropdown for Bidding Model Selection */}
         <FormControl fullWidth required>
           <InputLabel id="bidding-model-label">Bidding Model</InputLabel>
           <Tooltip title="Choose how bidders will be displayed">
-          <Select
-            labelId="bidding-model-label"
-            name="biddingModel"
-            value={formData.biddingModel} // Ensure this is set correctly
-            onChange={handleChange}
-         >
-           <MenuItem value="Top 3 Bidders">Top 3 Bidders</MenuItem>
-           <MenuItem value="Highest Bidder">Highest Bidder</MenuItem>
-         </Select>
-         </Tooltip>
-       </FormControl>
+            <Select
+              labelId="bidding-model-label"
+              name="biddingModel"
+              value={formData.biddingModel}
+              onChange={handleChange}
+            >
+              <MenuItem value="Top 3 Bidders">Top 3 Bidders</MenuItem>
+              <MenuItem value="Highest Bidder">Highest Bidder</MenuItem>
+            </Select>
+          </Tooltip>
+        </FormControl>
 
         <Button variant="contained" component="label">
           Upload Image
@@ -170,6 +221,12 @@ const CreateProductForm = () => {
             required
           />
         </Button>
+        {image && (
+          <Typography variant="body2" color="textSecondary">
+            Selected file: {image.name}
+          </Typography>
+        )}
+        
         <Button
           type="submit"
           variant="contained"

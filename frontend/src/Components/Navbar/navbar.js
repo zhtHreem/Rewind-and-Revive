@@ -23,6 +23,8 @@ import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { jwtDecode } from "jwt-decode"; 
+
 
 
 
@@ -88,40 +90,83 @@ function Navbar() {
 
     }
   };
+
+
+    // Extract user ID from token
+  const getUserId = () => {
+    if (!user) return null;
+    try {
+      const decoded = jwtDecode(user);
+      return decoded.id; // Extract the actual user ID
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
   
-  // Set up socket connection for real-time notifications
-  useEffect(() => {
-    if (!user ) return; 
-    // Create socket connection
-    const socket = io(`${process.env.REACT_APP_LOCAL_URL}`);
-     socket.emit('authenticate', user.id);
-    // Listen for new notifications
-    socket.on('new_notification', (notification) => {
-      console.log('Received notification:', notification);
-      
-      // Make sure the notification has the expected format before adding it
-      if (notification) {
-        // Format the notification for the Redux store
-        const formattedNotification = {
-          id: notification._id || Date.now(),
-          title: notification.title,
-          description: notification.description,
-          time: 'Just now',
-          isRead: false,
-          product: notification.product,
-          sender: notification.sender,
-          count: notification.count || 1
-        };
-        
-        dispatch(addNotification(formattedNotification));
-      }
+  const userId = getUserId();
+  const socketRef = useRef(null);
+  // Add this at the top of your component
+  
+
+// Then update your socket connection effect
+useEffect(() => {
+  if (!user || !userId) return;
+  
+  // Only create a new socket if one doesn't exist
+  if (!socketRef.current) {
+    socketRef.current = io(`${process.env.REACT_APP_LOCAL_URL}`, {
+      transports: ['websocket', 'polling'],
+      reconnection: true
     });
     
-    // Clean up on unmount
-    return () => {
-      socket.disconnect();
-    };
-  }, [user,dispatch]);
+    socketRef.current.on('connect', () => {
+      console.log('Socket connected:', socketRef.current.id);
+      socketRef.current.emit('authenticate', userId);
+    });
+  }
+  
+  // Listen for new notifications
+  const handleNewNotification = (notification) => {
+    console.log('Received notification:', notification);
+    
+    if (notification) {
+      const formattedNotification = {
+        id: notification._id || Date.now(),
+        title: notification.title,
+        description: notification.description,
+        time: 'Just now',
+        isRead: false,
+        product: notification.product,
+        sender: notification.sender,
+        count: notification.count || 1
+      };
+      
+      dispatch(addNotification(formattedNotification));
+    }
+  };
+  
+  socketRef.current.on('new_notification', handleNewNotification);
+  
+  // Clean up only the event listener, not the socket
+  return () => {
+    if (socketRef.current) {
+      socketRef.current.off('new_notification', handleNewNotification);
+    }
+  };
+}, [userId,user, dispatch]);
+
+// Add a separate cleanup for component unmount
+useEffect(() => {
+  return () => {
+    if (socketRef.current) {
+      console.log('Disconnecting socket on unmount');
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+  };
+}, []);
+  
 
   // Fetch notifications when component mounts and user is logged in
   useEffect(() => {

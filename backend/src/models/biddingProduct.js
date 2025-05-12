@@ -40,6 +40,11 @@ const BidSchema = new mongoose.Schema({
     type: Date, 
     default: Date.now 
   },
+  // Add this to your BiddingProduct schema if it doesn't exist already
+   notificationsProcessed: {
+  type: Boolean,
+  default: false
+}
 });
 
 const BiddingProduct= mongoose.model('BidProduct', BidSchema);

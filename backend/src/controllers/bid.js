@@ -19,13 +19,12 @@ export const addBid = async (req, res) => {
             return res.status(400).json({ message: 'All fields are required' });
         }
         
-        // Create new bid with the username, not the entire user object
         const newBid = new Bid({
             productId,
             bidderId: buyer,
-            name: buyer.username, // Use the username property from the user document
+            name: buyer.username, 
             bidAmount,
-            userId // Store userId for reference
+            userId 
         });
         
         await newBid.save();
@@ -41,8 +40,7 @@ export const addBid = async (req, res) => {
 export const getBidsByProduct = async (req, res) => {
     try {
         const productId = req.params.id;
-        
-        // Fetch the product to check the bidding type
+
         const product = await Product.findById(productId);
         if (!product) {
             return res.status(404).json({ message: "Product not found" });

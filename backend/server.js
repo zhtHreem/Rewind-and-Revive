@@ -7,6 +7,8 @@ import path from 'path';
 import http from 'http';
 import { Server } from 'socket.io';
 import session from 'express-session';
+import cron from 'node-cron';
+import { checkEndedAuctions } from './src/utils/auctionUtils.js';
 
 import FormData from 'form-data';
 
@@ -280,6 +282,15 @@ app.use('/api/chats', chatRoutes); // Add chat routes here
 app.use('/api/notifications', notificationRoutes);
 //app.use(trackUserActivity);
 app.use('/api', recommendationRoutes);
+
+cron.schedule('* * * * *', async () => {
+  try {
+    await checkEndedAuctions(io);
+    console.log('Checked for ended auctions');
+  } catch (error) {
+    console.error('Error checking ended auctions:', error);
+  }
+});
 
 app.use((err, req, res, next) => {
   console.error(err.stack);

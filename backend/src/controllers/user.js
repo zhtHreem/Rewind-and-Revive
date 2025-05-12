@@ -227,13 +227,35 @@ export const getUserProfile = async (req, res) => {
       totalEarned: 0, // Add if you track revenue
       likesReceived: user.likesReceived || 0
     };
+    // === Calculate Top Seller Rank ===
+const allSellers = await User.find({ role: 'seller' });
 
-    res.status(200).json({
-      ...user.toObject(),
-      stats,
-      reviewsData: user.reviewsData,
-      topSellerRank: user.topSellerRank || 0
-    });
+const sellerScores = allSellers.map(seller => {
+  const s = seller.stats || {};
+  const score =
+    (s.productsSold || 0) * 0.4 +
+    (seller.averageRating || 0) * 20 * 0.3 +
+    (s.totalEarned || 0) * 0.2 +
+    ((seller.reviewsData?.fiveStar || 0) +
+     (seller.reviewsData?.fourStar || 0) +
+     (seller.reviewsData?.threeStar || 0) +
+     (seller.reviewsData?.twoStar || 0) +
+     (seller.reviewsData?.oneStar || 0)) * 0.1;
+
+  return { id: seller._id.toString(), score };
+});
+
+sellerScores.sort((a, b) => b.score - a.score);
+const rank = sellerScores.findIndex(s => s.id === id) + 1;
+const topSellerRank = ((rank / sellerScores.length) * 100).toFixed(1);
+
+res.status(200).json({
+  ...user.toObject(),
+  stats,
+  reviewsData: user.reviewsData,
+  topSellerRank  // <-- now calculated live!
+});
+
   } catch (error) {
     console.error("Error in getUserProfile:", error);
     res.status(500).json({ message: "Server error", error: error.message });

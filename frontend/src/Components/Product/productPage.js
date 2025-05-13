@@ -282,9 +282,17 @@ const ProductPage = () => {
       <Box sx={{ flexGrow: 1, padding: 6 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
-            <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2, backgroundColor: '#f9f9f9' }}>
+            <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2, backgroundColor: '#f9f9f9' ,position:"relative"}}>
               <Box component="img" src={mainImage} alt="Main Product" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </Box>
+               {product.isSold && (
+                       <Box sx={{    width: '100%',   position: 'absolute', bottom: '0px',  left: 0,  backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'RED', padding: '4px 0',   borderRadius: '4px',  fontWeight: 'bold',  textTransform: 'uppercase', letterSpacing: '1px',  pointerEvents: 'none',  zIndex: 1,   textAlign: 'center' }}>
+                         SOLD
+                      </Box>
+                    )}
+           
+           
+           
+             </Box>
 
             <Swiper slidesPerView={slidesPerView} spaceBetween={10} pagination={{ clickable: true }} className="mySwiper" modules={[Pagination]} style={{ marginTop: '20px', height: 100 }}>
               {product.images.map((image, index) => (
@@ -299,12 +307,21 @@ const ProductPage = () => {
             <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
               
               <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
-                  <Typography variant="h4">{product.name}</Typography>
+                  <Typography variant="h4">
+                           {product.name}
+                          
+                    </Typography>
                   <Button variant="outlined" endIcon={<ArrowForward />}  onClick={handleOpenModal}  sx={{minWidth:"40%", background: "transparent", color: "#9c27b0", border: "2px solid #c59bff", borderRadius: "20px", padding: "8px 20px", textTransform: "none", fontWeight: "bold", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s ease", "&:hover": { background: "linear-gradient(90deg, #c59bff, #9c27b0)", color: "#fff" } }}>Match My Outfit</Button>
               </Stack>
-               <MatchOutfitModal  open={isModalOpen} onClose={handleCloseModal} product={product} /> 
+               <MatchOutfitModal  open={isModalOpen} onClose={handleCloseModal} product={product} />
+               <Stack direction="row">
               <Typography variant="h5" sx={{ marginBottom: 2 }}>Rs. {product.price}</Typography>
-              
+               {product.isSold && (
+                    <Typography component="span" sx={{ ml: 1, color: 'red', fontSize: '1rem', fontStyle: 'italic' }}>
+                      (Sold)
+                   </Typography>
+              )}
+              </Stack> 
               <Typography variant="overline" sx={{ marginLeft: '80%', cursor: 'pointer', '&:hover': { textDecoration: 'underline', color: 'primary.main' } }} onClick={() => navigate(`/profile/${product.owner._id}`)}>
                 {product.owner.username}
               </Typography>

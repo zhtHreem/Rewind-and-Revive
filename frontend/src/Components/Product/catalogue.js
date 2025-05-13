@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Box, Grid, Typography, Button, Checkbox, Link, FormControlLabel, useMediaQuery, Card, CardMedia, CardContent, FormControl, Select, InputLabel, MenuItem, IconButton, Skeleton } from "@mui/material";
+import { Box, Grid, Typography, Button, Checkbox, Link, FormControlLabel, useMediaQuery, Card, CardMedia, CardContent, FormControl, Select, InputLabel, MenuItem, IconButton, Skeleton, Stack } from "@mui/material";
 import KeyboardArrowDown from '@mui/icons-material/KeyboardArrowDown';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import CloseIcon from '@mui/icons-material/Close';
@@ -424,9 +424,6 @@ const getFilteredProducts = (products, filters) => {
                         {/* Product Grid */}
                         <Grid container spacing={2}>
 
-
-
-
    
                {loading ? (
  
@@ -438,34 +435,46 @@ const getFilteredProducts = (products, filters) => {
                     ) : (
   
                     filteredProducts.map(product => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
-                     <Card>
-                        {/* Make this clickable area separate from the username link */}
-                        <Box   component={Link}  href={`/product/${product._id}`}   sx={{ textDecoration: 'none', color: 'inherit' }}  >
-                       <CardMedia sx={{ height: 200, width: "100%" }}>
-                          <img  src={product.images[0]}  alt={product.name}  style={{ width: '100%', height: '100%', objectFit: "contain" }} />
-                       </CardMedia>
-                       <CardContent sx={{ pb: 0 }}>
-                         <Typography textAlign="start" variant="h6">{product.name}</Typography>
-                         <Typography variant="body1" color="text.secondary">Rs.{product.price}</Typography>
-                         <Typography variant="body2" color="text.secondary">
-                             {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
-                           </Typography>
-                       </CardContent>
-                      </Box>
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={product._id} >
+                     <Card  sx={{ height: 380,  backgroundColor: "#F9F9F9", display: 'flex',  flexDirection: 'column',justifyContent: 'space-between'}}>
+
+                     
+                       
+                         <Box component={Link}   href={`/product/${product._id}`}  sx={{ textDecoration: 'none', color: 'inherit' }} >
+                           <CardMedia sx={{ height: 200, width: "100%", position: 'relative' }}>
+                           <img   src={product.images[0]}  alt={product.name} style={{ width: '100%', height: '100%', objectFit: "cover" }} />
+        
+                           {product.isSold && (
+                              <Box sx={{ width: '100%', position: 'absolute', bottom: '0px', left: 0, backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'white', padding: '4px 0', borderRadius: '4px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '1px', pointerEvents: 'none', zIndex: 1, textAlign: 'center' }}>SOLD</Box>
+
+                               )}
+                          </CardMedia>
+                          <CardContent sx={{ flexGrow: 1 }}>
+                              <Typography textAlign="start" variant="h6"> {product.name}</Typography>
+                               <Stack direction="row">
+                               <Typography variant="body1" color="text.secondary">Rs.{product.price}</Typography>
+                                       {product.isSold && (
+                                  <Typography  component="span" sx={{ ml: 1, color: 'red',  fontSize: '0.8rem',  fontStyle: 'italic'  }}   >   (Sold)  </Typography> )}
+                                 </Stack>
+                                 
+                                  <Typography variant="body2" color="text.secondary">
+                                     {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
+                                 </Typography>
+                          </CardContent>
+                   </Box>
         
         {/* Separate CardContent for the username link to work independently */}
-                  <CardContent>
-                        <Typography textAlign="end" variant="body2" color="text.secondary">
-                              {product.owner && (
               
-                                  <Link   href={`/profile/${product.owner._id}`}  onClick={(e) => {  e.stopPropagation();  navigate(`/profile/${product.owner._id}`);  return false; }}
-                                    sx={{ textDecoration: 'none', color: 'inherit',color:"darkblue" }} >
+                        <Typography variant="body2" textAlign="end" sx={{ mb: '10%', mr: '10%', color: 'text.secondary' }}>
+                         {product.owner && (
+                            <Link href={`/profile/${product.owner._id}`} onClick={(e) => { e.stopPropagation(); navigate(`/profile/${product.owner._id}`); return false; }}
+                                     underline="hover" sx={{ color: 'darkblue', fontWeight: 500, '&:hover': { color: '#1a237e' } }}>
                                       {product.owner.username}
-                                   </Link>
-                                       )}
-                                   </Typography>
-                               </CardContent>
+                              </Link>
+                              )}
+                       </Typography>
+
+                             
                             </Card>
                           </Grid>
                           ))  )}

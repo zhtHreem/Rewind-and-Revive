@@ -4,6 +4,7 @@ import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Box, Typography, Button, Paper, CircularProgress } from '@mui/material';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
+import Layout from '../Layout/layout';
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -106,6 +107,7 @@ const PaymentForm = () => {
   };
 
   return (
+    <Layout>
     <>
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh" mt={5}>
         <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
@@ -127,7 +129,7 @@ const PaymentForm = () => {
         </Paper>
       </Box>
   
-      <Box display="flex" justifyContent="center" mt={1}>
+      <Box display="flex" justifyContent="center" mt={1} mb={5}>
         <Button 
           variant="outlined" 
           color="secondary" 
@@ -137,6 +139,7 @@ const PaymentForm = () => {
         </Button>
       </Box>
     </>
+    </Layout>
   );
 };  
   

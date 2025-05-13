@@ -5,15 +5,6 @@ import axios from "axios";
 import Product from "../models/biddingProduct.js";
 import FormData from "form-data";
 
-// Configure Multer for file uploads
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, "uploads/");
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, `${Date.now()}${path.extname(file.originalname)}`);
-//   },
-// });
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "/tmp"); // Use writable /tmp directory

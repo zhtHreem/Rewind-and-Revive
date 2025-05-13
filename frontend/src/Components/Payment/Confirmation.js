@@ -106,26 +106,39 @@ const PaymentForm = () => {
   };
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh" mt={5}>
-      <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
-        <Typography variant="h5" gutterBottom>Complete Your Payment</Typography>
-        <form onSubmit={handleSubmit}>
-          <Box sx={{ my: 3, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
-            <CardElement options={CARD_ELEMENT_OPTIONS} />
-          </Box>
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            disabled={!stripe || isProcessing}
-          >
-            {isProcessing ? <CircularProgress size={24} color="inherit" /> : 'Pay Now'}
-          </Button>
-        </form>
-      </Paper>
-    </Box>
+    <>
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh" mt={5}>
+        <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
+          <Typography variant="h5" gutterBottom>Complete Your Payment</Typography>
+          <form onSubmit={handleSubmit}>
+            <Box sx={{ my: 3, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
+              <CardElement options={CARD_ELEMENT_OPTIONS} />
+            </Box>
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={!stripe || isProcessing}
+            >
+              {isProcessing ? <CircularProgress size={24} color="inherit" /> : 'Pay Now'}
+            </Button>
+          </form>
+        </Paper>
+      </Box>
+  
+      <Box display="flex" justifyContent="center" mt={1}>
+        <Button 
+          variant="outlined" 
+          color="secondary" 
+          onClick={() => navigate('/')}
+        >
+          Return to Home
+        </Button>
+      </Box>
+    </>
   );
-};
+};  
+  
 
 export default PaymentForm;

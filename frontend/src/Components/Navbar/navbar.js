@@ -81,15 +81,22 @@ function Navbar() {
     handleClose();
     setDrawerOpen(false);
   };
+ 
   const handleMarkAsRead = (notification) => {
-    dispatch(markNotificationAsRead(notification.id));
-  
-    // ✅ Ensure we navigate to the correct chat for the specific buyer
-    if (notification.title === 'New Message' && notification.product && notification.sender) {
-      navigate(`/product/${notification.product}?openChat=true&buyer=${notification.sender}`);
+  dispatch(markNotificationAsRead(notification.id));
 
+  // Ensure we navigate to the correct chat for the specific product and buyer/seller
+  if (notification.title === 'New Message' && notification.product) {
+    // Get current user ID from token
+    const currentUserId = getUserId();
+    
+    // If current user is the recipient of the notification
+    if (currentUserId) {
+      // Use the sender ID from notification to open correct chat
+      navigate(`/product/${notification.product}?openChat=true&chatPartnerId=${notification.sender}`);
     }
-  };
+  }
+};
 
 
     // Extract user ID from token

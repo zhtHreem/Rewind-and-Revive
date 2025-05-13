@@ -427,48 +427,48 @@ const getFilteredProducts = (products, filters) => {
 
 
 
-                         
-
-   {loading ? (
-    // Show skeletons while loading
-    Array(8).fill(0).map((_, index) => (
-      <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-        <ProductCardSkeleton />
-      </Grid>
-    ))
-  ) : (
-    // Show actual products when loaded
-
-                            filteredProducts.map(product => (
-                                <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
-                                    <Link
-                                        href={`/product/${product._id}`}
-                                        style={{ textDecoration: 'none', color: 'inherit' }}
-                                    >
-                                        <Card>
-                                            <CardMedia sx={{ height: 200, width: "100%" }}>
-                                                <img
-                                                    src={product.images[0]}
-                                                    alt={product.name}
-                                                    style={{ width: '100%', height: '100%', objectFit: "contain" }}
-                                                />
-                                            </CardMedia>
-                                            <CardContent>
-                                                <Typography textAlign="start" variant="h6">{product.name}</Typography>
-                                                <Typography variant="body1" color="text.secondary">Rs.{product.price}</Typography>
-                                                <Typography variant="body2" color="text.secondary">
-                                                    {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
-                                                </Typography>
-                                               
-                                                    <Typography textAlign="end" variant="body2" color="text.secondary">
-                                                        {product.owner.username || 'Hareem'}
-                                                    </Typography>
-                                                
-                                            </CardContent>
-                                        </Card>
-                                    </Link>
-                                </Grid>
-                            )))}
+   
+               {loading ? (
+ 
+                        Array(8).fill(0).map((_, index) => (
+                            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                                 <ProductCardSkeleton />
+                              </Grid>
+                          ))
+                    ) : (
+  
+                    filteredProducts.map(product => (
+                    <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
+                     <Card>
+                        {/* Make this clickable area separate from the username link */}
+                        <Box   component={Link}  href={`/product/${product._id}`}   sx={{ textDecoration: 'none', color: 'inherit' }}  >
+                       <CardMedia sx={{ height: 200, width: "100%" }}>
+                          <img  src={product.images[0]}  alt={product.name}  style={{ width: '100%', height: '100%', objectFit: "contain" }} />
+                       </CardMedia>
+                       <CardContent sx={{ pb: 0 }}>
+                         <Typography textAlign="start" variant="h6">{product.name}</Typography>
+                         <Typography variant="body1" color="text.secondary">Rs.{product.price}</Typography>
+                         <Typography variant="body2" color="text.secondary">
+                             {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
+                           </Typography>
+                       </CardContent>
+                      </Box>
+        
+        {/* Separate CardContent for the username link to work independently */}
+                  <CardContent>
+                        <Typography textAlign="end" variant="body2" color="text.secondary">
+                              {product.owner && (
+              
+                                  <Link   href={`/profile/${product.owner._id}`}  onClick={(e) => {  e.stopPropagation();  navigate(`/profile/${product.owner._id}`);  return false; }}
+                                    sx={{ textDecoration: 'none', color: 'inherit',color:"darkblue" }} >
+                                      {product.owner.username}
+                                   </Link>
+                                       )}
+                                   </Typography>
+                               </CardContent>
+                            </Card>
+                          </Grid>
+                          ))  )}
                         </Grid>
                     </Box>
                 </Box>

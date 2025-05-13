@@ -133,14 +133,12 @@ export const getOwnedProducts = async (req, res) => {
 };
 
 
-// Endpoint to fetch products
 export const getProductCatalogueList = async (req, res) => {
   try {
-    console.log('hi')
-    const products = await Product.find(); // You can add filters based on query params
-    console.log("s",products)
+    const products = await Product.find().populate('owner', 'username'); // Only fetch username field
     res.json(products);
   } catch (error) {
+    console.error("Error fetching product catalogue:", error);
     res.status(500).json({ message: 'Server Error' });
   }
 };

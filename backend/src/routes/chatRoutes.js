@@ -32,32 +32,36 @@ const router = express.Router();
 router.get('/:productId/:buyerId/:sellerId', authMiddleware, async (req, res) => {
   const { productId, buyerId, sellerId } = req.params;
 
+  // 🔐 Validate the logged-in user is either the buyer or the seller
+if (req.user.id !== buyerId && req.user.id !== sellerId) {
+  return res.status(403).json({ error: 'Access denied. Not part of this chat.' });
+}
+
+
   try {
-    // ✅ Find the chat for the specific buyer-seller pair
     const chat = await Chat.findOne({
       product: productId,
       buyer: buyerId,
       seller: sellerId
     })
-    .populate('buyer', 'username')
-    .populate('seller', 'username')
-    .populate({
-      path: 'messages.sender',
-      select: 'username'
-    });
+      .populate('buyer', 'username')
+      .populate('seller', 'username')
+      .populate({
+        path: 'messages.sender',
+        select: 'username'
+      });
 
     if (!chat) {
-      console.log(`❌ Chat not found for product ${productId} between ${buyerId} and ${sellerId}`);
-      return res.status(200).json({ messages: [] }); // Return empty messages instead of error
+      return res.status(200).json({ messages: [] });
     }
 
-    console.log(`✅ Chat found for product ${productId} between ${buyerId} and ${sellerId}`);
     res.status(200).json(chat);
   } catch (error) {
     console.error("❌ Error fetching chat:", error);
     res.status(500).json({ error: 'Failed to fetch messages' });
   }
 });
+
 
 
 // **Send a message**

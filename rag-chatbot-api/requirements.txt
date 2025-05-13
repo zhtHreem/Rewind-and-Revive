@@ -9,6 +9,4 @@ clip-anytorch
 scikit-learn
 requests
 google-generativeai
-openpyxl
 python-multipart
-

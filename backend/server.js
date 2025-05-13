@@ -122,8 +122,17 @@ io.on('connection', (socket) => {
     io.emit('receiveMessage', message);
     
     try {
-      // Find or create a notification for this message
-      const sender = await User.findById(message.sender, 'username');
+    const senderUser = await User.findById(message.sender, 'username');
+
+    // Send message to all clients with sender info
+    io.emit('receiveMessage', {
+      ...message,
+      sender: {
+        _id: message.sender,
+        username: senderUser?.username || 'Unknown'
+      },
+      timestamp: new Date() // Optional: useful if not already added
+    });
       
       let existingNotification = await Notification.findOne({
         recipient: message.receiver,

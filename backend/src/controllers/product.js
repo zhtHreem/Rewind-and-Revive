@@ -135,14 +135,17 @@ export const getOwnedProducts = async (req, res) => {
 
 export const getProductCatalogueList = async (req, res) => {
   try {
-    const products = await Product.find().populate('owner', 'username'); // Only fetch username field
+    // Sort by isSold (false first) and then by createdAt (descending)
+    const products = await Product.find()
+      .sort({ isSold: 1, createdAt: -1 })
+      .populate('owner', 'username'); // Only fetch username field
+    
     res.json(products);
   } catch (error) {
     console.error("Error fetching product catalogue:", error);
     res.status(500).json({ message: 'Server Error' });
   }
 };
-
 
 
 

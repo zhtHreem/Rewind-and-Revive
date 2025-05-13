@@ -47,8 +47,6 @@ app.options('*', (req, res) => {
 
 
 app.use(express.json());
-//app.use(express.urlencoded({ extended: true }));
-// Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -58,17 +56,16 @@ app.use((err, req, res, next) => {
 });
 
 
-// Make sure your session configuration looks like this:
 app.use(session({
   secret: 'your-secret-key',
-  resave: true,               // Changed back to true for better compatibility
+  resave: true,               
   saveUninitialized: true,
-  name: 'recommendSession',   // Give it a specific name
+  name: 'recommendSession',   
   cookie: { 
     maxAge: 30 * 24 * 60 * 60 * 1000, 
     httpOnly: true,
     secure: false,            // Keep false during development
-    sameSite: 'lax'           // Add this to help with cross-site requests
+    sameSite: 'lax'           //  cross-site requests
   }
 }));
 // Add this to your routes
@@ -97,14 +94,7 @@ const io = new Server(httpServer, {
 
 
 io.on('connection', (socket) => {
-  //console.log('A user connected');
-
-  // Handle incoming chat messages
-  // socket.on('sendMessage', (message) => {
-  //     // Broadcast message to all connected clients including the sender
-  //     io.emit('receiveMessage', message);
-  //   //  console.log('Message sent:', message);
-  // });
+ 
   
 
    socket.on('authenticate', (userId) => {
@@ -121,65 +111,45 @@ io.on('connection', (socket) => {
     // Broadcast message to all connected clients including the sender
     io.emit('receiveMessage', message);
     
+
+   // Handle sending messages with proper room targeting
+  socket.on('sendMessage', async (messageData) => {
     try {
-    const senderUser = await User.findById(message.sender, 'username');
-
-    // Send message to all clients with sender info
-    io.emit('receiveMessage', {
-      ...message,
-      sender: {
-        _id: message.sender,
-        username: senderUser?.username || 'Unknown'
-      },
-      timestamp: new Date() // Optional: useful if not already added
-    });
+      const { senderId, receiverId, productId, message } = messageData;
       
-      let existingNotification = await Notification.findOne({
-        recipient: message.receiver,
-        sender: message.sender,
-        product: message.product,
-        type: 'message',
-        isRead: false
-      });
-      
-      if (existingNotification) {
-        existingNotification.count += 1;
-        existingNotification.description = `You have received ${existingNotification.count} new messages from ${sender.username}`;
-        existingNotification.timestamp = Date.now();
-        await existingNotification.save();
-        
-        io.emit('new_notification', {
-          ...existingNotification.toObject(),
-          title: 'New Message',
-          time: 'Just now'
-        });
-      } else {
-        const newNotification = new Notification({
-          recipient: message.receiver,
-          sender: message.sender,
-          product: message.product,
-          title: 'New Message',
-          description: `You have received a new message from ${sender.username}`,
-          type: 'message',
-          count: 1
-        });
-        
-        await newNotification.save();
-        
-        io.emit('new_notification', {
-          ...newNotification.toObject(),
-          title: 'New Message',
-          time: 'Just now'
-        });
+      if (!senderId || !receiverId || !productId || !message) {
+        console.error('Missing required message data');
+        return;
       }
+      
+      // Create a unique chat room identifier for this conversation
+      const chatRoomId = `chat_${productId}_${senderId}_${receiverId}`;
+      
+      // Get sender information for display
+      const User = mongoose.model('User');
+      const senderUser = await User.findById(senderId, 'username');
+      
+      const formattedMessage = {
+        sender: {
+          _id: senderId,
+          username: senderUser?.username || 'Unknown'
+        },
+        message,
+        timestamp: new Date(),
+        product: productId
+      };
+      
+      // Send message ONLY to the sender and receiver
+      io.to(senderId).emit('receiveMessage', formattedMessage);
+      io.to(receiverId).emit('receiveMessage', formattedMessage);
+      
+      console.log(`Message sent from ${senderId} to ${receiverId} for product ${productId}`);
+      
     } catch (error) {
-      console.error('Error creating notification:', error);
+      console.error('Error processing message:', error);
     }
-
-
-
-
-    // Add this to your existing Socket.io connection handler
+  });
+    
   socket.on('product_purchased', async (data) => {
   const { buyerId, sellerId, productId } = data;
   
@@ -190,8 +160,6 @@ io.on('connection', (socket) => {
     const seller = await User.findById(sellerId);
     
     if (product && buyer && seller) {
-      // Create and emit notifications
-      // (this logic is now handled in the addPayment controller)
       console.log(`Product ${product.name} purchased: buyer=${buyer.username}, seller=${seller.username}`);
     }
   } catch (error) {
@@ -207,7 +175,6 @@ io.on('connection', (socket) => {
     // This is a sample notification structure matching your Redux slice
     const testNotification = {
       id: Date.now(), // unique id
-    //  icon: 'CheckCircleOutlineIcon', // you might want to pass icon name or component
       title: 'Test Notification',
       description: 'This is a test notification from the backend',
       time: new Date().toLocaleTimeString(),
@@ -219,7 +186,6 @@ io.on('connection', (socket) => {
 
     // Broadcast the notification to all connected clients
     io.emit('new_notification', testNotification);
-   // console.log('Test notification sent'); // Add this for debugging
 
   });
 
@@ -277,10 +243,9 @@ app.use('/api/product', productRoute);
 app.use('/api/biddingProduct', bidRoute);
 app.use('/api/bid', biddingRoute);
 app.use('/api/payment', paymentRoute);
-app.use('/api/chats', chatRoutes); // Add chat routes here
-
+app.use('/api/chats', chatRoutes); 
 app.use('/api/notifications', notificationRoutes);
-//app.use(trackUserActivity);
+
 app.use('/api', recommendationRoutes);
 
 cron.schedule('* * * * *', async () => {

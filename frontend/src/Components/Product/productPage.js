@@ -85,6 +85,7 @@ const ProductPage = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [image, setImage] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('token'));
 
   const resetReviewForm = () => {
     setRating(0);
@@ -395,44 +396,19 @@ const ProductPage = () => {
   </Dialog>
 
       {/* Floating Chat Button */}
-      <div
-        style={{
-          position: 'fixed',
-          bottom: '20px',
-          right: '20px',
-          backgroundColor: '#007bff',
-          color: 'white',
-          padding: '10px 15px',
-          borderRadius: '30px',
-          boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-          cursor: 'pointer',
-          zIndex: 1000,  }}  onClick={() => setIsChatOpen((prev) => !prev)}>
-        💬 Chat
-      </div>
+      {isLoggedIn &&(
+        <>
+          <div style={{   position: 'fixed', bottom: '20px', right: '20px',  backgroundColor: '#007bff',  color: 'white',  padding: '10px 15px',  borderRadius: '30px',  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',  cursor: 'pointer',  zIndex: 1000,  }}  onClick={() => setIsChatOpen((prev) => !prev)}>
+            💬 Chat
+          </div>
 
-      {/* Chatbox Visibility */}
-      {/* Chatbox Visibility */}
-      {isChatOpen && product && product.owner && (
-  <div
-    style={{
-      position: 'fixed',
-      bottom: '80px',
-      right: '20px',
-      width: '350px',
-      height: '500px',
-      backgroundColor: 'white',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-      borderRadius: '10px',
-      zIndex: 1000,
-      overflow: 'hidden',
-    }}
-  >
-    <ProductChat productId={productId} ownerId={product.owner._id} buyerId={buyerId} />
-
-    
-
-  </div>
-)}
+      
+        {isChatOpen && product && product.owner && (
+          <div style={{  position: 'fixed',  bottom: '80px',   right: '20px',  width: '350px',  height: '500px', backgroundColor: 'white',  boxShadow: '0 4px 8px rgba(0,0,0,0.2)', borderRadius: '10px',   zIndex: 1000,  overflow: 'hidden', }}>
+            <ProductChat productId={productId} ownerId={product.owner._id} buyerId={buyerId} />
+        </div>
+  
+     )} </>)}
 
        <Modal open={shoppingCart} onClose={handleCartOpenClose}>
           <AddCart />

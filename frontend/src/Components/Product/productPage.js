@@ -20,15 +20,15 @@ import 'swiper/css/pagination';
 import { Pagination } from 'swiper/modules';
 import axios from 'axios';
 import MatchOutfitModal from './matchMyOutfit';
-  // Create skeleton components for different sections
+
 const ProductImageSkeleton = () => (
   <Box>
-    {/* Main image skeleton */}
+   
     <Box sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2 }}>
       <SkeletonLoader height="100%" />
     </Box>
     
-    {/* Thumbnail images skeleton */}
+   
     <Box sx={{ marginTop: '20px', height: 100 }}>
       <Box sx={{ display: 'flex', gap: 2 }}>
         {Array(4).fill(0).map((_, i) => (
@@ -41,24 +41,23 @@ const ProductImageSkeleton = () => (
 
 const ProductDetailsSkeleton = () => (
   <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 5 }}>
-    {/* Title */}
+   
     <SkeletonLoader.Text lines={1} width="80%" />
     
-    {/* Price */}
+    
     <SkeletonLoader.Text lines={1} width="30%" />
     
-    {/* Username */}
     <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
       <SkeletonLoader width="20%" height="20px" />
     </Box>
     
-    {/* Buttons */}
+   
     <Box sx={{ display: 'flex', gap: 2 }}>
       <SkeletonLoader height="48px" width="100%" />
       <SkeletonLoader height="48px" width="100%" />
     </Box>
     
-    {/* Accordion buttons */}
+   
     {Array(3).fill(0).map((_, i) => (
       <SkeletonLoader key={i} height="48px" width="100%" />
     ))}
@@ -93,7 +92,7 @@ const ProductPage = () => {
     setImage(null);
   };
 
-  // Handlers for modal
+ 
   const handleOpenModal = () => setIsModalOpen(true);
   const handleCloseModal = () => setIsModalOpen(false);
 
@@ -105,11 +104,11 @@ const ProductPage = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const openChat = queryParams.get('openChat') === 'true';
-  const buyerId = queryParams.get('buyer'); // ✅ Get the buyer ID from the URL
+  const buyerId = queryParams.get('buyer'); 
 
 
 
-  const [isChatOpen, setIsChatOpen] = useState(openChat); // Open chat if openChat=true
+  const [isChatOpen, setIsChatOpen] = useState(openChat); 
 
   useEffect(() => {
 
@@ -154,33 +153,33 @@ const ProductPage = () => {
   
   const handleAddToCart = async (product) => {
     try {
-      // Fetch product data from API using the correct product ID
+   
       const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/${productId}`);
       const productData = response.data;
       
-      // Update the cart state
+      
       setCart((prevCart) => {
 
-        // Check if the product already exists in the cart by comparing product.id
+        
         const isProductInCart = prevCart.find((item) => item.id === productId);
         if (isProductInCart) {
           console.log('Product already in cart:', productData);
           return prevCart; // Avoid adding duplicates
         }
         
-        // Add product to cart with initial quantity
+    
         const updatedCart = [...prevCart, { id: productId, name: productData.name, price: productData.price, quantity: 1 }];
         
-        // Log cart after update
+    
         console.log('Cart updated:', updatedCart);
         
-        // Save updated cart to localStorage
+        
         localStorage.setItem('cart', JSON.stringify(updatedCart));
         
         return updatedCart;
       });
 
-      // Navigate to the cart page (optional)
+    
       setShoppingCart(true);
     } catch (error) {
       console.error("Error adding product to cart:", error);
@@ -202,7 +201,7 @@ const ProductPage = () => {
   };
 
   const handleSubmitReview = async (event) => {
-    event.preventDefault();  // Prevent page reload
+    event.preventDefault();  
       
     if (!rating) {
       alert("Please select a rating before submitting.");
@@ -210,7 +209,7 @@ const ProductPage = () => {
    }
           
    const reviewData = {
-    userId: product.owner._id,  // Replace with actual user ID (e.g., from state or context)
+    userId: product.owner._id,  
     rating: rating
   };
 
@@ -282,7 +281,7 @@ const ProductPage = () => {
       <Box sx={{ flexGrow: 1, padding: 6 }}>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
-            <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding: 2, backgroundColor: '#f9f9f9' ,position:"relative"}}>
+            <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding:{xs:0 ,sm:2}, backgroundColor: '#f9f9f9' ,position:"relative"}}>
               <Box component="img" src={mainImage} alt="Main Product" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                {product.isSold && (
                        <Box sx={{    width: '100%',   position: 'absolute', bottom: '0px',  left: 0,  backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'RED', padding: '4px 0',   borderRadius: '4px',  fontWeight: 'bold',  textTransform: 'uppercase', letterSpacing: '1px',  pointerEvents: 'none',  zIndex: 1,   textAlign: 'center' }}>
@@ -304,7 +303,7 @@ const ProductPage = () => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Box sx={{ px: 6, display: 'flex', flexDirection: 'column', gap: 3 }}>
+            <Box sx={{ px:{ xs:0,sm:6}, display: 'flex', flexDirection: 'column', gap: 3 }}>
               
               <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
                   <Typography variant="h4">
@@ -322,7 +321,7 @@ const ProductPage = () => {
                    </Typography>
               )}
               </Stack> 
-              <Typography variant="overline" sx={{ marginLeft: '80%', cursor: 'pointer', '&:hover': { textDecoration: 'underline', color: 'primary.main' } }} onClick={() => navigate(`/profile/${product.owner._id}`)}>
+              <Typography variant="overline" sx={{ marginLeft: '60%', cursor: 'pointer', '&:hover': { textDecoration: 'underline', color: 'primary.main' } }} onClick={() => navigate(`/profile/${product.owner._id}`)}>
                 {product.owner.username}
               </Typography>
 

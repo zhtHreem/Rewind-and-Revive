@@ -58,7 +58,7 @@ export const fetchNotifications = createAsyncThunk(
           ...getAuthHeader()
         }
       });
-      console.log('Fetched notifications:', response.data);
+     
       return response.data;
     } catch (error) {
       return rejectWithValue(

@@ -77,17 +77,17 @@ useEffect(() => {
     
     // Check if user is the seller
     if (String(userId) !== String(ownerId)) {
-      console.log("User is not the seller, skipping buyers fetch");
+      
       return;
     }
     
-    console.log("Attempting to fetch buyers for product:", productId);
+  
     setLoadingBuyers(true);
     
     try {
       // Use POST request with the productId in the body instead of URL params
       const url = `${process.env.REACT_APP_LOCAL_URL}/api/chats/product/buyers`;
-      console.log("Fetching from URL:", url);
+     
       
       const response = await axios.post(
         url,
@@ -99,7 +99,7 @@ useEffect(() => {
         }
       );
       
-      console.log("Buyers API response:", response.data);
+     
       
       if (response.data && response.data.buyers) {
         setBuyersList(response.data.buyers);
@@ -192,11 +192,11 @@ useEffect(() => {
   
   // Listen for messages that are meant for this specific chat
   socket.on("receiveMessage", (receivedMessage) => {
-    console.log("Socket received message:", receivedMessage);
+  
     
     // Check for required fields
     if (!receivedMessage || !receivedMessage.product) {
-      console.log("Received malformed message:", receivedMessage);
+    
       return;
     }
     
@@ -206,7 +206,7 @@ useEffect(() => {
       
       // Validate the sender ID exists
       if (!messageSenderId) {
-        console.log("Message missing sender ID:", receivedMessage);
+        
         return;
       }
       
@@ -244,11 +244,11 @@ useEffect(() => {
           );
           
           if (messageExists) {
-            console.log("Message already exists, skipping");
+          
             return prevMessages;
           }
           
-          console.log("Adding new message to chat");
+         
           return [...prevMessages, receivedMessage];
         });
       }

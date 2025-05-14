@@ -49,7 +49,7 @@ const RatingBar = ({ label, value, total }) => {
 
 const Dashboard = () => {
   const params = useParams();
-  console.log("Params:", params); // Debugging
+  
   const userId = params.id;
   const [stats, setStats] = useState({
     productsSold: 0,
@@ -76,7 +76,7 @@ const Dashboard = () => {
         return;
       }
 
-      console.log("Fetching reviews for userId:", userId);
+     
 
       try {
         const response = await axios.get(
@@ -89,7 +89,7 @@ const Dashboard = () => {
         );
 
         const userData = response.data;
-        console.log("Fetched reviewsData:", userData.reviewsData);
+        
 
         setStats(userData.stats);
         setReviewsData(userData.reviewsData || {}); // Ensure safe state update
@@ -126,7 +126,7 @@ const Dashboard = () => {
   
   // Send averageRating to the backend when it changes
   useEffect(() => {
-    console.log("User average ID:", userId);
+   
     if (userId && totalReviews > 0) {
       const sendAverageRating = async () => {
         try {
@@ -136,7 +136,7 @@ const Dashboard = () => {
             return;
           }
 
-          console.log("Sending PUT request with:", { userId, averageRating });
+       
   
           await axios.put(
             `${process.env.REACT_APP_LOCAL_URL}/api/user/update-rating/${userId}`,
@@ -149,7 +149,6 @@ const Dashboard = () => {
             }
           );
   
-          console.log("Average rating updated successfully:", averageRating);
         } catch (error) {
           console.error("Error updating average rating:", error.response?.data || error.message);
         }

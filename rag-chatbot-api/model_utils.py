@@ -1,5 +1,3 @@
-import os
-import traceback
 import google.generativeai as genai
 import numpy as np
 from pymongo import MongoClient
@@ -9,7 +7,6 @@ import io
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Setup Gemini
 genai.configure(api_key="AIzaSyCD1taqy9xGauQxpiedchl7SICGqCcQ3sw")
 
 # MongoDB setup
@@ -50,7 +47,7 @@ def chat_with_bot(user_query, image_path=None):
     # Step 1: TF-IDF similarity
     query_vector = vectorizer.transform([user_query])
     similarities = cosine_similarity(query_vector, tfidf_matrix).flatten()
-    top_indices = similarities.argsort()[-20:][::-1]  # Get more candidates for filtering
+    top_indices = similarities.argsort()[-20:][::-1]  
 
     # Step 2: Smart keyword-to-type mapping
     keyword_to_type = {
@@ -111,49 +108,36 @@ def chat_with_bot(user_query, image_path=None):
     # Step 3: Complementary recommendation logic
     recommended_type = None
     if detected_type == "top":
-        # If top detected, recommend bottoms only (jeans or skirts)
         recommended_type = "bottom"
         print(" Recommending bottoms (jeans/skirts) to match the top")
     elif detected_type == "bottom":
-        # If bottom detected, recommend tops only
         recommended_type = "top"
         print(" Recommending tops to match the bottom")
     else:
-        # If no specific type detected, use general recommendations
         recommended_type = None
         print(" No specific clothing type detected, using general recommendations")
-
-    # Step 4: Filter products by recommended type
-    def normalize_type(p):
-        return p.get("type", "").lower().strip()
     
     def contains_keyword_in_fields(p, target_type):
-        # Check if product matches target type in name, type, or description
         name = p.get("name", "").lower()
         desc = p.get("description", "").lower()
         p_type = p.get("type", "").lower()
         
-        # For bottoms, specifically check for jeans and skirts if that's what we're recommending
         if target_type == "bottom":
             return any(k in name or k in desc or k in p_type for k in ["jeans", "skirt", "pants", "bottom", "trousers"])
         
-        # For tops
         if target_type == "top":
             return any(k in name or k in desc or k in p_type for k in ["shirt", "top", "blouse", "tee", "t-shirt"])
             
         return False
 
     if recommended_type:
-        # Filter products by recommended type
         filtered = [
             products_data[i] for i in top_indices
             if contains_keyword_in_fields(products_data[i], recommended_type)
         ]
     else:
-        # If no specific recommendation type, use general similarity
         filtered = [products_data[i] for i in top_indices]
 
-    # Get top 3 recommendations
     recommended = filtered[:3] if filtered else [products_data[i] for i in top_indices[:3]]
 
     # Step 5: Gemini reply

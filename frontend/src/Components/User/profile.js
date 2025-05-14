@@ -52,8 +52,7 @@ const UserProfilePage = () => {
     const fetchUserData = async () => {
       try {
         const token = localStorage.getItem('token');
-        console.log("Frontend Token:", token);
-
+       
         if (!token) {
           alert("Token is missing!");
           setLoading(false);
@@ -67,11 +66,10 @@ const UserProfilePage = () => {
           headers: { Authorization: token }
         });
 
-        console.log("Frontend API Response:", response.data);
+       
         setUserData(response.data);
         setLoading(false);
       } catch (error) {
-        console.error("❌ Frontend Error Fetching User Data:", error);
         alert("Failed to fetch user data");
         setLoading(false);
       }

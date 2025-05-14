@@ -46,7 +46,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
           );
           
           if (isMounted) {
-            console.log('API Response:', response.data);
+            
             const recommendations = response.data.recommendations;
             
             const matchItems = recommendations.map(rec => ({

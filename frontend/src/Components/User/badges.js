@@ -7,7 +7,7 @@ import { useDispatch } from 'react-redux';
 const Badges = () => {
   const dispatch = useDispatch();
   const [tabValue, setTabValue] = useState(0);
-  const [showMore, setShowMore] = useState(false); // Control show more/less
+  const [showMore, setShowMore] = useState(false); 
     const [badgesData, setBadgesData] = useState({
   sellerBadges: [],
   userBadges: []
@@ -16,7 +16,7 @@ const Badges = () => {
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
-    setShowMore(false); // Reset when changing tabs
+    setShowMore(false); 
   };
 
   const toggleShowMore = () => {
@@ -32,7 +32,7 @@ const Badges = () => {
                 }});
       
         setBadgesData(response.data);
-        console.log('Badges data:',badgesData);
+       
       } catch (err) {
         console.error('Error fetching badges:', err);
       }
@@ -58,7 +58,6 @@ const Badges = () => {
 
 
   const badges = tabValue === 0 ? badgesData.sellerBadges || [] : badgesData.userBadges || [];
-  // Only show the first 2 badges initially, and all if "Show More" is clicked
   const displayedBadges = showMore ? badges : badges.slice(0, 3);
 
   return (
@@ -80,10 +79,8 @@ const Badges = () => {
             <Tooltip title={badge.Description}>
              <Badge
                 color="primary"
-                badgeContent={badge.level} // For gamification, level or rank can be shown here
-                anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-                
-              >
+                badgeContent={badge.level} 
+                anchorOrigin={{ vertical: 'top', horizontal: 'left' }} >
               <Card sx={{ height: '150px', width: '100%' }}>
               <Card sx={{ borderRadius: '16px' }}>
                {badge.isAchieved ? (

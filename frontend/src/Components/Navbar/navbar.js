@@ -85,26 +85,19 @@ function Navbar() {
   const handleMarkAsRead = (notification) => {
   dispatch(markNotificationAsRead(notification.id));
 
-  // Ensure we navigate to the correct chat for the specific product and buyer/seller
   if (notification.title === 'New Message' && notification.product) {
-    // Get current user ID from token
     const currentUserId = getUserId();
-    
-    // If current user is the recipient of the notification
     if (currentUserId) {
-      // Use the sender ID from notification to open correct chat
       navigate(`/product/${notification.product}?openChat=true&chatPartnerId=${notification.sender}`);
     }
   }
 };
 
-
-    // Extract user ID from token
   const getUserId = () => {
     if (!user) return null;
     try {
       const decoded = jwtDecode(user);
-      return decoded.id; // Extract the actual user ID
+      return decoded.id; 
     } catch (error) {
       console.error("Error decoding token:", error);
       return null;
@@ -113,14 +106,11 @@ function Navbar() {
   
   const userId = getUserId();
   const socketRef = useRef(null);
-  // Add this at the top of your component
-  
-
-// Then update your socket connection effect
+ 
 useEffect(() => {
   if (!user || !userId) return;
   
-  // Only create a new socket if one doesn't exist
+  
   if (!socketRef.current) {
     socketRef.current = io(`${process.env.REACT_APP_LOCAL_URL}`, {
       transports: ['websocket', 'polling'],
@@ -128,14 +118,13 @@ useEffect(() => {
     });
     
     socketRef.current.on('connect', () => {
-      console.log('Socket connected:', socketRef.current.id);
+     
       socketRef.current.emit('authenticate', userId);
     });
   }
   
-  // Listen for new notifications
   const handleNewNotification = (notification) => {
-    console.log('Received notification:', notification);
+  
     
     if (notification) {
       const formattedNotification = {
@@ -155,7 +144,6 @@ useEffect(() => {
   
   socketRef.current.on('new_notification', handleNewNotification);
   
-  // Clean up only the event listener, not the socket
   return () => {
     if (socketRef.current) {
       socketRef.current.off('new_notification', handleNewNotification);
@@ -163,11 +151,9 @@ useEffect(() => {
   };
 }, [userId,user, dispatch]);
 
-// Add a separate cleanup for component unmount
 useEffect(() => {
   return () => {
     if (socketRef.current) {
-      console.log('Disconnecting socket on unmount');
       socketRef.current.disconnect();
       socketRef.current = null;
     }
@@ -175,13 +161,11 @@ useEffect(() => {
 }, []);
   
 
-  // Fetch notifications when component mounts and user is logged in
   useEffect(() => {
-    // Only fetch notifications if user is logged in
-    console.log("Fetching notifications for user:", user); // Add debugging
+    
     if (user) {
       dispatch(fetchNotifications());
-      console.log("Fetching notifications for user:", user.id); // Add debugging
+      
     }
   }, [user, dispatch]);
 
@@ -248,13 +232,13 @@ useEffect(() => {
      setDrawerOpen(false);
   };
 
-// In your Navbar component
+
 const [searchOpen, setSearchOpen] = useState(false);
 const [searchQuery, setSearchQuery] = useState('');
 const searchInputRef = useRef(null);
 const searchContainerRef = useRef(null);
 
-// Close search when clicking outside
+
 useEffect(() => {
   function handleClickOutside(event) {
     if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
@@ -273,7 +257,7 @@ useEffect(() => {
   };
 }, [searchOpen]);
 
-// Focus input when search opens
+
 useEffect(() => {
   if (searchOpen && searchInputRef.current) {
     searchInputRef.current.focus();
@@ -294,16 +278,16 @@ const handleSearchSubmit = (e) => {
   }
 };
 
-// In Navbar.js - Add these state variables
+
 const [searchSuggestions, setSearchSuggestions] = useState([]);
 const [showSuggestions, setShowSuggestions] = useState(false);
 
-// Add this function to fetch suggestions as user types
+
 const handleSearchInputChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
     
-    // Only fetch suggestions if there's actual input
+   
     if (value && value.length >= 2) {
       generateSearchSuggestions(value);
     } else {
@@ -312,7 +296,7 @@ const handleSearchInputChange = (e) => {
     }
   };
 
-  // Function to fetch search suggestions
+ 
 
   const generateSearchSuggestions = async (query) => {
     if (!query || query.length <= 0) {
@@ -322,22 +306,19 @@ const handleSearchInputChange = (e) => {
     }
     
     try {
-      // Fetch all products from catalogue
+    
       const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`);
-      console.log("Fetched products:", response.data);
-      
+ 
       if (response.data && response.data.length > 0) {
-        // Filter products that match the query (case-insensitive)
         const lowerQuery = query.toLowerCase();
         const filteredProducts = response.data.filter(product => {
-          // Check if the query matches product name, description, or category
           return (
               (product.name && product.name.toLowerCase() === lowerQuery) ||
               (product.name && product.name.toLowerCase().includes(lowerQuery))
           );
         });
         
-        // Convert filtered products to suggestion format
+       
         const suggestions = filteredProducts.map(product => ({
           id: product._id,
           text: product.name,
@@ -345,9 +326,7 @@ const handleSearchInputChange = (e) => {
           images: product.images,
         }));
         
-        console.log("Filtered suggestions:", suggestions);
-        
-        // Limit to 5 suggestions
+      
         setSearchSuggestions(suggestions.slice(0, 5));
         setShowSuggestions(suggestions.length > 0);
       } else {
@@ -356,13 +335,13 @@ const handleSearchInputChange = (e) => {
       }
     } catch (error) {
       console.error("Error fetching suggestions:", error);
-      // Fallback to empty suggestions
+     
       setSearchSuggestions([]);
       setShowSuggestions(false);
     }
   };
 
-  // Handle suggestion selection
+
   const handleSuggestionClick = (suggestion) => {
     setSearchQuery(suggestion.text);
     setShowSuggestions(false);
@@ -371,7 +350,7 @@ const handleSearchInputChange = (e) => {
   };
 
   const NotificationsDropdown = () => (
-    <Paper ref={dropdownRef} sx={{ position: 'absolute', boxShadow: 3, borderRadius: 2, top: '100%', right: 200, width: 300, maxHeight: '75vh', overflow: 'auto', zIndex: 10, p: 2 }}>
+    <Paper ref={dropdownRef} sx={{ position: 'absolute', boxShadow: 3, borderRadius: 2, top: '100%', right: {xs:0,sm:200}, width: {xs:"100vw",sm:300}, maxHeight:{ xs:"100vh",sm:'75vh'}, overflow: 'auto', zIndex: 10, p: 2 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
          <Box>
          <Typography variant="h6" sx={{ mb: 0 }}>
@@ -420,7 +399,7 @@ const handleSearchInputChange = (e) => {
     </Paper>
   );
 
-  // Enhanced Mobile Sidebar Menu
+  
   const MobileSidebar = () => (
     <Drawer  PaperProps={{  sx: {  width: 240, bgcolor: '#f9f5f7' } }}  anchor="left"   open={drawerOpen}  onClose={handleDrawerToggle}>
       
@@ -435,7 +414,7 @@ const handleSearchInputChange = (e) => {
                   <SearchIcon />
                 </Button>
                 
-                {/* Suggestions Dropdown */}
+            
                 {showSuggestions && searchSuggestions.length > 0 && (
                   <Box sx={{
                     position: 'absolute',  top: '100%', left: 0,   width: '100%',    maxHeight: '300px', overflowY: 'auto', backgroundColor: 'white',  boxShadow: 3,  borderRadius: '0 0 4px 4px',   zIndex: 10001,  mt: 0.5}}>
@@ -467,7 +446,6 @@ const handleSearchInputChange = (e) => {
         </Box>
         <Divider sx={{ mb: 2 }} />
 
-        {/* My Account Section */}
         {isLoggedIn && (
         <List subheader={
             <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
@@ -482,7 +460,7 @@ const handleSearchInputChange = (e) => {
           </ListItem>
         </List>)}
         
-        {/* Add Products Section */}
+       
         <List  subheader={
             <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
               ADD PRODUCTS
@@ -501,7 +479,7 @@ const handleSearchInputChange = (e) => {
           </ListItem>
         </List>
 
-        {/* Navigation Section */}
+     
         <List subheader={  <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
               NAVIGATION
             </ListSubheader> }>
@@ -531,7 +509,7 @@ const handleSearchInputChange = (e) => {
           </ListItem>
         </List>
         
-        {/* Spacer to push logout to bottom */}
+        
         <Box sx={{ flexGrow: 1 }} />
         
     
@@ -563,7 +541,7 @@ const handleSearchInputChange = (e) => {
                   <SearchIcon />
                 </Button>
                 
-                {/* Suggestions Dropdown */}
+     
                 {showSuggestions && searchSuggestions.length > 0 && (
                   <Box sx={{
                     position: 'absolute',  top: '100%', left: 0,   width: '100%',    maxHeight: '300px', overflowY: 'auto', backgroundColor: 'white',  boxShadow: 3,  borderRadius: '0 0 4px 4px',   zIndex: 10001,  mt: 0.5}}>
@@ -590,7 +568,7 @@ const handleSearchInputChange = (e) => {
         </Box>
      
      {login && (<Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
-          {/* <Login setLogin={setLoginOpen} /> */}
+       
            {login && <Login setLogin={setLogin} />}
            
 
@@ -686,7 +664,7 @@ const handleSearchInputChange = (e) => {
 
         {isOpen && <NotificationsDropdown />}
 
-        {/* Enhanced Mobile Side Menu */}
+      
         <MobileSidebar />
       </Box>
       {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />}

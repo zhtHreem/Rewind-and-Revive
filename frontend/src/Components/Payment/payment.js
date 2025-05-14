@@ -18,7 +18,7 @@ const Payment = () => {
         const parsedCart = savedCart ? JSON.parse(savedCart) : [];
 
         // Debugging to ensure products have valid IDs
-        console.log("Cart items:", parsedCart);
+        
 
         // Fetch product details from the backend (adjust API as needed)
         const updatedCart = await Promise.all(

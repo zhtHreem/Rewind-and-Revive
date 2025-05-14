@@ -34,7 +34,7 @@ const CreateProductForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    console.log(`Updating ${name} with value:`, value);
+   
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -71,7 +71,6 @@ const CreateProductForm = () => {
     try {
   
 
-       console.log("Submitting form data:", Object.fromEntries(data));
       
       // Fix the URL - remove /create from the endpoint
       const response = await axios.post(
@@ -84,7 +83,7 @@ const CreateProductForm = () => {
         }
       );
 
-      console.log("Product created:", response.data);
+      
       alert("Product created successfully!");
       navigate("/bidProduct");
     } catch (error) {

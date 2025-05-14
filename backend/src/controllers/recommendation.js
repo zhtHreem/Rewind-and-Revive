@@ -15,7 +15,7 @@ export const getRecommendations = async (req, res) => {
       recommendations: req.recommendations || []
     });
   } catch (error) {
-    console.error("Error in recommendation controller:", error);
+    // console.error("Error in recommendation controller:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to get recommendations",
@@ -27,7 +27,7 @@ export const getRecommendations = async (req, res) => {
 export const getProductRecommendations = async (req, res) => {
   try {
     const { productId } = req.params;
-    console.log("productId",productId);
+    // console.log("productId",productId);
     
     if (!productId) {
       return res.status(400).json({
@@ -61,7 +61,7 @@ export const getProductRecommendations = async (req, res) => {
       recommendations
     });
   } catch (error) {
-    console.error("Error in product recommendation controller:", error);
+    // console.error("Error in product recommendation controller:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to get product recommendations",
@@ -84,7 +84,7 @@ export const getTrendingProducts = async (req, res) => {
       trendingProducts
     });
   } catch (error) {
-    console.error("Error in trending products controller:", error);
+    // console.error("Error in trending products controller:", error);
     return res.status(500).json({
       success: false,
       message: "Failed to get trending products",

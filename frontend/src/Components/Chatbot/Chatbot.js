@@ -73,7 +73,7 @@ const Chatbot = ({ toggleChatWindow }) => {
       formData.append('user_query', input);
       if (selectedFile) formData.append('image', selectedFile);
 
-      const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/chat`, {
+      const response = await fetch(`${process.env.REACT_APP_CHATBOT_API}/chat`, {
         method: 'POST',
         headers: {
           Authorization: localStorage.getItem('token'),

@@ -266,9 +266,9 @@ export const getProductBuyers = async (req, res) => {
   const sellerId = req.user.id;
   
   // Debugging
-  console.log("==== POST /product/buyers route hit ====");
-  console.log("Product ID from body:", productId);
-  console.log("Seller ID:", sellerId);
+  // console.log("==== POST /product/buyers route hit ====");
+  // console.log("Product ID from body:", productId);
+  // console.log("Seller ID:", sellerId);
   
   try {
     // Validate product ID format
@@ -284,8 +284,8 @@ export const getProductBuyers = async (req, res) => {
     
     // Trim productId in case there are whitespace issues
     const trimmedProductId = productId.trim();
-    console.log("Trimmed Product ID:", trimmedProductId);
-    console.log("Is valid ObjectId?", mongoose.Types.ObjectId.isValid(trimmedProductId));
+    // console.log("Trimmed Product ID:", trimmedProductId);
+    // console.log("Is valid ObjectId?", mongoose.Types.ObjectId.isValid(trimmedProductId));
     
     if (!mongoose.Types.ObjectId.isValid(trimmedProductId)) {
       console.error("Invalid MongoDB ObjectId format:", trimmedProductId);
@@ -299,10 +299,10 @@ export const getProductBuyers = async (req, res) => {
       return res.status(404).json({ error: "Product not found" });
     }
     
-    console.log("Product found:", product._id);
-    console.log("Product owner:", product.owner);
-    console.log("Current user:", sellerId);
-    console.log("Is owner match?", product.owner.toString() === sellerId);
+    // console.log("Product found:", product._id);
+    // console.log("Product owner:", product.owner);
+    // console.log("Current user:", sellerId);
+    // console.log("Is owner match?", product.owner.toString() === sellerId);
     
     // Only the product owner can see the list of buyers
     if (product.owner.toString() !== sellerId) {
@@ -329,7 +329,7 @@ export const getProductBuyers = async (req, res) => {
         );
       });
     
-    console.log(`Returning ${buyers.length} unique buyers`);
+    // console.log(`Returning ${buyers.length} unique buyers`);
     res.status(200).json({ buyers });
   } catch (error) {
     console.error("Error fetching buyers:", error);

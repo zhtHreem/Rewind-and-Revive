@@ -23,7 +23,7 @@ const ProductChat = ({ productId, ownerId }) => {
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const buyerIdFromQuery = searchParams.get("buyer");
+  const buyerIdFromQuery = searchParams.get("chatPartnerId");
 
   // Initialize socket connection
   useEffect(() => {
@@ -102,7 +102,22 @@ useEffect(() => {
      
       
       if (response.data && response.data.buyers) {
-        setBuyersList(response.data.buyers);
+
+
+        // Sort the buyers list to put the selected buyer at the top
+        let sortedBuyers = [...response.data.buyers];
+        
+        // If we have a buyerIdFromQuery, move that buyer to the top
+        if (buyerIdFromQuery) {
+          sortedBuyers.sort((a, b) => {
+            if (a._id === buyerIdFromQuery) return -1;
+            if (b._id === buyerIdFromQuery) return 1;
+            return 0;
+          });
+        }
+        
+        setBuyersList(sortedBuyers);
+        // setBuyersList(response.data.buyers);
         
         // Auto-select buyer from query param or first buyer in list
         if (buyerIdFromQuery && response.data.buyers.some(b => b._id === buyerIdFromQuery)) {

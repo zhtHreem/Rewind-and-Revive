@@ -26,7 +26,7 @@ const LimitedTimeDeals = () => {
       {/* Text Content */}
       <Box mx={10} sx={{ maxWidth: '600px', textAlign: 'center' }}>
         <Typography variant="h6" sx={{ color: '#666', mb: 1 }}>
-          Limited Time Deals
+          All in One Stop
         </Typography>
         <Typography
           variant="h4"
@@ -37,13 +37,13 @@ const LimitedTimeDeals = () => {
             fontSize: { xs: '1.8rem', md: '2.5rem' },
           }}
         >
-          Hurry! Limited-Time Savings Await
+          Hurry! Limited Products awaited
         </Typography>
         <Typography
           variant="body1"
           sx={{ color: '#555', mb: 3, fontSize: { xs: '0.9rem', md: '1rem' } }}
         >
-            Grab these exclusive offers while they last! Our carefully curated selection is designed to elevate your style without breaking the bank.
+            Grab these price friendly products.Our carefully curated selection is designed to elevate your style without breaking the bank.
 
         </Typography>
         <Button

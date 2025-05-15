@@ -9,133 +9,144 @@ import { checkAndUpdateBadges } from '../utils/badgeService.js';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export const createPaymentIntent = async (req, res) => {
-  const { paymentMethodId, productId } = req.body;
+  const { paymentMethodId, cartItems } = req.body;
   const buyerId = req.user.id;
 
-  if (!mongoose.Types.ObjectId.isValid(productId)) {
-    return res.status(400).json({ error: 'Invalid product ID format' });
+  if (!Array.isArray(cartItems) || cartItems.length === 0) {
+    return res.status(400).json({ error: 'No items in cart' });
   }
 
   try {
-    const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ error: 'Product not found' });
+    let totalAmount = 0;
+    const validProducts = [];
+
+    for (const item of cartItems) {
+      const { id, quantity } = item;
+
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: `Invalid product ID: ${id}` });
+      }
+
+      const product = await Product.findById(id);
+      if (!product) {
+        return res.status(404).json({ error: `Product not found: ${id}` });
+      }
+
+      if (product.isSold) {
+        return res.status(400).json({ error: `Product already sold: ${product.name}` });
+      }
+
+      const itemAmount = Math.round((product.price || 10) * 100) * (quantity || 1);
+      totalAmount += itemAmount;
+
+      validProducts.push({ product, quantity: quantity || 1 });
     }
 
-    const amount = Math.round((product.price || 10) * 100);
-
-    // Create the PaymentIntent
     const paymentIntent = await stripe.paymentIntents.create({
-      amount,
-      currency: 'usd',
+      amount: totalAmount,
+      currency: 'pkr',
       payment_method: paymentMethodId,
-      confirm: true, // Auto-confirm the payment
+      confirm: true,
+      automatic_payment_methods: {
+       enabled: true,
+       allow_redirects: 'never',  
+     },
       metadata: {
-        buyerId: buyerId,
-        productId: productId,
-        productOwner: product.owner.toString(),
+        buyerId,
+        cartCount: validProducts.length,
       },
-      return_url: `${process.env.FRONTEND_URL}/payment/success`, // Optional return URL
     });
 
-    console.log("PaymentIntent created successfully");
-    console.log("PaymentIntent Status:", paymentIntent.status);
+    if (paymentIntent.status !== 'succeeded') {
+      return res.status(400).json({ error: 'Payment failed' });
+    }
 
-    // Check if the payment was successful
-    if (paymentIntent.status === 'succeeded') {
-      // Save the payment in the database
-      const paymentRecord = new Payment({
-        productBuyers: buyerId,
-        productOwner: product.owner.toString(),
-        productId,
-        amount: paymentIntent.amount / 100,
-        currency: paymentIntent.currency,
+    
+
+    
+for (const { product, quantity } of validProducts) {
+  const productId = product._id;
+  const sellerId = product.owner;
+  
+  
+  const paymentRecord = new Payment({
+    productBuyers: buyerId,
+    productOwner: sellerId,
+    productId,
+    amount: product.price,
+    currency: 'pkr',
+  });
+
+  await paymentRecord.save();
+  await Product.findByIdAndUpdate(productId, { isSold: true });
+
+  
+  await User.findByIdAndUpdate(sellerId, {
+    $inc: {
+      "stats.productsSold": 1,
+      "stats.totalEarned": product.price,
+    },
+  });
+
+  await User.findByIdAndUpdate(buyerId, {
+    $inc: {
+      "stats.itemsBought": 1,
+      "stats.totalSpent": product.price,
+    },
+  });
+
+  
+  const buyer = await User.findById(buyerId, 'username');
+  const seller = await User.findById(sellerId, 'username');
+
+  if (buyer && seller) {
+   
+    const buyerNotification = new Notification({
+      recipient: buyerId,
+      sender: sellerId,
+      product: productId,
+      title: 'Purchase Confirmed',
+      description: `You purchased ${product.name} for Rs. ${product.price}.`,
+      type: 'order',
+    });
+
+    const sellerNotification = new Notification({
+      recipient: sellerId,
+      sender: buyerId,
+      product: productId,
+      title: 'Product Sold',
+      description: `Your product ${product.name} was bought by ${buyer.username}.`,
+      type: 'order',
+    });
+
+    await buyerNotification.save();
+    await sellerNotification.save();
+
+    
+    if (req.io) {
+      req.io.to(buyerId.toString()).emit('new_notification', {
+        ...buyerNotification.toObject(),
+        time: 'Just now',
       });
 
-      try {
-        await paymentRecord.save();
-        console.log("Payment record saved:", paymentRecord._id);
+      req.io.to(sellerId.toString()).emit('new_notification', {
+        ...sellerNotification.toObject(),
+        time: 'Just now',
+      });
 
-        // Update stats for seller
-        await User.findByIdAndUpdate(product.owner, {
-          $inc: {
-            "stats.productsSold": 1,
-            "stats.totalEarned": paymentIntent.amount / 100,
-          },
-        });
-
-        // Update stats for buyer
-        await User.findByIdAndUpdate(buyerId, {
-          $inc: {
-            "stats.itemsBought": 1,
-            "stats.totalSpent": paymentIntent.amount / 100,
-          },
-        });
-
-        // Create notifications for both buyer and seller
-        const buyer = await User.findById(buyerId, 'username');
-        const seller = await User.findById(product.owner, 'username');
-
-        if (buyer && seller) {
-          const buyerNotification = new Notification({
-            recipient: buyerId,
-            sender: product.owner,
-            product: productId,
-            title: 'Purchase Confirmed',
-            description: `You have successfully purchased ${product.name} for Rs. ${product.price}.`,
-            type: 'order',
-          });
-          await buyerNotification.save();
-
-          const sellerNotification = new Notification({
-            recipient: product.owner,
-            sender: buyerId,
-            product: productId,
-            title: 'Product Sold',
-            description: `Your product ${product.name} was purchased by ${buyer.username} for Rs. ${product.price}.`,
-            type: 'order',
-          });
-          await sellerNotification.save();
-
-          // Optional: Send real-time notifications through Socket.io if available
-          if (req.io) {
-            req.io.to(buyerId.toString()).emit('new_notification', {
-              ...buyerNotification.toObject(),
-              time: 'Just now',
-            });
-
-            req.io.to(product.owner.toString()).emit('new_notification', {
-              ...sellerNotification.toObject(),
-              time: 'Just now',
-            });
-
-            // Check for badge unlocks
-            await checkAndUpdateBadges(buyerId, req.io);
-            await checkAndUpdateBadges(product.owner, req.io);
-          }
-        }
-        
-          
-  // Mark the product as sold
-         await Product.findByIdAndUpdate(productId, { isSold: true });
-
-        res.status(200).json({
-          clientSecret: paymentIntent.client_secret,
-          status: paymentIntent.status,
-        });
-
-        console.log("Payment processed and saved successfully.");
-      } catch (err) {
-        console.error('Error saving payment record:', err);
-        res.status(500).json({ error: 'Error saving payment record' });
-      }
-    } else {
-      // Handle payment failure
-      console.error('Payment failed:', paymentIntent.status);
-      res.status(400).json({ error: 'Payment failed' });
+      await checkAndUpdateBadges(buyerId, req.io);
+      await checkAndUpdateBadges(sellerId, req.io);
     }
+  }
+}
+
+    res.status(200).json({
+      clientSecret: paymentIntent.client_secret,
+      status: paymentIntent.status,
+    });
+
   } catch (err) {
-    console.error('Error processing payment:', err.message);
-    res.status(400).json({ error: err.message });
+    console.error('Payment processing error:', err);
+    res.status(500).json({ error: err.message });
   }
 };

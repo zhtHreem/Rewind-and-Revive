@@ -35,7 +35,7 @@ function Navbar() {
 
   const [shoppingCart, setShoppingCart] = useState(false);
   const [login, setLogin] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token'));
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('token'));
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   
@@ -93,17 +93,27 @@ function Navbar() {
   }
 };
 
-  const getUserId = () => {
-    if (!user) return null;
-    try {
-      const decoded = jwtDecode(user);
-      return decoded.id; 
-    } catch (error) {
-      console.error("Error decoding token:", error);
+const getUserId = () => {
+  if (!user) return null;
+  try {
+    const decoded = jwtDecode(user);
+    
+
+    const currentTime = Date.now() / 1000;
+    if (decoded.exp && decoded.exp < currentTime) {
+      localStorage.removeItem('token');
+      setIsLoggedIn(false);
       return null;
     }
-  };
-  
+    
+    return decoded.id;
+  } catch (error) {
+    console.error("Error decoding token:", error);
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    return null;
+  }
+};
   const userId = getUserId();
   const socketRef = useRef(null);
  

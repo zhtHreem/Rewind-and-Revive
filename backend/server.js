@@ -30,7 +30,7 @@ const app = express();
 
 connectDB();
 
-console.log("api",process.env.REACT_APP_API_URL);
+
 
 app.use(cors({
   origin: process.env.REACT_APP_API_URL,  // Use exact origin, not array
@@ -100,9 +100,8 @@ io.on('connection', (socket) => {
 
    socket.on('authenticate', (userId) => {
     if (userId) {
-      // Add this socket to a room named after the user ID
+      
       socket.join(userId);
-      console.log(`User ${userId} authenticated and joined room ${userId}`);
     }
   });
 
@@ -113,7 +112,7 @@ io.on('connection', (socket) => {
     io.emit('receiveMessage', message);
     
 
-   // Handle sending messages with proper room targeting
+
   socket.on('sendMessage', async (messageData) => {
     try {
       const { senderId, receiverId, productId, message } = messageData;
@@ -126,7 +125,6 @@ io.on('connection', (socket) => {
       // Create a unique chat room identifier for this conversation
       const chatRoomId = `chat_${productId}_${senderId}_${receiverId}`;
       
-      // Get sender information for display
       const User = mongoose.model('User');
       const senderUser = await User.findById(senderId, 'username');
       
@@ -140,11 +138,11 @@ io.on('connection', (socket) => {
         product: productId
       };
       
-      // Send message ONLY to the sender and receiver
+     
       io.to(senderId).emit('receiveMessage', formattedMessage);
       io.to(receiverId).emit('receiveMessage', formattedMessage);
       
-      console.log(`Message sent from ${senderId} to ${receiverId} for product ${productId}`);
+      
       
     } catch (error) {
       console.error('Error processing message:', error);
@@ -155,7 +153,7 @@ io.on('connection', (socket) => {
   const { buyerId, sellerId, productId } = data;
   
   try {
-    // Find product and user information
+    
     const product = await Product.findById(productId);
     const buyer = await User.findById(buyerId);
     const seller = await User.findById(sellerId);
@@ -192,9 +190,6 @@ io.on('connection', (socket) => {
 
 
 
-
-
-   // Handle badge notifications
   socket.on('badge_unlocked', async (data) => {
     try {
       const notification = await createNotification({
@@ -212,14 +207,6 @@ io.on('connection', (socket) => {
     }
   });
 
- 
-
-
-
-
-
-
-
   
   socket.on('disconnect', () => {
     console.log('User disconnected');
@@ -227,7 +214,6 @@ io.on('connection', (socket) => {
 
 
 });
-
 
 
 
@@ -266,11 +252,10 @@ app.use((err, req, res, next) => {
 app.get('/', (req, res) => res.send('Hello World!'));
 
 
-// Start server
 const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 
-// Export for serverless environments
+
 export default app;

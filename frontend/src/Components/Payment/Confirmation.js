@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
 import { Box, Typography, Button, Paper, CircularProgress } from '@mui/material';
@@ -22,84 +22,115 @@ const CARD_ELEMENT_OPTIONS = {
 };
 
 const PaymentForm = () => {
-  const { productId } = useParams();
   const stripe = useStripe();
   const elements = useElements();
   const navigate = useNavigate();
+  const [cart, setCart] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  useEffect(() => {
+    const fetchCartProducts = async () => {
+      try {
+        const savedCart = localStorage.getItem("cart");
+        const parsedCart = savedCart ? JSON.parse(savedCart) : [];
+
+        const updatedCart = await Promise.all(
+          parsedCart.map(async (item) => {
+            if (!item.id) {
+              console.error("Missing product ID:", item);
+              return item;
+            }
+            const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/${item.id}`);
+            return { ...item, ...response.data };
+          })
+        );
+
+        setCart(updatedCart);
+      } catch (error) {
+        console.error("Error fetching cart:", error);
+      }
+    };
+
+    fetchCartProducts();
+  }, []);
+
+  const getTotalPrice = () =>
+    cart.reduce((total, product) => total + product.price * product.quantity, 0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!stripe || !elements) return;
-    
+
+    setIsProcessing(true);
+    const cardElement = elements.getElement(CardElement);
+
     try {
-      setIsProcessing(true);
-      const cardElement = elements.getElement(CardElement);
-      
       const { error: methodError, paymentMethod } = await stripe.createPaymentMethod({
         type: 'card',
         card: cardElement,
       });
-      
+
       if (methodError) {
-        console.error(methodError);
         Swal.fire({ icon: 'error', title: methodError.message });
         setIsProcessing(false);
         return;
       }
-      
-      console.log("Submitting payment with paymentMethodId:", paymentMethod.id);
-      console.log("Submitting payment with productId:", productId);
-      
-      const res = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/payment/create-payment-intent`, {
-        paymentMethodId: paymentMethod.id,
-        productId,
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-           Authorization: localStorage.getItem('token'),
-         },
-      });
-      
+
+      // Send payment info and cart to backend
+      const res = await axios.post(
+        `${process.env.REACT_APP_LOCAL_URL}/api/payment/create-payment-intent`,
+        {
+          paymentMethodId: paymentMethod.id,
+          cartItems: cart,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: localStorage.getItem('token'),
+          },
+        }
+      );
+
       const { clientSecret, status } = res.data;
-      
-      // Check if payment was already successful (from automatic confirmation)
+
       if (status === 'succeeded') {
-        Swal.fire({ 
-          icon: 'success', 
+        Swal.fire({
+          icon: 'success',
           title: 'Payment successful!',
-          text: 'Your order has been placed successfully.'
+          text: 'Your order has been placed successfully.',
         });
+        localStorage.removeItem("cart");
         cardElement.clear();
+        navigate("/confirmation");
         return;
       }
-      
-      // Otherwise, handle client-side confirmation
+
       const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret);
-      
+
       if (error) {
         Swal.fire({ icon: 'error', title: error.message });
       } else if (paymentIntent.status === 'succeeded') {
-        Swal.fire({ 
-          icon: 'success', 
+        Swal.fire({
+          icon: 'success',
           title: 'Payment successful!',
-          text: 'Your order has been placed successfully.'
+          text: 'Your order has been placed successfully.',
         });
+        localStorage.removeItem("cart");
         cardElement.clear();
+        navigate("/confirmation");
       } else {
-        Swal.fire({ 
-          icon: 'info', 
-          title: 'Payment processing',
-          text: 'Your payment is being processed. We will notify you once completed.'
+        Swal.fire({
+          icon: 'info',
+          title: 'Payment Processing',
+          text: 'We will notify you once your payment is confirmed.',
         });
       }
     } catch (err) {
-      console.error('Payment failed:', err);
-      Swal.fire({ 
-        icon: 'error', 
+      Swal.fire({
+        icon: 'error',
         title: 'Payment Failed',
-        text: err.response?.data?.error || 'Something went wrong with your payment'
+        text: err.response?.data?.error || 'Something went wrong',
       });
     } finally {
       setIsProcessing(false);
@@ -108,10 +139,14 @@ const PaymentForm = () => {
 
   return (
     <Layout>
-    <>
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh" mt={5}>
         <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
-          <Typography variant="h5" gutterBottom>Complete Your Payment</Typography>
+          <Typography variant="h5" gutterBottom>
+            Complete Your Payment
+          </Typography>
+          <Typography variant="body1" gutterBottom>
+            Total Amount: Rs.{getTotalPrice()}
+          </Typography>
           <form onSubmit={handleSubmit}>
             <Box sx={{ my: 3, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
               <CardElement options={CARD_ELEMENT_OPTIONS} />
@@ -128,20 +163,14 @@ const PaymentForm = () => {
           </form>
         </Paper>
       </Box>
-  
+
       <Box display="flex" justifyContent="center" mt={1} mb={5}>
-        <Button 
-          variant="outlined" 
-          color="secondary" 
-          onClick={() => navigate('/')}
-        >
-          Return to Home
+        <Button variant="outlined" color="secondary" onClick={() => navigate('/cart')}>
+          Back to Cart
         </Button>
       </Box>
-    </>
     </Layout>
   );
-};  
-  
+};
 
 export default PaymentForm;

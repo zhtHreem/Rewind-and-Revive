@@ -10,7 +10,7 @@ const Payment = () => {
   const navigate = useNavigate();
   const { productId }= useParams();
 
-  // Fetch products from the backend (replace with correct endpoint)
+  // Fetch products from the backend (replace with correact endpoint)
   useEffect(() => {
     const fetchCartProducts = async () => {
       try {
@@ -61,7 +61,7 @@ const Payment = () => {
               </td>
               <td className="product-name">{product.name}</td>
               <td className="product-price">
-                {product.quantity} x ${product.price}
+                {product.quantity} x Rs.{product.price}
               </td>
             </tr>
           ))}
@@ -72,7 +72,7 @@ const Payment = () => {
 
       <Grid container justifyContent="space-between" alignItems="center">
         <Typography variant="h6" className="total-label">Total</Typography>
-        <Typography variant="h6" className="total-price">${getTotalPrice()}</Typography>
+        <Typography variant="h6" className="total-price">Rs.{getTotalPrice()}</Typography>
       </Grid>
 
       <Divider sx={{ my: 2 }} />
@@ -89,7 +89,7 @@ const Payment = () => {
         <Button
           variant="contained"
           sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}
-          onClick={() =>navigate(`/confirmation/${productId}`)}
+          onClick={() => navigate('/confirmation', { state: { cart } })}
           className="pay-now-btn"
         >
           Pay Now

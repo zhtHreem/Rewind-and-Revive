@@ -49,6 +49,10 @@ export const getProductRecommendations = async (req, res) => {
     const recommendations = await Product.find({
       _id: { $ne: productId }, // Exclude current product
       $or: [
+    { isSold: { $exists: false } }, // Include products where isSold field doesn't exist
+    { isSold: false }               // Include products where isSold is explicitly false
+  ],
+      $or: [
         { category: product.category },
         { type: product.type },
         { materials: { $in: product.materials } },

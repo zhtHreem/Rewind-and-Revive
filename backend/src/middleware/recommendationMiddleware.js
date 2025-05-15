@@ -123,7 +123,14 @@ export const generateRecommendations = async (req, res, next) => {
           // Find similar products
           const recommendations = await Product.find({
             _id: { $nin: viewHistory }, // Exclude viewed products
-            $or: conditions
+            $and: [
+              { $or: [
+                  { isSold: { $exists: false } }, // Include products where isSold field doesn't exist
+                  { isSold: false }               // Include products where isSold is explicitly false
+                ]
+              },
+              { $or: conditions }
+            ]
           }).populate('owner', 'username').limit(6);
           
           // console.log(`Found ${recommendations.length} recommendations based on product similarity`);
@@ -138,12 +145,12 @@ export const generateRecommendations = async (req, res, next) => {
     
     // If we still have no recommendations, show popular products
     if (!req.recommendations || req.recommendations.length === 0) {
-      // console.log("Falling back to trending products");
+
       req.recommendations = await Product.find()
         .sort({ createdAt: -1 })
         .populate('owner', 'username')
         .limit(6);
-      // console.log(`Found ${req.recommendations.length} trending products as fallback`);
+    
     }
     
     next();

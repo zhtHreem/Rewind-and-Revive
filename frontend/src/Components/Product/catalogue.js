@@ -95,7 +95,7 @@ const CataloguePage = () => {
         if (category) filters.push(`Category: ${category.charAt(0).toUpperCase() + category.slice(1)}`);
         if (selectedTypes.length > 0) filters.push(`Types: ${selectedTypes.join(', ')}`);
         if (selectedSizes.length > 0) filters.push(`Sizes: ${selectedSizes.join(', ').toUpperCase()}`);
-        if (priceRange) filters.push(`Price Up to $${priceRange}`);
+        if (priceRange) filters.push(`Price Up to Rs.${priceRange}`);
         if (searchQuery) filters.push(`Search: "${searchQuery}"`);
         return filters.length > 0 ? filters : ['No filters applied'];
     };
@@ -257,7 +257,7 @@ const getFilteredProducts = (products, filters) => {
                     categories={defaultCategories}
                     sizes={sizes}
                     productTypes={productTypes}
-                    priceRanges={[100, 200, 300]}
+                    priceRanges={[1000, 2000, 3000]}
                     category={category}
                     selectedSizes={selectedSizes}
                     selectedTypes={selectedTypes}
@@ -363,7 +363,7 @@ const getFilteredProducts = (products, filters) => {
                             <Box sx={{ mb: 2 }}>
                                 <Typography variant="subtitle1">Price Range</Typography>
                                 <Box sx={{ pl: 2 }}>
-                                    {[100, 200, 300].map(price => (
+                                    {[1000, 2000, 3000].map(price => (
                                         <FormControlLabel
                                             key={price}
                                             control={
@@ -372,7 +372,7 @@ const getFilteredProducts = (products, filters) => {
                                                     onChange={() => setPriceRange(priceRange === price.toString() ? '' : price.toString())}
                                                 />
                                             }
-                                            label={`Up to $${price}`}
+                                            label={`Up to Rs.${price}`}
                                         />
                                     ))}
                                 </Box>

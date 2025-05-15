@@ -4,14 +4,22 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from PIL import Image
 import io
+import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from dotenv import load_dotenv
 
 # Setup Gemini
-genai.configure(api_key="AIzaSyCKeSAVkR4IfMPvnQNrxJ_JnZRtY1KS288")
-client = MongoClient()  # Added missing MongoDB client initialization
+load_dotenv()  # Load variables from .env
+
+# Setup Gemini
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# Setup MongoDB
+client = MongoClient(os.getenv("MONGO_URI"))
 db = client["RewindAndRevive"]
 collection = db["products"]
+
 
 # Globals
 conversation_history = []
@@ -157,15 +165,17 @@ def chat_with_bot(user_query, image_path=None):
         else:
             prompt_text = f"{user_query}. "
             if detected_type == "top":
-                prompt_text += "I see you're interested in a top. Here are some jeans and skirts that would pair well with it."
+                prompt_text += "I see you're interested in a top. Here are some jeans and skirts that would pair well with it. Reply with a single sentence fashion suggestion. No elaboration."
             elif detected_type == "bottom":
-                prompt_text += "I see you're interested in bottoms. Here are some tops that would pair well with them."
+                prompt_text += "I see you're interested in bottoms. Here are some tops that would pair well with them. Reply with a single sentence fashion suggestion. No elaboration."
             else:
-                prompt_text += "Reply with a one-line fashion suggestion only."
+                prompt_text += "Reply with a single sentence fashion suggestion. No elaboration."
 
             response = chat.send_message(prompt_text)
 
         bot_reply = response.text.strip()
+        bot_reply = bot_reply.split('\n')[0].split('. ')[0].strip() + '.'  # Enforce one-liner
+
         print(" Suggestion:", bot_reply)
 
     except Exception as e:

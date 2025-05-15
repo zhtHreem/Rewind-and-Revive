@@ -31,7 +31,7 @@ const ProductCard = ({ product }) => {
         {description && (
           <Typography variant="caption" color="text.secondary" noWrap>{description}</Typography>
         )}
-        <Typography variant="caption">₹{price} | Color: {color}</Typography>
+        <Typography variant="caption">Rs{price} | Color: {color}</Typography>
         {product_link && (
           <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
             <a

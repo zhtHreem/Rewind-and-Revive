@@ -61,7 +61,7 @@ const Payment = () => {
               </td>
               <td className="product-name">{product.name}</td>
               <td className="product-price">
-                {product.quantity} x ${product.price}
+                {product.quantity} x Rs.{product.price}
               </td>
             </tr>
           ))}
@@ -72,7 +72,7 @@ const Payment = () => {
 
       <Grid container justifyContent="space-between" alignItems="center">
         <Typography variant="h6" className="total-label">Total</Typography>
-        <Typography variant="h6" className="total-price">${getTotalPrice()}</Typography>
+        <Typography variant="h6" className="total-price">Rs.{getTotalPrice()}</Typography>
       </Grid>
 
       <Divider sx={{ my: 2 }} />

@@ -145,7 +145,7 @@ const PaymentForm = () => {
             Complete Your Payment
           </Typography>
           <Typography variant="body1" gutterBottom>
-            Total Amount: ${getTotalPrice()}
+            Total Amount: Rs.{getTotalPrice()}
           </Typography>
           <form onSubmit={handleSubmit}>
             <Box sx={{ my: 3, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>

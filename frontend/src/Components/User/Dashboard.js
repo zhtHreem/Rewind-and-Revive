@@ -185,24 +185,7 @@ const Dashboard = () => {
     <Box sx={{ padding: 3 }}>
       <Grid container spacing={3}>
 
-        {/* Likes and Top Seller Together */}
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
-            <Typography variant="h6">Likes Received</Typography>
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-              <CountUp end={stats.likesReceived} duration={2.5} />
-            </Typography>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
-            <Typography variant="h6">Top Seller Position</Typography>
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-              Top {topSellerRank}%
-            </Typography>
-          </Paper>
-        </Grid>
+        
 
         {/* Monthly Sales Trend Full Width */}
         <Grid item xs={12}>
@@ -248,7 +231,10 @@ const Dashboard = () => {
         <Grid item xs={12} md={4}>
           <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Earned</Typography>
-            <Typography variant="h4">${stats.totalEarned}</Typography>
+            <Typography variant="h4">
+  ${stats.totalEarned !== undefined && stats.totalEarned !== null ? stats.totalEarned : '0.00'}
+</Typography>
+
           </Paper>
         </Grid>
 

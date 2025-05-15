@@ -216,45 +216,66 @@ export const getUserProfile = async (req, res) => {
     const totalListed = await Product.countDocuments({ owner: id });
     const productsSold = await Product.countDocuments({ owner: id, isSold: true });
 
-    // You can also reuse your Payment model logic if needed
+    // Calculate total earned (sum of all payments where this user is the product owner)
+    const earnings = await Payment.aggregate([
+      { $match: { productOwner: new mongoose.Types.ObjectId(id) }},
+      { $group: { _id: null, totalEarned: { $sum: "$amount" }}}
+    ]);
+    
+    // Calculate total spent (sum of all payments where this user is the buyer)
+    const spending = await Payment.aggregate([
+      { $match: { productBuyers: new mongoose.Types.ObjectId(id) }},
+      { $group: { _id: null, totalSpent: { $sum: "$amount" }}}
+    ]);
+
+    // Items bought count
     const itemsBought = await Payment.countDocuments({ productBuyers: id });
 
+    // Extract the values or default to 0 if no records found
+    const totalEarned = earnings.length > 0 ? earnings[0].totalEarned : 0;
+    const totalSpent = spending.length > 0 ? spending[0].totalSpent : 0;
+
+    // Build the stats object
     const stats = {
       productsSold,
       totalListed,
       itemsBought,
-      totalSpent: 0, // Add if you track spent amount
-      totalEarned: 0, // Add if you track revenue
+      totalSpent,
+      totalEarned,
       likesReceived: user.likesReceived || 0
     };
+
+    // Update the user's stats in the database
+    await User.findByIdAndUpdate(id, { stats }, { new: true });
+    
     // === Calculate Top Seller Rank ===
-const allSellers = await User.find({ role: 'seller' });
+    const allSellers = await User.find({ role: 'seller' });
 
-const sellerScores = allSellers.map(seller => {
-  const s = seller.stats || {};
-  const score =
-    (s.productsSold || 0) * 0.4 +
-    (seller.averageRating || 0) * 20 * 0.3 +
-    (s.totalEarned || 0) * 0.2 +
-    ((seller.reviewsData?.fiveStar || 0) +
-     (seller.reviewsData?.fourStar || 0) +
-     (seller.reviewsData?.threeStar || 0) +
-     (seller.reviewsData?.twoStar || 0) +
-     (seller.reviewsData?.oneStar || 0)) * 0.1;
+    const sellerScores = allSellers.map(seller => {
+      const s = seller.stats || {};
+      const score =
+        (s.productsSold || 0) * 0.4 +
+        (seller.averageRating || 0) * 20 * 0.3 +
+        (s.totalEarned || 0) * 0.2 +
+        ((seller.reviewsData?.fiveStar || 0) +
+         (seller.reviewsData?.fourStar || 0) +
+         (seller.reviewsData?.threeStar || 0) +
+         (seller.reviewsData?.twoStar || 0) +
+         (seller.reviewsData?.oneStar || 0)) * 0.1;
 
-  return { id: seller._id.toString(), score };
-});
+      return { id: seller._id.toString(), score };
+    });
 
-sellerScores.sort((a, b) => b.score - a.score);
-const rank = sellerScores.findIndex(s => s.id === id) + 1;
-const topSellerRank = ((rank / sellerScores.length) * 100).toFixed(1);
+    sellerScores.sort((a, b) => b.score - a.score);
+    const rank = sellerScores.findIndex(s => s.id === id) + 1;
+    const topSellerRank = ((rank / sellerScores.length) * 100).toFixed(1);
 
-res.status(200).json({
-  ...user.toObject(),
-  stats,
-  reviewsData: user.reviewsData,
-  topSellerRank  // <-- now calculated live!
-});
+    res.status(200).json({
+      ...user.toObject(),
+      stats,
+      reviewsData: user.reviewsData,
+      topSellerRank
+    });
 
   } catch (error) {
     console.error("Error in getUserProfile:", error);

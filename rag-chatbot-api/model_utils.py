@@ -4,15 +4,22 @@ from pymongo import MongoClient
 from bson.objectid import ObjectId
 from PIL import Image
 import io
+import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from dotenv import load_dotenv
 
-genai.configure(api_key="AIzaSyCD1taqy9xGauQxpiedchl7SICGqCcQ3sw")
+# Setup Gemini
+load_dotenv()  # Load variables from .env
 
-# MongoDB setup
-client = MongoClient("mongodb+srv://admin:123@eventify.dkeujvr.mongodb.net/RewindAndRevive?retryWrites=true&w=majority")
+# Setup Gemini
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+
+# Setup MongoDB
+client = MongoClient(os.getenv("MONGO_URI"))
 db = client["RewindAndRevive"]
 collection = db["products"]
+
 
 # Globals
 conversation_history = []
@@ -47,7 +54,7 @@ def chat_with_bot(user_query, image_path=None):
     # Step 1: TF-IDF similarity
     query_vector = vectorizer.transform([user_query])
     similarities = cosine_similarity(query_vector, tfidf_matrix).flatten()
-    top_indices = similarities.argsort()[-20:][::-1]  
+    top_indices = similarities.argsort()[-20:][::-1]
 
     # Step 2: Smart keyword-to-type mapping
     keyword_to_type = {
@@ -57,8 +64,8 @@ def chat_with_bot(user_query, image_path=None):
         "joggers": "bottom", "slacks": "bottom", "denims": "bottom",
 
         # Tops
-        "shirt": "top", "tshirt": "top", "t-shirt": "top", "tee": "top", "top": "top", "blouse": "top", 
-        "crop top": "top", "tank": "top", "tanktop": "top", "camisole": "top", "kurta": "top", "sweater": "top", 
+        "shirt": "top", "tshirt": "top", "t-shirt": "top", "tee": "top", "top": "top", "blouse": "top",
+        "crop top": "top", "tank": "top", "tanktop": "top", "camisole": "top", "kurta": "top", "sweater": "top",
         "hoodie": "top", "sweatshirt": "top", "polo": "top", "bodysuit": "top", "frock": "top", "dress": "top",
 
         # Layering pieces
@@ -71,8 +78,8 @@ def chat_with_bot(user_query, image_path=None):
 
         # Accessories
         "scarf": "accessory", "hat": "accessory", "belt": "accessory", "watch": "accessory",
-        "bracelet": "accessory", "necklace": "accessory", "bag": "accessory", "handbag": "accessory", 
-        "clutch": "accessory", "sunglasses": "accessory", "glasses": "accessory", "earrings": "accessory", 
+        "bracelet": "accessory", "necklace": "accessory", "bag": "accessory", "handbag": "accessory",
+        "clutch": "accessory", "sunglasses": "accessory", "glasses": "accessory", "earrings": "accessory",
         "ring": "accessory"
     }
 
@@ -87,21 +94,21 @@ def chat_with_bot(user_query, image_path=None):
         try:
             with open(image_path, "rb") as f:
                 image_bytes = f.read()
-            
+
             # Use Gemini to detect clothing type from image
             model = genai.GenerativeModel("gemini-2.0-flash")
             response = model.generate_content([
                 {"mime_type": "image/jpeg", "data": image_bytes},
                 {"text": "Is this image showing primarily a top (shirt, t-shirt, blouse, etc.) or a bottom (jeans, skirt, pants, etc.)? Answer with only one word: 'top' or 'bottom'."}
             ])
-            
+
             if "top" in response.text.lower():
                 detected_type = "top"
             elif "bottom" in response.text.lower():
                 detected_type = "bottom"
         except Exception as e:
             print(f"❌ Error analyzing image: {e}")
-    
+
     print(f" Detected clothing type: {detected_type}")
 
     # Step 3: Complementary recommendation logic
@@ -115,18 +122,16 @@ def chat_with_bot(user_query, image_path=None):
     else:
         recommended_type = None
         print(" No specific clothing type detected, using general recommendations")
-    
+
     def contains_keyword_in_fields(p, target_type):
         name = p.get("name", "").lower()
         desc = p.get("description", "").lower()
         p_type = p.get("type", "").lower()
-        
+
         if target_type == "bottom":
             return any(k in name or k in desc or k in p_type for k in ["jeans", "skirt", "pants", "bottom", "trousers"])
-        
         if target_type == "top":
             return any(k in name or k in desc or k in p_type for k in ["shirt", "top", "blouse", "tee", "t-shirt"])
-            
         return False
 
     if recommended_type:
@@ -140,13 +145,10 @@ def chat_with_bot(user_query, image_path=None):
     recommended = filtered[:3] if filtered else [products_data[i] for i in top_indices[:3]]
 
     # Step 5: Gemini reply
-    chat = genai.GenerativeModel("gemini-2.0-flash").start_chat(history=conversation_history)
-    
-    if image_path:
-        try:
-            with open(image_path, "rb") as f:
-                image_bytes = f.read()
-        
+    try:
+        chat = genai.GenerativeModel("gemini-2.0-flash").start_chat(history=conversation_history)
+
+        if image_path and 'image_bytes' in locals():
             prompt_text = f"{user_query}. "
             if detected_type == "top":
                 prompt_text += "I see you're looking at a top. Here are some jeans and skirts that would pair well with it."
@@ -154,27 +156,30 @@ def chat_with_bot(user_query, image_path=None):
                 prompt_text += "I see you're looking at bottoms. Here are some tops that would pair well with them."
             else:
                 prompt_text += "Reply with a one-line fashion suggestion based on this image."
-                
+
             response = chat.send_message([
                 {"mime_type": "image/jpeg", "data": image_bytes},
                 {"text": prompt_text}
             ])
-        except Exception as e:
-            print(f"❌ Error processing image: {e}")
-            response = chat.send_message(f"{user_query}. Reply with a one-line fashion suggestion only.")
-    else:
-        prompt_text = f"{user_query}. "
-        if detected_type == "top":
-            prompt_text += "I see you're interested in a top. Here are some jeans and skirts that would pair well with it."
-        elif detected_type == "bottom":
-            prompt_text += "I see you're interested in bottoms. Here are some tops that would pair well with them."
         else:
-            prompt_text += "Reply with a one-line fashion suggestion only."
-            
-        response = chat.send_message(prompt_text)
+            prompt_text = f"{user_query}. "
+            if detected_type == "top":
+                prompt_text += "I see you're interested in a top. Here are some jeans and skirts that would pair well with it. Reply with a single sentence fashion suggestion. No elaboration."
+            elif detected_type == "bottom":
+                prompt_text += "I see you're interested in bottoms. Here are some tops that would pair well with them. Reply with a single sentence fashion suggestion. No elaboration."
+            else:
+                prompt_text += "Reply with a single sentence fashion suggestion. No elaboration."
 
-    bot_reply = response.text.strip()
-    print(" Suggestion:", bot_reply)
+            response = chat.send_message(prompt_text)
+
+        bot_reply = response.text.strip()
+        bot_reply = bot_reply.split('\n')[0].split('. ')[0].strip() + '.'  # Enforce one-liner
+
+        print(" Suggestion:", bot_reply)
+
+    except Exception as e:
+        print(f"❌ Error generating reply: {e}")
+        bot_reply = "Sorry, I had trouble generating a fashion suggestion."
 
     # Step 6: Update history
     conversation_history.append({"role": "user", "parts": [{"text": user_query}]})

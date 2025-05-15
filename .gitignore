@@ -15,6 +15,9 @@ backend/node_modules
 venv/
 rag-chatbot-api/venv/
 
+# dotenv
+.env
+
 # testings
 /coverage
 

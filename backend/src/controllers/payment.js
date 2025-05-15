@@ -49,7 +49,7 @@ export const createPaymentIntent = async (req, res) => {
       confirm: true,
       automatic_payment_methods: {
        enabled: true,
-       allow_redirects: 'never',  // prevents redirect-based methods
+       allow_redirects: 'never',  
      },
       metadata: {
         buyerId,
@@ -61,76 +61,84 @@ export const createPaymentIntent = async (req, res) => {
       return res.status(400).json({ error: 'Payment failed' });
     }
 
-    for (const { product, quantity } of validProducts) {
-      const productId = product._id;
+    
 
-      const paymentRecord = new Payment({
-        productBuyers: buyerId,
-        productOwner: product.owner,
-        productId,
-        amount: product.price,
-        currency: 'usd',
+    
+for (const { product, quantity } of validProducts) {
+  const productId = product._id;
+  const sellerId = product.owner;
+  
+  
+  const paymentRecord = new Payment({
+    productBuyers: buyerId,
+    productOwner: sellerId,
+    productId,
+    amount: product.price,
+    currency: 'usd',
+  });
+
+  await paymentRecord.save();
+  await Product.findByIdAndUpdate(productId, { isSold: true });
+
+  
+  await User.findByIdAndUpdate(sellerId, {
+    $inc: {
+      "stats.productsSold": 1,
+      "stats.totalEarned": product.price,
+    },
+  });
+
+  await User.findByIdAndUpdate(buyerId, {
+    $inc: {
+      "stats.itemsBought": 1,
+      "stats.totalSpent": product.price,
+    },
+  });
+
+  
+  const buyer = await User.findById(buyerId, 'username');
+  const seller = await User.findById(sellerId, 'username');
+
+  if (buyer && seller) {
+   
+    const buyerNotification = new Notification({
+      recipient: buyerId,
+      sender: sellerId,
+      product: productId,
+      title: 'Purchase Confirmed',
+      description: `You purchased ${product.name} for Rs. ${product.price}.`,
+      type: 'order',
+    });
+
+    const sellerNotification = new Notification({
+      recipient: sellerId,
+      sender: buyerId,
+      product: productId,
+      title: 'Product Sold',
+      description: `Your product ${product.name} was bought by ${buyer.username}.`,
+      type: 'order',
+    });
+
+    await buyerNotification.save();
+    await sellerNotification.save();
+
+    
+    if (req.io) {
+      req.io.to(buyerId.toString()).emit('new_notification', {
+        ...buyerNotification.toObject(),
+        time: 'Just now',
       });
 
-      await paymentRecord.save();
-
-      await Product.findByIdAndUpdate(productId, { isSold: true });
-
-      await User.findByIdAndUpdate(product.owner, {
-        $inc: {
-          "stats.productsSold": 1,
-          "stats.totalEarned": product.price,
-        },
+      req.io.to(sellerId.toString()).emit('new_notification', {
+        ...sellerNotification.toObject(),
+        time: 'Just now',
       });
 
-      await User.findByIdAndUpdate(buyerId, {
-        $inc: {
-          "stats.itemsBought": 1,
-          "stats.totalSpent": product.price,
-        },
-      });
-
-      const buyer = await User.findById(buyerId, 'username');
-      const seller = await User.findById(product.owner, 'username');
-
-      if (buyer && seller) {
-        const buyerNotification = new Notification({
-          recipient: buyerId,
-          sender: product.owner,
-          product: productId,
-          title: 'Purchase Confirmed',
-          description: `You purchased ${product.name} for Rs. ${product.price}.`,
-          type: 'order',
-        });
-
-        const sellerNotification = new Notification({
-          recipient: product.owner,
-          sender: buyerId,
-          product: productId,
-          title: 'Product Sold',
-          description: `Your product ${product.name} was bought by ${buyer.username}.`,
-          type: 'order',
-        });
-
-        await buyerNotification.save();
-        await sellerNotification.save();
-
-        if (req.io) {
-          req.io.to(buyerId.toString()).emit('new_notification', {
-            ...buyerNotification.toObject(),
-            time: 'Just now',
-          });
-
-          req.io.to(product.owner.toString()).emit('new_notification', {
-            ...sellerNotification.toObject(),
-            time: 'Just now',
-          });
-
-          await checkAndUpdateBadges(buyerId, req.io);
-          await checkAndUpdateBadges(product.owner, req.io);
-        }
-      }
+      await checkAndUpdateBadges(buyerId, req.io);
+      await checkAndUpdateBadges(sellerId, req.io);
     }
+  }
+}
 
     res.status(200).json({
       clientSecret: paymentIntent.client_secret,

@@ -82,7 +82,7 @@ export const createPaymentIntent = async (req, res) => {
             sender: product.owner,
             product: productId,
             title: 'Purchase Confirmed',
-            description: `You have successfully purchased ${product.name} for $${product.price}.`,
+            description: `You have successfully purchased ${product.name} for Rs. ${product.price}.`,
             type: 'order',
           });
           await buyerNotification.save();
@@ -92,7 +92,7 @@ export const createPaymentIntent = async (req, res) => {
             sender: buyerId,
             product: productId,
             title: 'Product Sold',
-            description: `Your product ${product.name} was purchased by ${buyer.username} for $${product.price}.`,
+            description: `Your product ${product.name} was purchased by ${buyer.username} for Rs. ${product.price}.`,
             type: 'order',
           });
           await sellerNotification.save();
@@ -114,6 +114,10 @@ export const createPaymentIntent = async (req, res) => {
             await checkAndUpdateBadges(product.owner, req.io);
           }
         }
+        
+          
+  // Mark the product as sold
+         await Product.findByIdAndUpdate(productId, { isSold: true });
 
         res.status(200).json({
           clientSecret: paymentIntent.client_secret,
@@ -135,4 +139,3 @@ export const createPaymentIntent = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
-

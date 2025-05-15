@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import '../Navbar/navbar.css'; // Assuming you have navbar.css
-import Navbar from '../Navbar/navbar'; // Corrected path for Navbar
-import Footer from '../Footer/footer'; // Corrected path for Footer
-import './ContactUs.css'; // ContactUs CSS
+import '../Navbar/navbar.css';
+import Navbar from '../Navbar/navbar'; 
+import Footer from '../Footer/footer'; 
+import './ContactUs.css'; 
 
 const ContactUs = () => {
   const [formData, setFormData] = useState({
@@ -21,13 +21,12 @@ const ContactUs = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission here (e.g., send the data to a server)
-    console.log('Form submitted:', formData);
+  
   };
 
   return (
     <>
-      <Navbar /> {/* Including the navbar */}
+      <Navbar /> 
       <div className="contact-us">
         <form className="contact-form" onSubmit={handleSubmit}>
           <h2>Get in Touch</h2>

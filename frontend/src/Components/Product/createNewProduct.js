@@ -115,7 +115,7 @@ function NewProduct({ setAddProduct =true }){
         // Add image files
         imageFiles.forEach((file, index) => {
             formData.append('images', file);
-            console.log('f',file)
+         
         });
 
          // Add selected categories and materials
@@ -132,10 +132,7 @@ function NewProduct({ setAddProduct =true }){
         if (selectedOption === 'bottom' || selectedOption === 'top/bottom') {
             formData.append('bottomSizes', JSON.stringify(bottomSizes));
         }
-        // formData.forEach((value, key) => {
-        //   console.log(`${key}: ${value}`);
-        //  });
-
+       
 
         try {
  
@@ -157,7 +154,7 @@ function NewProduct({ setAddProduct =true }){
             });
             
             // Redirect to product page
-            console.log('Product added:', response.data);
+           
             setTimeout(() => {
                navigate(`/product/${response.data.product._id}`);
               }, 2000); 

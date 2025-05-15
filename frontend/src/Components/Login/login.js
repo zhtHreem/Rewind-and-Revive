@@ -59,7 +59,6 @@ function Login({ setLogin }) {
         const loginData = { email: loginEmail, password: loginPassword }; 
         try { 
             const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/login`, loginData); 
-            console.log("s",response)
             localStorage.setItem('token', response.data.token);
             setSnackbarMessage('Login successful!'); 
             setSnackbarSeverity('success'); 
@@ -75,12 +74,11 @@ function Login({ setLogin }) {
     
     const handleGoogleSuccess = async (credentialResponse) => {
         try {
-            // Send the Google token to your backend for verification and login
+    
             const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/google-login`, {
                 token: credentialResponse.credential
             });
-               console.log("kkk",response.data)
-            // Handle successful login
+
             localStorage.setItem('token', response.data.token);
             setSnackbarMessage('Google Login successful!');
             setSnackbarSeverity('success');
@@ -93,7 +91,7 @@ function Login({ setLogin }) {
             setOpenSnackbar(true);
         }
     };
-    // Signup Handler 
+   
     const handleSignup = async () => { 
         if (signupPassword !== signupConfirmPassword) { 
             setErrorMessage('Passwords do not match'); 
@@ -114,7 +112,7 @@ function Login({ setLogin }) {
         } 
     };
 
-        // Decorative Images State
+    
     const [visibleIndexes, setVisibleIndexes] = useState([]);
        const imageConfigs = [
             { src: NewProductImage, top: "5%", left: "1%" },
@@ -128,14 +126,13 @@ function Login({ setLogin }) {
             { src: RobotImage, top: "5%", left: "85%" },
             { src: OnlineShopImage, top: "-10%", left: "45%" },
         ];
-    // useEffect for decorative images visibility
     useEffect(() => {
      
 
         const timeouts = imageConfigs.map((_, index) =>
-            setTimeout(() => setVisibleIndexes((prev) => [...prev, index]), index * 300) // 300ms delay between icons
+            setTimeout(() => setVisibleIndexes((prev) => [...prev, index]), index * 300)
         );
-          return () => timeouts.forEach(clearTimeout); // Clear timeouts on unmount
+          return () => timeouts.forEach(clearTimeout); 
     }, []);
 
 
@@ -156,14 +153,14 @@ function Login({ setLogin }) {
                     <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>{snackbarMessage}</Alert> 
                 </Snackbar> 
                 <Stack direction={{ xs: "column", md: "row" }} sx={{ width: '100%', height: '100%', flexDirection: { xs: 'column', md: 'row' } }}>
-                    {/* Image Section */} 
+                
                     <Box sx={{ width: { xs: '100%', md: '60%' }, height: { xs: '200px', md: '100%' }, position: 'relative', borderRight: '2px dotted #000', display: 'flex', justifyContent: 'center', alignItems: 'center' }}> 
                         <Paper sx={{ backgroundColor: "black", borderRadius: { xs: "10%", md: '90%' }, height: { xs: '200px', md: '60%' }, width: { xs: '200px', md: '60%' }, position: 'relative' }} elevation={24}> 
                             <Box component="img" src={ThriftShopImage} sx={{ width: { xs: '150px', md: '20vw' }, height: { xs: '150px', md: '30vh' }, position: "absolute", top: "20%", left: "9%", zIndex: 1, userSelect: 'none', pointerEvents: 'none' }} /> 
                             {!isMobile && renderDecorativeImages()} 
                         </Paper> 
                     </Box> 
-                    {/* Form Section */} 
+                  
                     <Stack sx={{ width: { xs: "100%", md: "40%" }, padding: 2, display: 'flex', justifyContent: 'center', alignItems: 'center' }}> 
                         {!signup ? ( 
                             <Stack spacing={2} sx={{ width: '100%', maxWidth: 400 }}> 

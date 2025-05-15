@@ -35,8 +35,7 @@ const BiddingProduct = () => {
       try {
         const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid/${id}`);
         const data = await response.json();
-        console.log('API response:', response.status, response.statusText);
-        console.log('Bidders data:', data);
+     
 
         setBidders(data);
       } catch (error) {

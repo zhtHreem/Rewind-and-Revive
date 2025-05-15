@@ -49,7 +49,7 @@ const RatingBar = ({ label, value, total }) => {
 
 const Dashboard = () => {
   const params = useParams();
-  console.log("Params:", params); // Debugging
+  
   const userId = params.id;
   const [stats, setStats] = useState({
     productsSold: 0,
@@ -76,7 +76,7 @@ const Dashboard = () => {
         return;
       }
 
-      console.log("Fetching reviews for userId:", userId);
+     
 
       try {
         const response = await axios.get(
@@ -89,7 +89,7 @@ const Dashboard = () => {
         );
 
         const userData = response.data;
-        console.log("Fetched reviewsData:", userData.reviewsData);
+        
 
         setStats(userData.stats);
         setReviewsData(userData.reviewsData || {}); // Ensure safe state update
@@ -126,7 +126,7 @@ const Dashboard = () => {
   
   // Send averageRating to the backend when it changes
   useEffect(() => {
-    console.log("User average ID:", userId);
+   
     if (userId && totalReviews > 0) {
       const sendAverageRating = async () => {
         try {
@@ -136,7 +136,7 @@ const Dashboard = () => {
             return;
           }
 
-          console.log("Sending PUT request with:", { userId, averageRating });
+       
   
           await axios.put(
             `${process.env.REACT_APP_LOCAL_URL}/api/user/update-rating/${userId}`,
@@ -149,7 +149,6 @@ const Dashboard = () => {
             }
           );
   
-          console.log("Average rating updated successfully:", averageRating);
         } catch (error) {
           console.error("Error updating average rating:", error.response?.data || error.message);
         }
@@ -186,24 +185,7 @@ const Dashboard = () => {
     <Box sx={{ padding: 3 }}>
       <Grid container spacing={3}>
 
-        {/* Likes and Top Seller Together */}
-        <Grid item xs={12} md={6}>
-          //<Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
-            <Typography variant="h6">Likes Received</Typography>
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-              <CountUp end={stats.likesReceived} duration={2.5} />
-            </Typography>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={6}>
-          <Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
-            <Typography variant="h6">Top Seller Position</Typography>
-            <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
-              Top {topSellerRank}%
-            </Typography>
-          </Paper>
-        </Grid>
+        
 
         {/* Monthly Sales Trend Full Width */}
         <Grid item xs={12}>
@@ -249,7 +231,10 @@ const Dashboard = () => {
         <Grid item xs={12} md={4}>
           <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Earned</Typography>
-            <Typography variant="h4">${stats.totalEarned}</Typography>
+            <Typography variant="h4">
+  ${stats.totalEarned !== undefined && stats.totalEarned !== null ? stats.totalEarned : '0.00'}
+</Typography>
+
           </Paper>
         </Grid>
 

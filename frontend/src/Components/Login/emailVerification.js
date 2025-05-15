@@ -28,7 +28,7 @@ function EmailVerification() {
             try {
                 const searchParams = new URLSearchParams(window.location.search);
                 const token = searchParams.get('token');
-                console.log("Verification token:", token);
+               ;
 
                 if (!token) {
                     setVerificationStatus({
@@ -40,11 +40,9 @@ function EmailVerification() {
                     return;
                 }
 
-                // Connect to your actual API endpoint
+             
                 const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/verify-email`, { token });
-                console.log("API Response:", response.data); // Debug log
-
-                // Check if the response indicates already verified
+                
                 if (response.data.status === 'already_verified' || 
                     response.data.message.toLowerCase().includes('already verified') ||
                     response.data.message.toLowerCase().includes('already been verified')) {
@@ -71,7 +69,7 @@ function EmailVerification() {
                 }
 
             } catch (error) {
-                console.error("Verification Error:", error.response?.data); // Debug log
+                console.error("Verification Error:", error.response?.data); 
                 setVerificationStatus({
                     loading: false,
                     success: false,

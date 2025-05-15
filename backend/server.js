@@ -20,6 +20,7 @@ import biddingRoute from './src/routes/bid.js'
 import paymentRoute from './src/routes/payment.js'
 import Chat from './src/models/chat.js';
 import chatRoutes from './src/routes/chatRoutes.js'; // Import chat routes
+//import chatbotRouter from './src/routes/chatbot.js';
 // Add this import at the top with your other route imports
 import notificationRoutes from './src/routes/notifications.js';
 
@@ -245,7 +246,7 @@ app.use('/api/bid', biddingRoute);
 app.use('/api/payment', paymentRoute);
 app.use('/api/chats', chatRoutes); 
 app.use('/api/notifications', notificationRoutes);
-
+//app.use('/api/chat', chatbotRouter);
 app.use('/api', recommendationRoutes);
 
 cron.schedule('* * * * *', async () => {

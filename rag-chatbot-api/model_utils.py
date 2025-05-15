@@ -83,7 +83,6 @@ def chat_with_bot(user_query, image_path=None):
             detected_type = mapped_type
             break
     
-    # If image is provided, try to detect clothing type from image using Gemini
     if image_path and not detected_type:
         try:
             with open(image_path, "rb") as f:
@@ -147,8 +146,7 @@ def chat_with_bot(user_query, image_path=None):
         try:
             with open(image_path, "rb") as f:
                 image_bytes = f.read()
-            
-            # Send the image and text as part of the conversation
+        
             prompt_text = f"{user_query}. "
             if detected_type == "top":
                 prompt_text += "I see you're looking at a top. Here are some jeans and skirts that would pair well with it."

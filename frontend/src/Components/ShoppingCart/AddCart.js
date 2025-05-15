@@ -171,7 +171,7 @@ const AddCart = () => {
           <Button
             fullWidth
             variant="contained"
-            onClick={() => navigate(`/payment/${productId}`)}
+            onClick={() => navigate('/payment')}
             className="cart-button"
             sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}
           >

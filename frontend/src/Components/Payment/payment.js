@@ -10,7 +10,7 @@ const Payment = () => {
   const navigate = useNavigate();
   const { productId }= useParams();
 
-  // Fetch products from the backend (replace with correct endpoint)
+  // Fetch products from the backend (replace with correact endpoint)
   useEffect(() => {
     const fetchCartProducts = async () => {
       try {
@@ -89,7 +89,7 @@ const Payment = () => {
         <Button
           variant="contained"
           sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}
-          onClick={() =>navigate(`/confirmation/${productId}`)}
+          onClick={() => navigate('/confirmation', { state: { cart } })}
           className="pay-now-btn"
         >
           Pay Now

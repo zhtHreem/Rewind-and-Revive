@@ -188,7 +188,7 @@ const Dashboard = () => {
 
         {/* Likes and Top Seller Together */}
         <Grid item xs={12} md={6}>
-          <Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
+          //<Paper sx={{ padding: 3, textAlign: 'center', boxShadow: 3, borderRadius: 2 }}>
             <Typography variant="h6">Likes Received</Typography>
             <Typography variant="h4" sx={{ fontWeight: 'bold' }}>
               <CountUp end={stats.likesReceived} duration={2.5} />

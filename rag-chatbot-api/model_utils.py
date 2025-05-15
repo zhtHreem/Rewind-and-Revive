@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 # Setup Gemini
-genai.configure(api_key="AIzaSyA-MGyfJ3lmiXS-iqfeYFNrBll6lw9YtOU")
+genai.configure(api_key="AIzaSyCKeSAVkR4IfMPvnQNrxJ_JnZRtY1KS288")
 
 # MongoDB setup
 client = MongoClient("mongodb+srv://admin:123@eventify.dkeujvr.mongodb.net/RewindAndRevive?retryWrites=true&w=majority")
@@ -101,7 +101,7 @@ def chat_with_bot(user_query, image_path=None):
     recommended = filtered[:3] if filtered else [products_data[i] for i in top_indices[:3]]
 
     # Step 4: Gemini reply
-    chat = genai.GenerativeModel("gemini-1.5-pro").start_chat(history=conversation_history)
+    chat = genai.GenerativeModel("gemini-2.0-flash").start_chat(history=conversation_history)
     response = chat.send_message(f"{user_query}. Reply with a one-line fashion suggestion only.")
     bot_reply = response.text.strip()
 

@@ -17,7 +17,15 @@ export async function checkEndedAuctions(io) {
     notificationsProcessed: { $ne: true } 
   });
   console.log('Ended auctions:', endedAuctions);
-  
+
+  if (endedAuctions.length === 0) return;
+
+  const auctionIds = endedAuctions.map(a => a._id);
+  await BiddingProduct.updateMany(
+    { _id: { $in: auctionIds } },
+    { $set: { notificationsProcessed: true } }
+  );
+
   for (const auction of endedAuctions) {
     // Process winners based on bidding model
     if (auction.biddingModel === "Highest Bidder") {
@@ -185,7 +193,7 @@ async function notifyWinner(auction, bid, io, message) {
       sender: bidder._id,
       product: auction._id,
       title: 'Auction Ended',
-      description: `Your auction for ${auction.name} has ended. The winner is ${bidder.username} with a bid of $${bid.bidAmount}.`,
+      description: `Your auction for ${auction.name} has ended. The winner is ${bidder.username} with a bid of Rs.${bid.bidAmount}.`,
       type: 'auction'
     });
     console.log('Seller notification:', sellerNotification);

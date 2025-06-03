@@ -1,22 +1,18 @@
 # Rewind & Revive - Online Thrift Store
 
-**Rewind & Revive** is an innovative, eco-friendly online platform where users can buy and sell pre-loved fashion items. It promotes sustainable fashion practices while enhancing user interaction through modern technological features.
+**Rewind & Revive**  is an online thrift store developed with the MERN stack that promotes sustainable fashion by enabling users to buy and sell pre-loved clothing with advanced AI-powered and real-time interactive features.
 
 ## Project Features
 
-The Rewind & Revive platform aims to revolutionize the thrift shopping experience by integrating advanced features such as:
-- **Fashion Assistant Chatbot**: Provides personalized fashion advice to users.
-- **Recommendation System**: Offers tailored item suggestions based on user preferences and behaviors.
-- **Live Bidding System**: Allows users to bid on exclusive pre-loved items from industry stars.
-- **Gamification**: Rewards users for sales milestones and purchases, fostering engagement and participation.
-- **In-App Chat**: Facilitates direct communication between buyers and sellers.
-- **User Reviews and Ratings**: Builds trust by allowing users to rate and review items and sellers.
-  
-## Project Goals
-- **Promote Sustainable Fashion**: Encourage the reuse and recycling of clothing by providing an engaging and eco-friendly platform for users.
-- **Personalized Shopping Experience**: Enhance the shopping experience by offering personalized recommendations and interactive tools.
-- **Support Local Sellers**: Empower local sellers by providing them with a platform to reach wider audiences and promote their pre-loved items.
-- **Encourage User Interaction**: Increase engagement through gamification, live bidding, and in-app communication, while promoting sustainable fashion practices.
+- **Product Matching System**: Uses MobileNet and cosine similarity to recommend outfit matches.
+- **Personalized Recommendation Engine**: Suggests items based on user browsing history and preferences.
+- **Live Bidding System**: Enables real-time bidding on pre-loved fashion items.
+- **Gamification & Notifications**: Rewards users for engagement and sends real-time alerts to enhance participation.
+- **In-App Chat**: Facilitates direct buyer-seller communication using Socket.IO.
+- **AI Styling Assistant Chatbot**: Offers personalized fashion advice powered by a RAG-based Gemini chatbot.
+- **Secure Authentication**: Provides JWT-based login with Gmail integration.
+- **Payment Integration**: Supports Stripe for secure, seamless transactions.
+
 
 ## Installation (for local development)
 

@@ -39,8 +39,9 @@ const BiddingProduct = () => {
 
         setBidders(data);
       } catch (error) {
-        console.error('Error fetching bidders:', error);
-      }
+        const message = error.response?.data?.message || "An error occurred";
+        alert(message); // This shows the backend message in a browser alert
+}
     };
 
     fetchProduct();
@@ -79,34 +80,44 @@ const BiddingProduct = () => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handlePlaceBid = async () => {
-    if (bidAmount) {
-        if (Number(bidAmount) <= product.startingPrice) {
-          setError(`Bid amount must be greater than Rs.${product.startingPrice}`);
-          return;
-        }
-      try {
-        const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid`, {
-          method: 'POST',
-          headers: {
-             'Content-Type': 'application/json',
-              Authorization: localStorage.getItem('token'),
-            },
-          body: JSON.stringify({
-            productId: id,
-            bidAmount: Number(bidAmount),
-          }),
-        });
-
-        const data = await response.json();
-        if (!response.ok) {
-          console.error('Error placing bid:', data.message);
-        }
-        setBidAmount('');
-      } catch (error) {
-        console.error('Error placing bid:', error);
-      }
+  if (bidAmount) {
+    if (Number(bidAmount) <= product.startingPrice) {
+      setError(`Bid amount must be greater than Rs.${product.startingPrice}`);
+      return;
     }
-  };
+    try {
+      const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/bid`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: localStorage.getItem('token'),
+        },
+        body: JSON.stringify({
+          productId: id,
+          bidAmount: Number(bidAmount),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Show the backend error message in alert AND in the form
+        setError(data.message || "Failed to place bid");
+        alert(data.message || "Failed to place bid");
+        return;
+      }
+
+      // Clear the field & error after successful bid
+      setBidAmount('');
+      setError('');
+    } catch (error) {
+      console.error('Error placing bid:', error);
+      setError("Something went wrong. Try again.");
+      alert("Something went wrong. Try again.");
+    }
+  }
+};
+
 
   if (!product) {
     return (

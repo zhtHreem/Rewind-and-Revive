@@ -18,6 +18,15 @@ export async function checkEndedAuctions(io) {
   });
   console.log('Ended auctions:', endedAuctions);
   
+  if (endedAuctions.length === 0) return;
+
+  const auctionIds = endedAuctions.map(a => a._id);
+  await BiddingProduct.updateMany(
+    { _id: { $in: auctionIds } },
+    { $set: { notificationsProcessed: true } }
+  );
+
+
   for (const auction of endedAuctions) {
     // Process winners based on bidding model
     if (auction.biddingModel === "Highest Bidder") {

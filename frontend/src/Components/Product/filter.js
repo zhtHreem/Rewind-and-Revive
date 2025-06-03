@@ -181,7 +181,7 @@ const FilterDrawer = ({
                     key={price}
                     value={price.toString()}
                     control={<Radio />}
-                    label={`Up to $${price}`}
+                    label={`Up to Rs.${price}`}
                   />
                 ))}
               </RadioGroup>

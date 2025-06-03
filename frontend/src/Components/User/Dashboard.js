@@ -232,7 +232,7 @@ const Dashboard = () => {
           <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Earned</Typography>
             <Typography variant="h4">
-  ${stats.totalEarned !== undefined && stats.totalEarned !== null ? stats.totalEarned : '0.00'}
+  Rs.{stats.totalEarned !== undefined && stats.totalEarned !== null ? stats.totalEarned : '0.00'}
 </Typography>
 
           </Paper>
@@ -241,7 +241,7 @@ const Dashboard = () => {
         <Grid item xs={12} md={4}>
           <Paper sx={{ padding: 3, textAlign: 'center' }}>
             <Typography variant="h6">Total Spent</Typography>
-            <Typography variant="h4">${stats.totalSpent}</Typography>
+            <Typography variant="h4">Rs.{stats.totalSpent}</Typography>
           </Paper>
         </Grid>
       </Grid>

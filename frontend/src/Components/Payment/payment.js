@@ -87,12 +87,18 @@ const Payment = () => {
           Back to Cart
         </Button>
         <Button
-          variant="contained"
-          sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}
+          
+          sx={{ backgroundColor: "#85586F",   color: "#fff", // Make sure text is readable on dark background
+    '&:hover': {
+      backgroundColor: "#6A4C58"
+    }}}
           onClick={() => navigate('/confirmation', { state: { cart } })}
-          className="pay-now-btn"
+        
+          variant="contained"
+          disableElevation
+  disableRipple
         >
-          Pay Now
+          Pay Nowh
         </Button>
       </Box>
     </Box>

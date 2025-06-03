@@ -428,14 +428,14 @@ const getFilteredProducts = (products, filters) => {
                {loading ? (
  
                         Array(8).fill(0).map((_, index) => (
-                            <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+                            <Grid item xs={6} sm={6} md={4} lg={3} key={index}>
                                  <ProductCardSkeleton />
                               </Grid>
                           ))
                     ) : (
   
                     filteredProducts.map(product => (
-                    <Grid item xs={12} sm={6} md={4} lg={3} key={product._id} >
+                    <Grid item xs={6} sm={6} md={4} lg={3} key={product._id} >
                      <Card  sx={{ height: 380,  backgroundColor: "#F9F9F9", display: 'flex',  flexDirection: 'column',justifyContent: 'space-between'}}>
 
                      

@@ -264,7 +264,7 @@ const handleMaterialChange = (event) => {
                 
                     <Typography variant="h3" sx={{textAlign:"center"}}>Create New Product</Typography>
 
-                    <Grid container direction={{xs:"column",md:"row"}}  justifyContent="space-between" spacing={2} p={2} sx={{maxHeight: isExpanded ? 'none' : 850,}}>
+                    <Grid container direction={{xs:"column",md:"row"}}  justifyContent="space-between" spacing={2} paddingTop={10} px={10} sx={{maxHeight: isExpanded ? 'none' : 850,}}>
                                
                           <Stack marginTop={2} direction="row" alignItems="center" spacing={2}  > 
                               <Typography  variant="h5" >Name</Typography> 
@@ -282,7 +282,7 @@ const handleMaterialChange = (event) => {
                                 <TextField label='color' value={color} onChange={(e) => setColor(e.target.value)} />
                           </Stack>
 
-                        <Grid item marginTop={2}>
+                        <Grid item >
                             {/* <Typography variant="h5" marginTop={2}>Category</Typography> */}
                             <Select    fullWidth value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)} displayEmpty  >
                                 <MenuItem value="" disabled>Select a Category</MenuItem>
@@ -296,7 +296,7 @@ const handleMaterialChange = (event) => {
                     </Grid>
                     <Grid container direction={{xs:"column",md:"row"}} md={12}  justifyContent="space-between" p={1}>
                            
-                         <Grid item md={6} >  
+                         <Grid item md={6} p={6}>  
                            
                           <Typography  marginTop={2}  variant="h5" sx={{marginTop:4}}>Type</Typography> 
                           <Grid container p={4} spacing={2} >
@@ -381,7 +381,7 @@ const handleMaterialChange = (event) => {
                         </Grid>
 
                        {/* Left side */}
-                       <Grid container direction={{xs:"column",md:"row" }} py={4}  md={6} spacing={2} sx={{maxHeight: isExpanded ? 'none' : 850,}}> {/*will not apply height when user clicks button */}
+                       <Grid container direction={{xs:"column",md:"row" }} p={10}  md={6} spacing={2} sx={{maxHeight: isExpanded ? 'none' : 850,}}> {/*will not apply height when user clicks button */}
 
                                <Grid item md={12}>
                                        <Typography variant="h5">Add Image</Typography>

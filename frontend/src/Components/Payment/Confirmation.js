@@ -154,7 +154,8 @@ const PaymentForm = () => {
             <Button
               type="submit"
               variant="contained"
-              color="primary"
+              color="inherit"
+              sx={{ mt: 2, color:"white",backgroundColor: '#85586F', '&:hover': { backgroundColor: '#6A4C58' } }}
               fullWidth
               disabled={!stripe || isProcessing}
             >

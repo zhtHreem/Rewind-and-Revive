@@ -76,7 +76,7 @@ function Header() {
           <Typography variant='h2' fontFamily={"'Times New Roman', serif"}fontSize={{xs: '2rem', sm: '2.5rem',   md: '3rem',lg: '3.5rem',  }}>
             Rewind and Revive
           </Typography>
-          <Typography variant='body2'  fontSize={{  xs: '0.75rem', sm: '0.875rem', md: '1rem', lg: '1.125rem', }} >
+          <Typography variant='body2'  fontSize={{   xs: '0.750rem', xs: '1rem', lg: '1.125rem', }} >
             Discover sustainable fashion at Rewind & Revive, the ultimate online thrift store for unique, second-hand treasures
           </Typography>
           <Stack direction="row" py={2}>
@@ -104,7 +104,7 @@ function Header() {
               <IconButton  sx={{ border: '2px solid #000', borderRadius: '1' }}>
                 <AddSharpIcon  sx={{ color: "orangered",fontSize:{ xs: "0.75rem" } }} />
               </IconButton>
-              <Typography  component={Link} variant="h5" fontSize={{ xs: "0.75rem",md: '1rem',
+              <Typography  component={Link} variant="h5" fontSize={{ xs: "0.85rem",md: '1rem',
               lg: '1.125rem', }} fontFamily={"'Times New Roman', serif"} sx={{color:"black"}}>
                 Explore our curated collection of pre-loved treasures
               </Typography>

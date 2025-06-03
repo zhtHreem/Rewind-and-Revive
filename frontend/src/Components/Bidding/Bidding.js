@@ -12,6 +12,7 @@ import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
 import bidProduct from '../BidProduct/BidProductHome';
+import { Circle } from '@mui/icons-material';
 
 
 const Bidding = () => {
@@ -74,7 +75,13 @@ const Bidding = () => {
 
   return (
     <div className="slider-container" style={{ position: 'relative'}}>
-      <h1>Explore Our Bidding Collection</h1>
+      
+       <Box sx={{ display: 'flex', flexDirection:"column",justifyContent: 'center', alignItems: 'center', mb: 5, height: 'auto',borderTop: '2px inset #867070',borderBottom:"2px inset #867070", paddingTop: '16px', marginBottom: '32px'}}>
+              <Typography variant="h4" sx={{ fontFamily: 'Playfair Display, serif',fontWeight: 'bold', textShadow: '2px 2px 8px rgba(0, 0, 0, 0.3)', }}>
+                Explore Our Bidding Products
+              </Typography>
+              <Typography variant="bodyv2" sx={{fontFamily: 'Lato, serif',marginBottom:2, textShadow: '2px 2px 8px rgba(0, 0, 0, 0.3)',}}>Bid, Win, and Style Sustainably</Typography>
+            </Box>
       <Slider {...settings}>
         {products.map((product) => (
           <div className="slide-item" key={product.id}>
@@ -88,47 +95,41 @@ const Bidding = () => {
                 justifyContent: 'space-between',
               }}
             >
-              <CardMedia component="img" height="100" image={product.images && product.images[0]} alt={product.name} />
+              
+              {/* <CardMedia component="img" height="150" image={product.images && product.images[0]} alt={product.name} /> */}
+              <CardMedia component="div"  sx={{     height: 150,position: 'relative', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <Box component="img" src={product.images && product.images[0]} alt={product.name} sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </CardMedia>
               <CardContent sx={{ padding: '8px' }}>
-                {/* <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Chip label="On Stock" sx={{backgroundColor:"#829460"}} size="small" />
-                  <Chip label={`${item.bids} Bids`} sx={{backgroundColor:"#7D9D9C",color:"white"}}size="small" />
-                </Box> */}
-                <Typography
-                  gutterBottom
-                  variant="h6"
-                  component="div"
-                  noWrap
-                  sx={{ fontSize: '14px', textAlign: 'center' }}
-                >
+               
+
+                
+                    <Typography textAlign={'start'} variant="h6" sx={{ fontFamily: 'Playfair Display, serif', fontWeight: 200 }} noWrap>
+
                   {product.name}
                 </Typography>
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                  <Box>
+                <Box display="flex"  alignItems="center" mb={1}>
+                  
                     <Typography variant="body2" color="text.secondary">
                       Current Bid
                     </Typography>
-                    <Typography variant="body1" color="text.primary">
+                    <Typography variant="body1" color="text.primary" sx={{ marginLeft: '8px', display: 'flex', alignItems: 'center' }}>
+                    <IconButton aria-label="add to favorites" size="small" sx={{color:"green"}}>
+                    < Circle sx={{ fontSize: '10px' }} />
+                    </IconButton>
+                      {/* Assuming product.startingPrice is a number */}
                       Rs.{product.startingPrice}
                     </Typography>
-                  </Box>
+                 
                   <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Buy Now
-                    </Typography>
-                    {/* <Typography variant="body1" color="text.primary">
-                      ${item.buyNowPrice.toFixed(2)}
-                    </Typography> */}
+                   
+                  
                   </Box>
                 </Box>
                 <Button variant="contained" sx={{backgroundColor:"#85586F",color:"white"}} startIcon={<ShoppingCartIcon />} fullWidth  onClick={() => navigate(`/biddingProduct/${product._id}`)}>
                   PLACE BID
                 </Button>
-                <Box display="flex" justifyContent="center" mt={1}>
-                  <IconButton color="default">
-                    <FavoriteBorderIcon />
-                  </IconButton>
-                </Box>
+               
               </CardContent>
             </Card>
           </div>

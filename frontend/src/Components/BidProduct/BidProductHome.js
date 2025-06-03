@@ -91,6 +91,7 @@ const BidProductHome = () => {
         >
           Explore our Bidding Products
         </Typography>
+        
         <Grid
           container
           spacing={3}

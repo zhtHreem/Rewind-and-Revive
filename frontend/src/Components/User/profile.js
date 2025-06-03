@@ -121,9 +121,9 @@ const UserProfilePage = () => {
           <Grid item xs={12} md={8}>
             <Paper elevation={3} sx={{ padding: 2 }}>
               <Typography variant="h4">{userData.username}</Typography>
-              <Typography variant="subtitle1" color="textSecondary">
+              {/* <Typography variant="subtitle1" color="textSecondary">
                 Email: {userData.email}
-              </Typography>
+              </Typography> */}
               <Tabs value={tabValue} onChange={handleTabChange} aria-label="user profile tabs" sx={{ mt: 2 }}>
                 <Tab label="Stats" />
                 <Tab label="Products" />

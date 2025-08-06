@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Grid, Card, CardMedia, CardContent, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SkeletonLoader from '../Utils/skeletonLoader';
+import Skeleton from '@mui/material/Skeleton';
+
 import axios from 'axios';
 axios.defaults.withCredentials = true;
 const RecommendedProductsSection = ({ userId }) => {
@@ -73,6 +75,7 @@ const fetchRecommendations = async () => {
 };
 
 useEffect(() => {
+  setLoading(true);
   fetchRecommendations();
 }, []);
 
@@ -90,19 +93,21 @@ useEffect(() => {
       [productId]: true
     }));
   };
-
-  const ProductCardSkeleton = () => (
-    <Card sx={{ height: '500px' }}>
-      <SkeletonLoader height="400px" />
+const ProductCardSkeleton = () => (
+  <Box sx={{ position: 'relative', width: '100%', height: { xs: '300px', md: '500px' }, aspectRatio: '3/4' }}>
+    <Card sx={{ height: '100%' }}>
+      <Skeleton variant="rectangular" height="70%" width="100%" />
       <CardContent>
-        <SkeletonLoader.Text lines={1} width="60%" />
-        <SkeletonLoader.Text lines={1} width="30%" />
+        <Skeleton variant="text" width="60%" />
+        <Skeleton variant="text" width="30%" />
         <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <SkeletonLoader width="20%" height="20px" />
+          <Skeleton variant="rounded" width="20%" height={20} />
         </Box>
       </CardContent>
     </Card>
-  );
+  </Box>
+);
+
 
   if (loading) {
     return (

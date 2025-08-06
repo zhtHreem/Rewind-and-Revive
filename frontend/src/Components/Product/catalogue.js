@@ -248,7 +248,7 @@ const getFilteredProducts = (products, filters) => {
 
     return (
         <Layout>
-            <Box p={5} >
+            <Box p={{xs:0,sm:5}} >
                 {/* Mobile Filters Button */}
                   <Suspense fallback={null}>
                                <FilterDrawer
@@ -372,7 +372,7 @@ const getFilteredProducts = (products, filters) => {
                                                     onChange={() => setPriceRange(priceRange === price.toString() ? '' : price.toString())}
                                                 />
                                             }
-                                            label={`Up to Rs.${price}`}
+                                            label={`Upto Rs.${price}`}
                                         />
                                     ))}
                                 </Box>

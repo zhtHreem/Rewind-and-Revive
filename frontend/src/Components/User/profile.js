@@ -54,7 +54,7 @@ const UserProfilePage = () => {
         const token = localStorage.getItem('token');
        
         if (!token) {
-          alert("Token is missing!");
+          alert("You Need to LogIn!");
           setLoading(false);
           return;
         }
@@ -119,12 +119,12 @@ const UserProfilePage = () => {
           </Grid>
 
           <Grid item xs={12} md={8}>
-            <Paper elevation={3} sx={{ padding: 2 }}>
-              <Typography variant="h4">{userData.username}</Typography>
+            <Paper elevation={3} sx={{ padding: 0 }}>
+              <Typography sx={{ padding: 4 }}variant="h4">{userData.username}</Typography>
               {/* <Typography variant="subtitle1" color="textSecondary">
                 Email: {userData.email}
               </Typography> */}
-              <Tabs value={tabValue} onChange={handleTabChange} aria-label="user profile tabs" sx={{ mt: 2 }}>
+              <Tabs value={tabValue} onChange={handleTabChange} aria-label="user profile tabs" sx={{ mt: 2 }}  TabIndicatorProps={{style: {  backgroundColor: '#8C5367'  }}}>
                 <Tab label="Stats" />
                 <Tab label="Products" />
               </Tabs>

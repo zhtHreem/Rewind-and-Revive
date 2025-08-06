@@ -24,7 +24,7 @@ const ProductTab = () => {
   return (
     <Grid container spacing={3}>
       {products.map((product, index) => (
-        <Grid item xs={12} sm={6} md={4} key={index}>
+        <Grid item xs={6} sm={6} md={4} key={index}>
           <Link
             href={`/product/${product._id}`}
             style={{ textDecoration: 'none', color: 'inherit' }}

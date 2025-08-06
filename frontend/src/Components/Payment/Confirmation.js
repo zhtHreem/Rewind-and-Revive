@@ -166,7 +166,7 @@ const PaymentForm = () => {
       </Box>
 
       <Box display="flex" justifyContent="center" mt={1} mb={5}>
-        <Button variant="outlined" color="secondary" onClick={() => navigate('/cart')}>
+        <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
           Back to Cart
         </Button>
       </Box>

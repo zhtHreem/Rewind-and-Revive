@@ -592,7 +592,7 @@ const handleSearchInputChange = (e) => {
             </span>
           </Typography>
         </Stack>
-
+  
         <Stack direction="row" alignItems="center" spacing={{ sm: 1, md: 2, lg: 2, xl:5 }} borderLeft={{ sm: "inset" }} borderRight={{ sm: "inset" }}  px={{ xs: 2.4, md: 10, lg: 10, xl: 25 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
           <Link component={RouterLink} to="/" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
             Home
@@ -600,7 +600,7 @@ const handleSearchInputChange = (e) => {
           <Link component={RouterLink} to="/c" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
             Products
           </Link>
-          <Link component={RouterLink} to="#" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
+          <Link component={RouterLink} to="/AboutUs" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
             About Us
           </Link>
           <Link component={RouterLink} to="/contact" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
@@ -677,7 +677,19 @@ const handleSearchInputChange = (e) => {
       
         <MobileSidebar />
       </Box>
-      {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />}
+      {/* {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />} */}
+      {shoppingCart && (
+  <Box
+    onClick={handleCartClose} 
+    sx={{ position: "fixed",  top: 0,  left: 0,  width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "flex-end",  zIndex: 1200, }}>
+    <Box
+      onClick={(e) => e.stopPropagation()} 
+      sx={{  width: 200, height: "100%", boxShadow: "-2px 0 8px rgba(0,0,0,0.2)", }}  >
+      <AddCart onClose={handleCartClose} />
+    </Box>
+  </Box>
+)}
+
       <Box sx={{ height: "64px" }} />
     </>
   );

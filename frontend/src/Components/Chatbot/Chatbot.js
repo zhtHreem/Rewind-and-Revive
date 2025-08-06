@@ -106,7 +106,16 @@ const Chatbot = ({ toggleChatWindow }) => {
   };
 
   return (
-    <Paper elevation={6} sx={{ width: 360, height: 540, borderRadius: 2, display: 'flex', flexDirection: 'column' }}>
+<Paper
+  elevation={6}
+  sx={{
+    width: { xs: '100vw', sm: 360 },
+    height: { xs: '100vh', sm: 440 },
+    borderRadius: { xs: 0, sm: 2 },
+    display: 'flex',
+    flexDirection: 'column',
+  }}
+>
       {/* Header with purple background */}
       <Box sx={{ p: 2, bgcolor: '#8C5367', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
         <Typography variant="subtitle1">Chat with us</Typography>
@@ -120,15 +129,7 @@ const Chatbot = ({ toggleChatWindow }) => {
         {messages.map((msg, index) => (
           <Box key={index} sx={{ mb: 1, alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
             {msg.component || (
-              <Box
-                sx={{
-                  p: 1.5,
-                  bgcolor: msg.sender === 'user' ? '#8C5367' : 'grey.200',
-                  color: msg.sender === 'user' ? 'white' : 'initial',
-                  borderRadius: 2,
-                  maxWidth: '80%',
-                }}
-              >
+              <Box sx={{  p: 1.5,  bgcolor: msg.sender === 'user' ? '#8C5367' : 'grey.200',  color: msg.sender === 'user' ? 'white' : 'initial', borderRadius: 2, maxWidth: '80%', }} >
                 <Typography variant="body2">{msg.text}</Typography>
               </Box>
             )}
@@ -144,30 +145,12 @@ const Chatbot = ({ toggleChatWindow }) => {
 
       {/* Input, Upload, Send */}
       <Box sx={{ p: 2, borderTop: '1px solid #eee', display: 'flex', gap: 1 }}>
-        <TextField
-          fullWidth
-          size="small"
-          placeholder="Type your message..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-        />
-        <Button
-          variant="contained"
-          component="label"
-          sx={{ bgcolor: '#8C5367', '&:hover': { bgcolor: '#7a4659' }, color: 'white' }}
-        >
+        <TextField fullWidth size="small"  placeholder="Type your message..."  value={input}  onChange={(e) => setInput(e.target.value)}  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} />
+        <Button  variant="contained"   component="label" sx={{ bgcolor: '#8C5367', '&:hover': { bgcolor: '#7a4659' }, color: 'white' }}>
           Upload
           <input hidden accept="image/*" type="file" onChange={(e) => setSelectedFile(e.target.files[0])} />
         </Button>
-        <IconButton
-          onClick={handleSendMessage}
-          sx={{
-            bgcolor: '#8C5367',
-            color: 'white',
-            '&:hover': { bgcolor: '#7a4659' },
-          }}
-        >
+        <IconButton onClick={handleSendMessage} sx={{  bgcolor: '#8C5367',    color: 'white',   '&:hover': { bgcolor: '#7a4659' },}} >
           <SendIcon />
         </IconButton>
       </Box>

@@ -1,16 +1,21 @@
+/* === Base Styles === */
+
 .robot-icon-wrapper {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  z-index: 100;
+  z-index: 1000;
 }
-
 .robot-icon-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row-reverse;
+  /* icon on right, dialog on left */
   align-items: center;
   cursor: pointer;
+  gap: 8px;
+  /* spacing between icon and dialog box */
 }
+
 
 .robot-icon {
   width: 60px;
@@ -28,12 +33,79 @@
   padding: 6px 12px;
   margin-top: 8px;
   font-size: 14px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  animation: pulseFade 4s ease-in-out infinite;
+  transition: opacity 0.3s ease;
+  /* position: relative; */
+  max-width: 180px;
+  text-align: center;
+}
+
+/* Optional: little speech bubble triangle */
+.dialog-box::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -8px;
+  transform: translateY(-50%);
+  border-width: 8px;
+  border-style: solid;
+  border-color: transparent transparent transparent white;
+}
+@keyframes pulseFade {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  10% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+
+  70% {
+    opacity: 1;
+    transform: translateY(0px);
+  }
+
+  90% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 .chatbot-window {
   position: fixed;
   bottom: 90px;
   right: 20px;
-  z-index: 1000000000000;
+  z-index: 1100;
+}
+
+/* === Responsive Styles === */
+@media (max-width: 600px) {
+  .robot-icon {
+    width: 50px;
+    height: 50px;
+  }
+
+  .robot-icon-wrapper {
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .chatbot-window {
+    bottom: 0;
+    right: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .dialog-box {
+    font-size: 12px;
+    padding: 4px 10px;
+  }
 }

@@ -61,7 +61,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
             
 
             setMatchingItems(matchItems);
-            setPeopleAlsoBuy(matchItems.slice(0, 6)); // Using same items for people also buy section
+            setPeopleAlsoBuy(matchItems.slice(0, 6)); 
             setIsLoading(false);
           }
         } catch (error) {
@@ -150,7 +150,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
               ) : matchingItems.length > 0 ? (
                 matchingItems.map((item) => (
                   <SwiperSlide key={item.id} style={{ padding: 6 }}>
-                    <Box   sx={{  position: 'relative',  width: '100%', height: { xs: "100%", sm: "100%" }, bgcolor: '#f5f5f5',  overflow: 'hidden'  }} >
+                    <Box   sx={{  position: 'relative',  width: '100%', height: { xs: "70%", sm: "100%" }, bgcolor: '#f5f5f5',  overflow: 'hidden'  }} >
                       <Box   component="img"  src={item.image} alt={item.alt} sx={{  width: '100%', height:'80%',objectFit: 'cover'}}   />
                       <Typography  variant="h6"   sx={{ textAlign: 'center', display: 'block',   cursor: 'pointer',  color: 'primary.main', transition: 'all 0.2s ease-in-out', '&:hover': {     color: 'primary.dark', textDecoration: 'underline', transform: 'scale(1.02)' } }}  onClick={() => navigate(`/product/${item?.id}`)} >
                        {item.name}

@@ -149,7 +149,7 @@ const AddCart = () => {
             </Grid>
           ))
         ) : (
-          <Typography>Your cart is empty.</Typography> // Fallback message for empty cart
+          <Typography>Your cart is empty.</Typography> 
         )}
       </Box>
 
@@ -157,26 +157,22 @@ const AddCart = () => {
       <Divider sx={{ marginY: 2 }} />
       <Grid container justifyContent="space-between" className="cart-footer">
         <Grid item xs={5}>
-          <Button
-            fullWidth
-            variant="outlined"
-            onClick={() => navigate("/c")}
-            className="cart-button"
-            sx={{ color: "#85586F", borderColor: "#85586F" }}
-          >
+          <Button  fullWidth   variant="outlined"          onClick={() => {if (window.history.length > 1) {  navigate(-1);   } else {  navigate("/"); }}} className="cart-button"  sx={{ color: "#85586F", borderColor: "#85586F" }}>
             Back 
           </Button>
         </Grid>
+
         <Grid item xs={5}>
-          <Button
-            fullWidth
-            variant="contained"
-            onClick={() => navigate('/payment')}
-            className="cart-button"
-            sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}
-          >
-            Checkout
-          </Button>
+          <Button  fullWidth variant="contained" onClick={() => {
+    if (cart.length > 0) {
+      navigate('/payment');
+    } else {
+      alert("Your cart must have at least one item before proceeding to checkout.");
+    }
+  }}className="cart-button"sx={{ backgroundColor: "#85586F", '&:hover': { backgroundColor: '#6A4C58' } }}>
+  Checkout
+        </Button>
+
         </Grid>
       </Grid>
     </Box>

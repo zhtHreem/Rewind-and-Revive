@@ -13,6 +13,7 @@ import AddCart from "../ShoppingCart/AddCart";
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat'; // Chat component import
 import SkeletonLoader from '../Utils/skeletonLoader';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
 import 'swiper/css';
@@ -279,9 +280,21 @@ const ProductPage = () => {
   return (
     <Layout>
       <Box sx={{ flexGrow: 1, padding: 6 }}>
+      <Box sx={{position: 'fixed',top: 60,right: 16,zIndex: 9999,display: 'flex',alignItems: 'center',bgcolor: '#e3f2fd',color: '#1976d2',px: 2,py: 1,borderRadius: 2,fontWeight: 500, maxWidth: '250px',boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          animation: 'fadeSlide 3s ease-in-out infinite',
+          '@keyframes fadeSlide': {
+            '0%': { opacity: 0, transform: 'translateX(50px)' },
+            '20%': { opacity: 1, transform: 'translateX(0)' },
+            '80%': { opacity: 1, transform: 'translateX(0)' },
+            '100%': { opacity: 0, transform: 'translateX(50px)' }
+          } }}>
+            <InfoOutlinedIcon sx={{ fontSize: 20, mr: 1 }} />
+                  See the details below
+            </Box>
         <Grid container spacing={2}>
           <Grid item xs={12} md={6}>
             <Box display="flex" justifyContent="center" alignItems="center" sx={{ width: '100%', height: { xs: 300, md: 600, lg: 500 }, border: '1px solid #ccc', padding:{xs:0 ,sm:2}, backgroundColor: '#f9f9f9' ,position:"relative"}}>
+            
               <Box component="img" src={mainImage} alt="Main Product" sx={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                {product.isSold && (
                        <Box sx={{    width: '100%',   position: 'absolute', bottom: '0px',  left: 0,  backgroundColor: 'rgba(0, 0, 0, 0.7)', color: 'RED', padding: '4px 0',   borderRadius: '4px',  fontWeight: 'bold',  textTransform: 'uppercase', letterSpacing: '1px',  pointerEvents: 'none',  zIndex: 1,   textAlign: 'center' }}>
@@ -300,17 +313,17 @@ const ProductPage = () => {
                 </SwiperSlide>
               ))}
             </Swiper>
+            
           </Grid>
 
           <Grid item xs={12} md={6}>
             <Box sx={{ px:{ xs:0,sm:6}, display: 'flex', flexDirection: 'column', gap: 3 }}>
-              
+
               <Stack flexDirection="row" justifyContent="space-between" alignItems="center">
                   <Typography variant="h4">
                            {product.name}
                           
                     </Typography>
-                  <Button variant="outlined" endIcon={<ArrowForward />}  onClick={handleOpenModal}  sx={{minWidth:"40%", background: "transparent", color: "#9c27b0", border: "2px solid #c59bff", borderRadius: "20px", padding: "8px 20px", textTransform: "none", fontWeight: "bold", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s ease", "&:hover": { background: "linear-gradient(90deg, #c59bff, #9c27b0)", color: "#fff" } }}>Match My Outfit</Button>
               </Stack>
                <MatchOutfitModal  open={isModalOpen} onClose={handleCloseModal} product={product} />
                <Stack direction="row">
@@ -326,6 +339,7 @@ const ProductPage = () => {
               </Typography>
 
               <Box sx={{ display: 'flex', gap: 2 }}>
+
                 <Button
                   variant="contained"
                   onClick={handleAddToCart}
@@ -334,6 +348,8 @@ const ProductPage = () => {
                 >
                   Add to Cart
                 </Button>
+                <Button variant="outlined" endIcon={<ArrowForward />}  onClick={handleOpenModal}  sx={{minWidth:"40%", background: "transparent", color: "#9c27b0", border: "2px solid #c59bff", borderRadius: "20px", padding: "8px 20px", textTransform: "none", fontWeight: "bold", fontSize: "14px", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.3s ease", "&:hover": { background: "linear-gradient(90deg, #c59bff, #9c27b0)", color: "#fff" } }}>Match My Outfit</Button>
+
                 <Button variant="contained" size="large" sx={{ width: '100%', backgroundColor: '#85586F', '&:hover': { backgroundColor: 'black' } }}>Buy Now</Button>
               </Box>
 

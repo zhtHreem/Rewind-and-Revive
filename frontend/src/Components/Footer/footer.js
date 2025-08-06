@@ -1,7 +1,6 @@
 import React from 'react';
 import { Box, Grid, Typography, TextField, Button,Stack, Link } from '@mui/material';
 import { Facebook, Twitter, Instagram, YouTube } from '@mui/icons-material';
-
 const Footer = () => {
   return (
     <Box component="footer" sx={{  backgroundColor: '#8B7E74', color: 'white', py: 6,  px: { xs: 4, md: 8 },}}>
@@ -27,16 +26,16 @@ const Footer = () => {
             Quick Links
           </Typography>
           <Box sx={{ display: 'flex',  flexDirection: 'column', gap: 1,  }} >
-            <Link href="#" color="inherit" underline="hover">
+            <Link href="/" color="inherit" underline="hover">
               Home
             </Link>
-            <Link href="#" color="inherit" underline="hover">
+            <Link href="/c" color="inherit" underline="hover">
               Shop
             </Link>
-            <Link href="#" color="inherit" underline="hover">
+            <Link href="/AboutUs" color="inherit" underline="hover">
               About Us
             </Link>
-            <Link href="#" color="inherit" underline="hover">
+            <Link href="/contact" color="inherit" underline="hover">
               Contact
             </Link>
           </Box>

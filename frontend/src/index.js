@@ -6,6 +6,8 @@ import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import EmailVerification from './Components/Login/emailVerification';
 import Header from './Components/Header/header';
 import './index.css';
+import AboutUsPage from './Components/About/About';
+
 import App from './App';
 import Navbar from './Components/Navbar/navbar';
 import BidProductHome from './Components/BidProduct/BidProductHome';
@@ -28,10 +30,15 @@ import Chatbot from './Components/Chatbot/Chatbot';
 import ConfirmationWrapper from './Components/Payment/ConfirmationWrapper';
 const GOOGLE_CLIENT_ID = '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
 
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+  },
+  {
+    path: "/AboutUs",
+    element: <AboutUsPage />,
   },
   {
     path: "/nav",

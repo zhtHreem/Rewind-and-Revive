@@ -5,6 +5,7 @@ import Badges from './badges';
 import Layout from '../Layout/layout';
 import { useParams } from 'react-router-dom';
 import SkeletonLoader from '../Utils/skeletonLoader';
+import { useNavigate } from 'react-router-dom';
 const ProductTab = lazy(() => import('./ProductTab'));
 const Dashboard = lazy(() => import('./Dashboard'));
 
@@ -47,18 +48,21 @@ const UserProfilePage = () => {
   const [tabValue, setTabValue] = useState(0);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+       
+    if (!token) {
+      setShouldRedirect(true);
+      alert("You Need to LogIn!");
+      navigate("/c");
+      return; 
+    }
+
     const fetchUserData = async () => {
       try {
-        const token = localStorage.getItem('token');
-       
-        if (!token) {
-          alert("You Need to LogIn!");
-          setLoading(false);
-          return;
-        }
-
         const decodedToken = JSON.parse(atob(token.split('.')[1]));
         const userId = id || decodedToken.id;
 
@@ -66,7 +70,6 @@ const UserProfilePage = () => {
           headers: { Authorization: token }
         });
 
-       
         setUserData(response.data);
         setLoading(false);
       } catch (error) {
@@ -76,11 +79,16 @@ const UserProfilePage = () => {
     };
 
     fetchUserData();
-  }, [id]);
+  }, [id, navigate]);
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
   };
+
+  // Prevent rendering if redirecting or no token
+  if (shouldRedirect || (!loading && !userData)) {
+    return null;
+  }
 
   if (loading) {
     return (
@@ -88,10 +96,6 @@ const UserProfilePage = () => {
         <ProfileSkeleton />
       </Layout>
     );
-  }
-
-  if (!userData) {
-    return <Typography>Error loading user data.</Typography>;
   }
 
   const { sellerBadges, userBadges } = userData;
@@ -120,11 +124,14 @@ const UserProfilePage = () => {
 
           <Grid item xs={12} md={8}>
             <Paper elevation={3} sx={{ padding: 0 }}>
-              <Typography sx={{ padding: 4 }}variant="h4">{userData.username}</Typography>
-              {/* <Typography variant="subtitle1" color="textSecondary">
-                Email: {userData.email}
-              </Typography> */}
-              <Tabs value={tabValue} onChange={handleTabChange} aria-label="user profile tabs" sx={{ mt: 2 }}  TabIndicatorProps={{style: {  backgroundColor: '#8C5367'  }}}>
+              <Typography sx={{ padding: 4 }} variant="h4">{userData.username}</Typography>
+              <Tabs 
+                value={tabValue} 
+                onChange={handleTabChange} 
+                aria-label="user profile tabs" 
+                sx={{ mt: 2 }}  
+                TabIndicatorProps={{style: { backgroundColor: '#8C5367' }}}
+              >
                 <Tab label="Stats" />
                 <Tab label="Products" />
               </Tabs>
@@ -136,11 +143,10 @@ const UserProfilePage = () => {
                   </Suspense>
                 )}
                 {tabValue === 1 && (
-  <Suspense fallback={<SkeletonLoader.Text lines={6} />}>
-    <ProductTab />
-  </Suspense>
-)}
-
+                  <Suspense fallback={<SkeletonLoader.Text lines={6} />}>
+                    <ProductTab />
+                  </Suspense>
+                )}
               </Box>
             </Paper>
           </Grid>

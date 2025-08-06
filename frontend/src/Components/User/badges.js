@@ -75,7 +75,7 @@ const Badges = () => {
         <Grid container spacing={2} sx={{ mt: 2 }}>
           {displayedBadges.map((badge, index) => (
              
-            <Grid item xs={12} sm={6} md={4} key={index}sx={{ height: '200px', width: '100%' }}>
+            <Grid item xs={4} sm={6} md={4} key={index}sx={{ height: '200px', width: '100%' }}>
             <Tooltip title={badge.Description}>
              <Badge
                 color="primary"

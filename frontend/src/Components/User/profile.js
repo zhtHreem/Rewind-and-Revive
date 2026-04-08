@@ -57,7 +57,7 @@ const UserProfilePage = () => {
     if (!token) {
       setShouldRedirect(true);
       alert("You Need to LogIn!");
-      navigate("/c");
+      navigate("/catalogue");
       return; 
     }
 

@@ -32,10 +32,20 @@ connectDB();
 
 
 
+const allowedOrigins = [
+  process.env.REACT_APP_API_URL,
+  "http://localhost:3000",
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.REACT_APP_API_URL,  // Use exact origin, not array
+  origin: (origin, callback) => {
+    // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`Not allowed by CORS: ${origin}`));
+  },
   methods: ["POST", "GET", "PUT", "DELETE"],
-  credentials: true  // Ensure this is true
+  credentials: true
 }));
 
 // Handle preflight requests
@@ -85,11 +95,11 @@ const httpServer = createServer(app);
 // Attach Socket.IO to the server
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.REACT_APP_API_URL, 
+    origin: allowedOrigins,
     methods: ["GET", "POST"],
+    credentials: true,
   },
-  transports: ['websocket', 'polling'], 
-   withCredentials: true, 
+  transports: ['websocket', 'polling'],
 });
 
 

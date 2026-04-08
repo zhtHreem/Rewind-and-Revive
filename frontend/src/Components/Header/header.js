@@ -64,21 +64,49 @@ function Header() {
 
   return (
     <>
-    
+
     <Box marginLeft={4}  p={{ xs: 1, md: 5 }} marginTop={{xs:2,sm:0}} >
-     
+
       <Grid container spacing={{ xs: 3, md: 8 }}  >
-        <Grid item xs={12} md={5}>
-          <Typography variant='h2' fontFamily={"'Times New Roman', serif"}fontSize={{xs: '2rem', sm: '2.5rem',   md: '2.5rem',lg: '2.75rem',  }}>
-            Rewind and Revive
-          </Typography>
-          <Typography variant='body2'  fontSize={{   xs: '0.750rem', xs: '1rem',md:"0.95rem", lg: '1.125rem', }} >
-            Discover sustainable fashion at Rewind & Revive, the ultimate online thrift store for unique, second-hand treasures
-          </Typography>
-          <Stack direction="row" py={2}>
-            <Button onClick={()=> navigate("/c")} fontSize={{ xs: "0.75rem" }} sx={{ color: "white", backgroundColor: "#B3A398",'&:hover': { backgroundColor: "#576F72" }  }}>
-              Explore More
-            </Button>
+        <Grid item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <Box>
+            <Typography variant='h2' fontFamily={"'Times New Roman', serif"}fontSize={{xs: '2rem', sm: '2.5rem',   md: '2.5rem',lg: '2.75rem',  }}>
+              Rewind and Revive
+            </Typography>
+            <Typography variant='body2'  fontSize={{   xs: '0.750rem', xs: '1rem',md:"0.95rem", lg: '1.125rem', }} >
+              Discover sustainable fashion at Rewind & Revive, the ultimate online thrift store for unique, second-hand treasures
+            </Typography>
+            <Stack direction="row" py={2}>
+              <Button onClick={()=> navigate("/catalogue")} fontSize={{ xs: "0.75rem" }} sx={{ color: "white", backgroundColor: "#B3A398",'&:hover': { backgroundColor: "#576F72" }  }}>
+                Explore More
+              </Button>
+            </Stack>
+          </Box>
+
+          {/* "What Makes Us Pro?" — sits at the bottom of the left column,
+              so its bottom aligns with the bottom of the right-column images. */}
+          <Stack py={2}>
+            <Typography variant="h5" fontFamily={"'Times New Roman', serif"} fontSize={{  xs: '1.5rem', sm: '1.75rem',md: '2rem',  lg: '2.25rem',}} >
+                 What Makes Us Pro?
+            </Typography>
+            <List>
+              <ListItem>
+                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#B3A398" }} /></ListItemIcon>
+                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Quality second-hand fashion</ListItemText>
+              </ListItem>
+              <ListItem>
+                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#C1A3A3" }} /></ListItemIcon>
+                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Affordable sustainable styles</ListItemText>
+              </ListItem>
+              <ListItem>
+                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#618264" }} /></ListItemIcon>
+                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Pre-loved designer items</ListItemText>
+              </ListItem>
+              <ListItem>
+                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#7C9D96" }} /></ListItemIcon>
+                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Fashion-forward sustainability</ListItemText>
+              </ListItem>
+            </List>
           </Stack>
         </Grid>
 
@@ -113,35 +141,8 @@ function Header() {
           </Grid>
         </Grid>
 
-        {/* "What Makes Us Pro?" Section Moves Below on Small Screens */}
-        <Grid item xs={12}  sx={{ position: {xs:"none",md:'absolute'},zIndex: 1,bottom:{md:-10,lg:-5,xl:100} }}>
-          <Stack py={2}>
-            <Typography variant="h5" fontFamily={"'Times New Roman', serif"} fontSize={{  xs: '1.5rem', sm: '1.75rem',md: '2rem',  lg: '2.25rem',}} >
-                 What Makes Us Pro?
-            </Typography>
-            <List>
-            
-              <ListItem>
-                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#B3A398" }} /></ListItemIcon>
-                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Quality second-hand fashion</ListItemText>
-              </ListItem>
-              <ListItem>
-                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#C1A3A3" }} /></ListItemIcon>
-                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Affordable sustainable styles</ListItemText>
-              </ListItem>
-              <ListItem>
-                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#618264" }} /></ListItemIcon>
-                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Pre-loved designer items</ListItemText>
-              </ListItem>
-              <ListItem>
-                <ListItemIcon><RadioButtonCheckedIcon sx={{ color: "#7C9D96" }} /></ListItemIcon>
-                <ListItemText primaryTypographyProps={{ variant: "body2" }}>Fashion-forward sustainability</ListItemText>
-              </ListItem>
-            </List>
-          </Stack>
-        </Grid>
       </Grid>
-      
+
       {/* <Grid item xs={12}>
          <Swipe/>
          </Grid> */}

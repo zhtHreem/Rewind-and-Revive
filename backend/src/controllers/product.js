@@ -135,12 +135,38 @@ export const getOwnedProducts = async (req, res) => {
 
 export const getProductCatalogueList = async (req, res) => {
   try {
-    // Sort by isSold (false first) and then by createdAt (descending)
-    const products = await Product.find()
+    // Pagination is OPT-IN. Only kicks in when the client passes ?page or ?limit.
+    // Without query params, behavior is identical to before (returns all products).
+    const paginated = req.query.page !== undefined || req.query.limit !== undefined;
+
+    const baseQuery = Product.find()
       .sort({ isSold: 1, createdAt: -1 })
-      .populate('owner', 'username'); // Only fetch username field
-    
-    res.json(products);
+      // Only the fields the catalogue card actually uses — smaller payload, faster JSON.
+      .select('name price images type category isSold owner createdAt')
+      .populate('owner', 'username')
+      .lean(); // Skip Mongoose doc hydration — faster serialization.
+
+    if (!paginated) {
+      const products = await baseQuery;
+      return res.json(products);
+    }
+
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(60, Math.max(1, parseInt(req.query.limit) || 24));
+    const skip = (page - 1) * limit;
+
+    const [products, total] = await Promise.all([
+      baseQuery.skip(skip).limit(limit),
+      Product.estimatedDocumentCount(),
+    ]);
+
+    res.json({
+      products,
+      total,
+      page,
+      limit,
+      hasMore: skip + products.length < total,
+    });
   } catch (error) {
     console.error("Error fetching product catalogue:", error);
     res.status(500).json({ message: 'Server Error' });

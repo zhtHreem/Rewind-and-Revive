@@ -1,18 +1,47 @@
 import React, { useState, useEffect, useRef } from "react";
 
 import io from 'socket.io-client';
-import { useNavigate, Link as RouterLink } from 'react-router-dom';
+import { useNavigate, NavLink, Link as RouterLink, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useDispatch, useSelector } from 'react-redux';
 import Login from "../Login/login.js";
-import {  toggleNotifications,  addNotification,  fetchNotifications,  closeNotifications,  markNotificationAsRead,  markAllNotificationsAsRead } from '../../redux/slices/notificationsSlice.js';
+import {
+  toggleNotifications,
+  addNotification,
+  fetchNotifications,
+  closeNotifications,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from '../../redux/slices/notificationsSlice.js';
 
-import {  Stack,  Link,  Box,  IconButton,  Typography,  Button,  Badge,  Drawer,  Divider,  Paper,  Menu,  ListItemIcon,  ListItemText,  MenuItem, List,ListItem,ListSubheader,Avatar} from "@mui/material";
+import {
+  Stack,
+  Box,
+  IconButton,
+  Typography,
+  Button,
+  Badge,
+  Drawer,
+  Divider,
+  Paper,
+  Menu,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  List,
+  ListItem,
+  ListSubheader,
+  TextField,
+  InputAdornment,
+  Tooltip,
+} from "@mui/material";
 import LocalMallOutlinedIcon from '@mui/icons-material/LocalMallOutlined';
 import LocalMallIcon from '@mui/icons-material/LocalMall';
+import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import AddCart from "../ShoppingCart/AddCart";
@@ -23,52 +52,142 @@ import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { jwtDecode } from "jwt-decode"; 
+import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
+import StarsIcon from '@mui/icons-material/Stars';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import { jwtDecode } from "jwt-decode";
 
+// ----- shared design tokens -----
+const COLORS = {
+  surface: '#FFFFFF',
+  border: '#ECEAE4',
+  accent: '#85586F',
+  accentDark: '#6B4459',
+  accentSoft: '#F5EEF1',
+  textPrimary: '#1A1A1A',
+  textSecondary: '#6B6B6B',
+  live: '#E53935',
+};
 
+// Primary nav items used in both desktop bar + mobile drawer
+const NAV_ITEMS = [
+  { label: 'Home',     to: '/' },
+  { label: 'Shop',     to: '/catalogue' },
+  { label: 'Auctions', to: '/bidProduct', live: true },
+  { label: 'About',    to: '/AboutUs' },
+];
 
+// Reusable desktop nav link with active underline
+const NavItem = ({ item }) => (
+  <NavLink
+    to={item.to}
+    end={item.to === '/'}
+    style={{ textDecoration: 'none' }}
+  >
+    {({ isActive }) => (
+      <Box
+        sx={{
+          position: 'relative',
+          px: 1.5,
+          py: 2.5,
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0.75,
+          cursor: 'pointer',
+          color: isActive ? COLORS.accent : COLORS.textPrimary,
+          fontSize: 14,
+          fontWeight: 600,
+          letterSpacing: 0.2,
+          transition: 'color 0.2s ease',
+          '&:hover': { color: COLORS.accent },
+          '&::after': {
+            content: '""',
+            position: 'absolute',
+            left: 12,
+            right: 12,
+            bottom: 14,
+            height: 2,
+            backgroundColor: COLORS.accent,
+            borderRadius: 2,
+            opacity: isActive ? 1 : 0,
+            transform: isActive ? 'scaleX(1)' : 'scaleX(0)',
+            transition: 'all 0.25s ease',
+          },
+        }}
+      >
+        {item.star && <StarsIcon sx={{ fontSize: 16, color: COLORS.accent }} />}
+        {item.label}
+        {item.live && (
+          <Box
+            sx={{
+              ml: 0.25,
+              px: 0.75,
+              py: 0.125,
+              fontSize: 9,
+              fontWeight: 700,
+              letterSpacing: 0.6,
+              color: '#fff',
+              bgcolor: COLORS.live,
+              borderRadius: 1,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.25,
+              '&::before': { content: '"●"', fontSize: 7 },
+            }}
+          >
+            LIVE
+          </Box>
+        )}
+      </Box>
+    )}
+  </NavLink>
+);
+
+// Shared icon-button hover styling
+const iconBtnSx = {
+  color: COLORS.textPrimary,
+  borderRadius: 2,
+  '&:hover': { bgcolor: COLORS.accentSoft, color: COLORS.accent },
+};
 
 function Navbar() {
   const user = localStorage.getItem('token');
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const [shoppingCart, setShoppingCart] = useState(false);
   const [login, setLogin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('token'));
 
   const [drawerOpen, setDrawerOpen] = useState(false);
-  
+
   const { notifications, isOpen, unreadCount } = useSelector(state => state.notifications);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
 
   const open = Boolean(anchorEl);
-   const dropdownRef = useRef(null);
+  const profileOpen = Boolean(profileAnchorEl);
+  const dropdownRef = useRef(null);
+
   useEffect(() => {
-  function handleClickOutside(event) {
-    if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-      dispatch(closeNotifications());
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        dispatch(closeNotifications());
+      }
     }
-  }
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, dispatch]);
 
-  if (isOpen) {
-    document.addEventListener('mousedown', handleClickOutside);
-  } else {
-    document.removeEventListener('mousedown', handleClickOutside);
-  }
-
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
-  };
-}, [isOpen, dispatch]);
-
-  const handleAddClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
+  const handleAddClick = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleProfileClick = (event) => setProfileAnchorEl(event.currentTarget);
+  const handleProfileClose = () => setProfileAnchorEl(null);
 
   const handleSimpleProduct = () => {
     navigate("/createproduct");
@@ -81,232 +200,191 @@ function Navbar() {
     handleClose();
     setDrawerOpen(false);
   };
- 
+
   const handleMarkAsRead = (notification) => {
-  dispatch(markNotificationAsRead(notification.id));
-
-  if (notification.title === 'New Message' && notification.product) {
-    const currentUserId = getUserId();
-    if (currentUserId) {
-      navigate(`/product/${notification.product}?openChat=true&chatPartnerId=${notification.sender}`);
+    dispatch(markNotificationAsRead(notification.id));
+    if (notification.title === 'New Message' && notification.product) {
+      const currentUserId = getUserId();
+      if (currentUserId) {
+        navigate(`/product/${notification.product}?openChat=true&chatPartnerId=${notification.sender}`);
+      }
     }
-  }
-};
+  };
 
-const getUserId = () => {
-  if (!user) return null;
-  try {
-    const decoded = jwtDecode(user);
-    
-
-    const currentTime = Date.now() / 1000;
-    if (decoded.exp && decoded.exp < currentTime) {
+  const getUserId = () => {
+    if (!user) return null;
+    try {
+      const decoded = jwtDecode(user);
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp && decoded.exp < currentTime) {
+        localStorage.removeItem('token');
+        setIsLoggedIn(false);
+        return null;
+      }
+      return decoded.id;
+    } catch (error) {
+      console.error("Error decoding token:", error);
       localStorage.removeItem('token');
       setIsLoggedIn(false);
       return null;
     }
-    
-    return decoded.id;
-  } catch (error) {
-    console.error("Error decoding token:", error);
-    localStorage.removeItem('token');
-    setIsLoggedIn(false);
-    return null;
-  }
-};
+  };
+
   const userId = getUserId();
   const socketRef = useRef(null);
- 
-useEffect(() => {
-  if (!user || !userId) return;
-  
-  
-  if (!socketRef.current) {
-    socketRef.current = io(`${process.env.REACT_APP_LOCAL_URL}`, {
-      transports: ['websocket', 'polling'],
-      reconnection: true
-    });
-    
-    socketRef.current.on('connect', () => {
-     
-      socketRef.current.emit('authenticate', userId);
-    });
-  }
-  
-  const handleNewNotification = (notification) => {
-  
-    
-    if (notification) {
-      const formattedNotification = {
-        id: notification._id || Date.now(),
-        title: notification.title,
-        description: notification.description,
-        time: 'Just now',
-        isRead: false,
-        product: notification.product,
-        sender: notification.sender,
-        count: notification.count || 1
-      };
-      
-      dispatch(addNotification(formattedNotification));
-    }
-  };
-  
-  socketRef.current.on('new_notification', handleNewNotification);
-  
-  return () => {
-    if (socketRef.current) {
-      socketRef.current.off('new_notification', handleNewNotification);
-    }
-  };
-}, [userId,user, dispatch]);
-
-useEffect(() => {
-  return () => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
-  };
-}, []);
-  
 
   useEffect(() => {
-    
+    if (!user || !userId) return;
+    if (!socketRef.current) {
+      socketRef.current = io(`${process.env.REACT_APP_LOCAL_URL}`, {
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+      });
+      socketRef.current.on('connect', () => {
+        socketRef.current.emit('authenticate', userId);
+      });
+    }
+
+    const handleNewNotification = (notification) => {
+      if (notification) {
+        const formattedNotification = {
+          id: notification._id || Date.now(),
+          title: notification.title,
+          description: notification.description,
+          time: 'Just now',
+          isRead: false,
+          product: notification.product,
+          sender: notification.sender,
+          count: notification.count || 1,
+        };
+        dispatch(addNotification(formattedNotification));
+      }
+    };
+
+    socketRef.current.on('new_notification', handleNewNotification);
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.off('new_notification', handleNewNotification);
+      }
+    };
+  }, [userId, user, dispatch]);
+
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     if (user) {
       dispatch(fetchNotifications());
-      
     }
   }, [user, dispatch]);
 
-  
-  const handleNotificationsToggle = () => {
-    dispatch(toggleNotifications());
-  };
+  const handleNotificationsToggle = () => dispatch(toggleNotifications());
+  const handleCartOpen = () => setShoppingCart(true);
+  const handleCartClose = () => setShoppingCart(false);
 
-  const handleCartOpen = () => {
-    setShoppingCart(true);
-  };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) setIsLoggedIn(true);
+    else setIsLoggedIn(false);
+  }, [localStorage.getItem('token')]);
 
-  const handleCartClose = () => {
-    setShoppingCart(false);
-  };
+  const handleLogin = () => setLogin(true);
 
-   useEffect(() => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    setIsLoggedIn(true);
-  } else {
-    setIsLoggedIn(false);
-  }
-}, [localStorage.getItem('token')]); 
-
-  const handleLogin = () => {
-    setLogin(true);
-    
-  };
-
-  const handleDrawerToggle = () => {
-    setDrawerOpen(prevState => !prevState);
-  };
+  const handleDrawerToggle = () => setDrawerOpen(prevState => !prevState);
 
   const navigateToProfile = () => {
+    handleProfileClose();
     const token = localStorage.getItem('token');
-    let userId;
-    
+    let uid;
     if (user?.id) {
-      userId = user.id;
+      uid = user.id;
     } else if (token) {
       try {
-        const decodedToken = JSON.parse(atob(token.split('.')[1])); 
-        userId = decodedToken.id;
+        const decodedToken = JSON.parse(atob(token.split('.')[1]));
+        uid = decodedToken.id;
       } catch (error) {
         console.error("Error decoding token:", error);
-        alert("Invalid token");
       }
-    } 
-    
-    if (userId) {
-      navigate(`/profile/${userId}`);
+    }
+    if (uid) {
+      navigate(`/profile/${uid}`);
       setDrawerOpen(false);
-    } else {
-      console.error("User ID is missing.");
-      alert("User ID is not available");
     }
   };
 
+  const navigateToBadges = () => {
+    handleProfileClose();
+    setDrawerOpen(false);
+    navigate('/badge');
+  };
 
   const handleLogout = () => {
-     localStorage.removeItem('token'); 
-     setIsLoggedIn(false);  
-     setDrawerOpen(false);
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setDrawerOpen(false);
+    handleProfileClose();
   };
 
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef(null);
+  const searchContainerRef = useRef(null);
 
-const [searchOpen, setSearchOpen] = useState(false);
-const [searchQuery, setSearchQuery] = useState('');
-const searchInputRef = useRef(null);
-const searchContainerRef = useRef(null);
-
-
-useEffect(() => {
-  function handleClickOutside(event) {
-    if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
-      setSearchOpen(false);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+        setSearchOpen(false);
+      }
     }
-  }
+    if (searchOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchOpen]);
 
-  if (searchOpen) {
-    document.addEventListener('mousedown', handleClickOutside);
-  } else {
-    document.removeEventListener('mousedown', handleClickOutside);
-  }
+  useEffect(() => {
+    if (searchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [searchOpen]);
 
-  return () => {
-    document.removeEventListener('mousedown', handleClickOutside);
+  const performSearch = () => setSearchOpen(true);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/catalogue?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchOpen(false);
+      setSearchQuery('');
+    }
   };
-}, [searchOpen]);
 
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const catalogueCacheRef = useRef(null);
+  const searchDebounceRef = useRef(null);
 
-useEffect(() => {
-  if (searchOpen && searchInputRef.current) {
-    searchInputRef.current.focus();
-  }
-}, [searchOpen]);
-
-const performSearch = () => {
-  setSearchOpen(true);
-};
-
-
-const handleSearchSubmit = (e) => {
-  e.preventDefault();
-  if (searchQuery.trim()) {
-    navigate(`/c?search=${encodeURIComponent(searchQuery.trim())}`);
-    setSearchOpen(false);
-    setSearchQuery('');
-  }
-};
-
-
-const [searchSuggestions, setSearchSuggestions] = useState([]);
-const [showSuggestions, setShowSuggestions] = useState(false);
-
-
-const handleSearchInputChange = (e) => {
+  const handleSearchInputChange = (e) => {
     const value = e.target.value;
     setSearchQuery(value);
-    
-   
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
     if (value && value.length >= 2) {
-      generateSearchSuggestions(value);
+      searchDebounceRef.current = setTimeout(() => {
+        generateSearchSuggestions(value);
+      }, 250);
     } else {
       setShowSuggestions(false);
       setSearchSuggestions([]);
     }
   };
-
- 
 
   const generateSearchSuggestions = async (query) => {
     if (!query || query.length <= 0) {
@@ -314,30 +392,24 @@ const handleSearchInputChange = (e) => {
       setShowSuggestions(false);
       return;
     }
-    
     try {
-    
-      const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`);
- 
-      if (response.data && response.data.length > 0) {
+      if (!catalogueCacheRef.current) {
+        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`);
+        catalogueCacheRef.current = response.data || [];
+      }
+      const data = catalogueCacheRef.current;
+      if (data.length > 0) {
         const lowerQuery = query.toLowerCase();
-        const filteredProducts = response.data.filter(product => {
-          return (
-              (product.name && product.name.toLowerCase() === lowerQuery) ||
-              (product.name && product.name.toLowerCase().includes(lowerQuery))
-          );
-        });
-        
-       
-        const suggestions = filteredProducts.map(product => ({
+        const filteredProducts = data.filter(product =>
+          product.name && product.name.toLowerCase().includes(lowerQuery)
+        );
+        const suggestions = filteredProducts.slice(0, 5).map(product => ({
           id: product._id,
           text: product.name,
           category: product.category,
           images: product.images,
         }));
-        
-      
-        setSearchSuggestions(suggestions.slice(0, 5));
+        setSearchSuggestions(suggestions);
         setShowSuggestions(suggestions.length > 0);
       } else {
         setSearchSuggestions([]);
@@ -345,352 +417,621 @@ const handleSearchInputChange = (e) => {
       }
     } catch (error) {
       console.error("Error fetching suggestions:", error);
-     
       setSearchSuggestions([]);
       setShowSuggestions(false);
     }
   };
 
-
   const handleSuggestionClick = (suggestion) => {
     setSearchQuery(suggestion.text);
     setShowSuggestions(false);
-    navigate(`/c?search=${encodeURIComponent(suggestion.text)}`);
+    navigate(`/catalogue?search=${encodeURIComponent(suggestion.text)}`);
     setSearchOpen(false);
   };
 
-  const NotificationsDropdown = () => (
-    <Paper ref={dropdownRef} sx={{ position: 'absolute', boxShadow: 3, borderRadius: 2, top: '100%', right: {xs:0,sm:200}, width: {xs:"100vw",sm:300}, maxHeight:{ xs:"100vh",sm:'75vh'}, overflow: 'auto', zIndex: 10, p: 2 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-         <Box>
-         <Typography variant="h6" sx={{ mb: 0 }}>
-             Notifications
-         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-           {unreadCount} unread
-        </Typography>
-         </Box>
-        <Button size="small" onClick={() => dispatch(markAllNotificationsAsRead())}>
-           Mark All as Read
-        </Button>
-
+  // ----- search overlay (shared between desktop + mobile) -----
+  const SearchOverlay = () => (
+    searchOpen && (
+      <Box
+        component="form"
+        onSubmit={handleSearchSubmit}
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bgcolor: COLORS.surface,
+          borderBottom: `1px solid ${COLORS.border}`,
+          boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+          py: 2.5,
+          px: { xs: 2, md: 6 },
+          zIndex: 10000,
+        }}
+      >
+        <Box sx={{ maxWidth: 760, mx: 'auto', position: 'relative' }}>
+          <TextField
+            fullWidth
+            inputRef={searchInputRef}
+            value={searchQuery}
+            onChange={handleSearchInputChange}
+            placeholder="Search for products, brands, eras..."
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: COLORS.textSecondary }} />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
+                    sx={iconBtnSx}
+                  >
+                    <CloseIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+              sx: {
+                borderRadius: 2,
+                fontSize: 16,
+                '& fieldset': { borderColor: COLORS.border },
+                '&:hover fieldset': { borderColor: COLORS.accent },
+                '&.Mui-focused fieldset': { borderColor: COLORS.accent },
+              },
+            }}
+          />
+          {showSuggestions && searchSuggestions.length > 0 && (
+            <Paper
+              sx={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                mt: 1,
+                borderRadius: 2,
+                border: `1px solid ${COLORS.border}`,
+                boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
+                maxHeight: 380,
+                overflowY: 'auto',
+                zIndex: 10001,
+              }}
+              elevation={0}
+            >
+              {searchSuggestions.map((suggestion, index) => (
+                <Box
+                  key={suggestion.id || index}
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  sx={{
+                    p: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    cursor: 'pointer',
+                    borderBottom: index < searchSuggestions.length - 1 ? `1px solid ${COLORS.border}` : 'none',
+                    '&:hover': { bgcolor: COLORS.accentSoft },
+                  }}
+                >
+                  <Box
+                    component="img"
+                    src={suggestion?.images?.[0] || '/placeholder.jpg'}
+                    alt={suggestion.text}
+                    sx={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 1.5, flexShrink: 0 }}
+                  />
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>
+                      {suggestion.text}
+                    </Typography>
+                    {suggestion.category && (
+                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>
+                        in {suggestion.category}
+                      </Typography>
+                    )}
+                  </Box>
+                </Box>
+              ))}
+            </Paper>
+          )}
+        </Box>
       </Box>
+    )
+  );
 
-
-
-  
+  // ----- notifications dropdown -----
+  const NotificationsDropdown = () => (
+    <Paper
+      ref={dropdownRef}
+      elevation={0}
+      sx={{
+        position: 'absolute',
+        top: 'calc(100% + 8px)',
+        right: { xs: 8, md: 24 },
+        width: { xs: 'calc(100vw - 16px)', sm: 360 },
+        maxHeight: '75vh',
+        overflow: 'auto',
+        zIndex: 10,
+        borderRadius: 3,
+        border: `1px solid ${COLORS.border}`,
+        boxShadow: '0 16px 40px rgba(0,0,0,0.10)',
+        bgcolor: COLORS.surface,
+      }}
+    >
+      <Box sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${COLORS.border}` }}>
+        <Box>
+          <Typography sx={{ fontWeight: 700, color: COLORS.textPrimary }}>Notifications</Typography>
+          <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>
+            {unreadCount} unread
+          </Typography>
+        </Box>
+        <Button
+          size="small"
+          onClick={() => dispatch(markAllNotificationsAsRead())}
+          sx={{
+            textTransform: 'none',
+            color: COLORS.accent,
+            fontWeight: 600,
+            '&:hover': { bgcolor: COLORS.accentSoft },
+          }}
+        >
+          Mark all read
+        </Button>
+      </Box>
       {notifications.length > 0 ? (
         notifications.map((notification) => (
-          <React.Fragment key={notification.id}>
-            <Box  sx={{ display: 'flex',  alignItems: 'center', gap: 2, backgroundColor: notification.isRead ? '#f0f0f0' : 'white',opacity: notification.isRead ? 0.7 : 1, cursor: 'pointer','&:hover': {  backgroundColor: notification.isRead ? '#e0e0e0' : '#f5f5f5'}  }} onClick={() => handleMarkAsRead(notification)} >
-              <Box sx={{ m: 2, display: 'flex', alignItems: 'center' }}>
-                {notification.icon}
-              </Box>
-              <Box>
-                <Typography variant="subtitle1" sx={{  fontWeight: notification.isRead ? 'normal' : 'bold', color: notification.isRead ? 'text.secondary' : 'text.primary'  }}>
-                  {notification.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {notification.description}
-                </Typography>
-                <Typography variant="caption" color="text.disabled">
-                  {notification.time}
-                </Typography>
-              </Box>
+          <Box
+            key={notification.id}
+            onClick={() => handleMarkAsRead(notification)}
+            sx={{
+              p: 2,
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: 1.5,
+              cursor: 'pointer',
+              borderBottom: `1px solid ${COLORS.border}`,
+              opacity: notification.isRead ? 0.6 : 1,
+              bgcolor: notification.isRead ? 'transparent' : COLORS.accentSoft,
+              '&:hover': { bgcolor: notification.isRead ? COLORS.accentSoft : '#EEDCE4' },
+            }}
+          >
+            <Box sx={{ flex: 1, minWidth: 0 }}>
+              <Typography sx={{ fontWeight: notification.isRead ? 500 : 700, fontSize: 14, color: COLORS.textPrimary }}>
+                {notification.title}
+              </Typography>
+              <Typography sx={{ fontSize: 13, color: COLORS.textSecondary, mt: 0.25 }}>
+                {notification.description}
+              </Typography>
+              <Typography sx={{ fontSize: 11, color: COLORS.textSecondary, mt: 0.5 }}>
+                {notification.time}
+              </Typography>
             </Box>
-            <Divider />
-          </React.Fragment>
+          </Box>
         ))
       ) : (
-        <Typography variant="body2" sx={{ textAlign: 'center', py: 2 }}>
-          No notifications to display
-        </Typography>
+        <Box sx={{ textAlign: 'center', py: 5 }}>
+          <Typography sx={{ fontSize: 14, color: COLORS.textSecondary }}>
+            No notifications yet
+          </Typography>
+        </Box>
       )}
     </Paper>
   );
 
-  
+  // ----- mobile drawer -----
   const MobileSidebar = () => (
-    <Drawer  PaperProps={{  sx: {  width: 240, bgcolor: '#f9f5f7' } }}  anchor="left"   open={drawerOpen}  onClose={handleDrawerToggle}>
-      
-       <Box ref={searchContainerRef}>
-          {searchOpen && (
-            <Box
-              component="form"  onSubmit={handleSearchSubmit}    sx={{    position: 'absolute',   top: '0',    left: '0',  right: '0',  width: "100vw", backgroundColor: '#f9f5f7', boxShadow: 3,  borderRadius: 1,   py: 2,  px: {xs: 5, sm: 10},  zIndex: 10000   }}  >
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>Search Products</Typography>
-              <Box sx={{ display: 'flex', width: '90%', position: 'relative' }}>
-                <input  ref={searchInputRef}  type="text"    value={searchQuery}   onChange={handleSearchInputChange}   placeholder="Search for products..." style={{   flex: 1,    padding: '10px',  fontSize: '16px',border: '1px solid #ccc',      borderRadius: '4px 0 0 4px',  outline: 'none' }}   />
-                <Button   type="submit"    variant="contained"  sx={{  marginLeft: '2%',   borderRadius: '0 4px 4px 0',   backgroundColor: '#85586F',   '&:hover': { backgroundColor: '#6d4659' }  }}>
-                  <SearchIcon />
-                </Button>
-                
-            
-                {showSuggestions && searchSuggestions.length > 0 && (
-                  <Box sx={{
-                    position: 'absolute',  top: '100%', left: 0,   width: '100%',    maxHeight: '300px', overflowY: 'auto', backgroundColor: 'white',  boxShadow: 3,  borderRadius: '0 0 4px 4px',   zIndex: 10001,  mt: 0.5}}>
-                    {searchSuggestions.map((suggestion, index) => (
-                      <Box key={suggestion.id || index}  onClick={() => handleSuggestionClick(suggestion)}  sx={{    p: 1.5,  borderBottom: index < searchSuggestions.length - 1 ? '1px solid #eee' : 'none', cursor: 'pointer',  '&:hover': {   backgroundColor: '#f5f5f5' },  display: 'flex',  alignItems: 'center' }}  >
-                        <SearchIcon sx={{ mr: 1, color: '#85586F', fontSize: '1rem' }} />
-                        <Box  component="img" src={suggestion?.images?.[0] || '/placeholder.jpg'} alt={suggestion.text} sx={{ width: '40px',  height: '40px', objectFit: 'cover', borderRadius: '4px', marginRight: '10px' }}/>
-
-                        <Box>
-                          <Typography variant="body1">{suggestion.text}</Typography>
-                          {suggestion.category && (
-                            <Typography variant="caption" color="text.secondary">
-                              in {suggestion.category}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            </Box>
-          )}
+    <Drawer
+      PaperProps={{ sx: { width: 280, bgcolor: COLORS.surface } }}
+      anchor="left"
+      open={drawerOpen}
+      onClose={handleDrawerToggle}
+    >
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Box
+            component="img"
+            src={require("./S.png")}
+            alt="Logo"
+            sx={{ height: 40, objectFit: 'contain' }}
+          />
+          <IconButton onClick={handleDrawerToggle} sx={iconBtnSx} size="small">
+            <CloseIcon fontSize="small" />
+          </IconButton>
         </Box>
-      <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', height: '100%' }}>
-        {/* Logo & Brand */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-          <Box component="img" src={require("./S.png")} alt="Logo" sx={{ width: 80, height: 45 }} />
-        </Box>
-        <Divider sx={{ mb: 2 }} />
 
-        {isLoggedIn && (
-        <List subheader={
-            <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
-              MY ACCOUNT
+        <List
+          subheader={
+            <ListSubheader sx={{ bgcolor: 'transparent', color: COLORS.accent, fontWeight: 700, fontSize: 11, letterSpacing: 1.5, lineHeight: 2, px: 0 }}>
+              BROWSE
             </ListSubheader>
-          }>
-          <ListItem button onClick={navigateToProfile} sx={{ py: 0.5 }}>
-            <ListItemIcon sx={{ minWidth: 35 }}>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="My Profile" />
-          </ListItem>
-        </List>)}
-        
-       
-        <List  subheader={
-            <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
-              ADD PRODUCTS
-            </ListSubheader>  } >
-          <ListItem button onClick={handleSimpleProduct} sx={{ py: 0.5 }}>
-            <ListItemIcon sx={{ minWidth: 35 }}>
-              <ShoppingBagIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Simple Product" />
-          </ListItem>
-          <ListItem button onClick={handleBiddingProduct} sx={{ py: 0.5 }}>
-            <ListItemIcon sx={{ minWidth: 35 }}>
-              <GavelIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Bidding Product" />
-          </ListItem>
-        </List>
-
-     
-        <List subheader={  <ListSubheader component="div" sx={{ bgcolor: 'transparent', color: '#85586F', fontWeight: 'bold' }}>
-              NAVIGATION
-            </ListSubheader> }>
-          <ListItem   button  component={RouterLink}  to="/"  onClick={handleDrawerToggle} sx={{ py: 0.5 }} >
-            <ListItemIcon sx={{ minWidth: 35 }}>
-              <HomeIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Home" />
-          </ListItem>
-          <ListItem  button  component={RouterLink}    to="/c"    onClick={handleDrawerToggle}   sx={{ py: 0.5 }} >
-            <ListItemIcon sx={{ minWidth: 35 }}>
-              <ShoppingBagIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="Products" />
-          </ListItem>
-          <ListItem    button   component={RouterLink}   to="#"  onClick={handleDrawerToggle} sx={{ py: 0.5 }} >
-            <ListItemIcon sx={{ minWidth: 35 }}>
-              <InfoIcon fontSize="small" />
-            </ListItemIcon>
-            <ListItemText primary="About Us" />
-          </ListItem>
-          <ListItem   button   component={RouterLink}   to="/contact"  onClick={handleDrawerToggle} sx={{ py: 0.5 }}>
-            <ListItemIcon sx={{ minWidth: 35 }}>
+          }
+          sx={{ p: 0, mb: 1 }}
+        >
+          {NAV_ITEMS.map((item) => (
+            <ListItem
+              key={item.to}
+              button
+              component={RouterLink}
+              to={item.to}
+              onClick={handleDrawerToggle}
+              sx={{
+                borderRadius: 2,
+                py: 1,
+                '&:hover': { bgcolor: COLORS.accentSoft },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36, color: COLORS.textPrimary }}>
+                {item.label === 'Home' && <HomeIcon fontSize="small" />}
+                {item.label === 'Shop' && <ShoppingBagIcon fontSize="small" />}
+                {item.label === 'Auctions' && <GavelIcon fontSize="small" />}
+                {item.label === 'Celebrity' && <StarsIcon fontSize="small" />}
+                {item.label === 'About' && <InfoIcon fontSize="small" />}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}
+              />
+              {item.live && (
+                <Box sx={{ px: 0.75, py: 0.125, fontSize: 9, fontWeight: 700, color: '#fff', bgcolor: COLORS.live, borderRadius: 1 }}>
+                  LIVE
+                </Box>
+              )}
+            </ListItem>
+          ))}
+          <ListItem
+            button
+            component={RouterLink}
+            to="/contact"
+            onClick={handleDrawerToggle}
+            sx={{ borderRadius: 2, py: 1, '&:hover': { bgcolor: COLORS.accentSoft } }}
+          >
+            <ListItemIcon sx={{ minWidth: 36, color: COLORS.textPrimary }}>
               <ContactsIcon fontSize="small" />
             </ListItemIcon>
-            <ListItemText primary="Contact Us" />
+            <ListItemText
+              primary="Contact"
+              primaryTypographyProps={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}
+            />
           </ListItem>
         </List>
-        
-        
+
+        <List
+          subheader={
+            <ListSubheader sx={{ bgcolor: 'transparent', color: COLORS.accent, fontWeight: 700, fontSize: 11, letterSpacing: 1.5, lineHeight: 2, px: 0, mt: 1 }}>
+              SELL
+            </ListSubheader>
+          }
+          sx={{ p: 0, mb: 1 }}
+        >
+          <ListItem button onClick={handleSimpleProduct} sx={{ borderRadius: 2, py: 1, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+            <ListItemIcon sx={{ minWidth: 36, color: COLORS.textPrimary }}>
+              <ShoppingBagIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Sell an item" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+          </ListItem>
+          <ListItem button onClick={handleBiddingProduct} sx={{ borderRadius: 2, py: 1, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+            <ListItemIcon sx={{ minWidth: 36, color: COLORS.textPrimary }}>
+              <GavelIcon fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Start an auction" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+          </ListItem>
+        </List>
+
+        {isLoggedIn && (
+          <List
+            subheader={
+              <ListSubheader sx={{ bgcolor: 'transparent', color: COLORS.accent, fontWeight: 700, fontSize: 11, letterSpacing: 1.5, lineHeight: 2, px: 0, mt: 1 }}>
+                ACCOUNT
+              </ListSubheader>
+            }
+            sx={{ p: 0 }}
+          >
+            <ListItem button onClick={navigateToProfile} sx={{ borderRadius: 2, py: 1, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+              <ListItemIcon sx={{ minWidth: 36, color: COLORS.textPrimary }}>
+                <PersonOutlineIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="My profile" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+            </ListItem>
+            <ListItem button onClick={navigateToBadges} sx={{ borderRadius: 2, py: 1, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+              <ListItemIcon sx={{ minWidth: 36, color: COLORS.textPrimary }}>
+                <EmojiEventsOutlinedIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText primary="My badges" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+            </ListItem>
+          </List>
+        )}
+
         <Box sx={{ flexGrow: 1 }} />
-        
-    
+
         {!isLoggedIn ? (
-    <Button variant="contained" color="primary" onClick={handleLogin}  sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }}>
-      Login
-    </Button>
-  ) : (
-    <Button variant="contained"   color="primary"  fullWidth onClick={handleLogout}   startIcon={<LogoutIcon />} sx={{  mt: 2,  backgroundColor: '#85586F',   '&:hover': {  backgroundColor: '#6d4659', },  textTransform: 'uppercase',  py: 1 }}>
-      Logout
-    </Button>
-  )}
+          <Button
+            variant="contained"
+            fullWidth
+            onClick={handleLogin}
+            sx={{
+              mt: 2,
+              bgcolor: COLORS.accent,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              py: 1.25,
+              boxShadow: 'none',
+              '&:hover': { bgcolor: COLORS.accentDark, boxShadow: 'none' },
+            }}
+          >
+            Log in
+          </Button>
+        ) : (
+          <Button
+            variant="outlined"
+            fullWidth
+            onClick={handleLogout}
+            startIcon={<LogoutIcon />}
+            sx={{
+              mt: 2,
+              borderColor: COLORS.border,
+              color: COLORS.textPrimary,
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: 600,
+              py: 1.25,
+              '&:hover': { borderColor: COLORS.accent, color: COLORS.accent, bgcolor: COLORS.accentSoft },
+            }}
+          >
+            Log out
+          </Button>
+        )}
       </Box>
     </Drawer>
   );
 
   return (
     <>
-      <Box component="navbar" marginBottom={10} sx={{ position: "fixed", zIndex: 2, width: "100%", backgroundColor: "white", display: "flex", paddingX: { xs: 1, md: 4, lg: 8, xl: 10 }, justifyContent: "space-between", borderBottom: "inset", boxShadow: 3 }}>
-      
-      <Box ref={searchContainerRef}>
-          {searchOpen && (
-            <Box
-              component="form"  onSubmit={handleSearchSubmit}    sx={{    position: 'absolute',   top: '0',    left: '0',  right: '0',  width: "100vw", backgroundColor: '#f9f5f7', boxShadow: 3,  borderRadius: 1,   py: 2,  px: {xs: 5, sm: 10},  zIndex: 10000   }}  >
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>Search Products</Typography>
-              <Box sx={{ display: 'flex', width: '90%', position: 'relative' }}>
-                <input  ref={searchInputRef}  type="text"    value={searchQuery}   onChange={handleSearchInputChange}   placeholder="Search for products..." style={{   flex: 1,    padding: '10px',  fontSize: '16px',border: '1px solid #ccc',      borderRadius: '4px 0 0 4px',  outline: 'none' }}   />
-                <Button   type="submit"    variant="contained"  sx={{  marginLeft: '2%',   borderRadius: '0 4px 4px 0',   backgroundColor: '#85586F',   '&:hover': { backgroundColor: '#6d4659' }  }}>
-                  <SearchIcon />
-                </Button>
-                
-     
-                {showSuggestions && searchSuggestions.length > 0 && (
-                  <Box sx={{
-                    position: 'absolute',  top: '100%', left: 0,   width: '100%',    maxHeight: '300px', overflowY: 'auto', backgroundColor: 'white',  boxShadow: 3,  borderRadius: '0 0 4px 4px',   zIndex: 10001,  mt: 0.5}}>
-                    {searchSuggestions.map((suggestion, index) => (
-                      <Box key={suggestion.id || index}  onClick={() => handleSuggestionClick(suggestion)}  sx={{    p: 1.5,  borderBottom: index < searchSuggestions.length - 1 ? '1px solid #eee' : 'none', cursor: 'pointer',  '&:hover': {   backgroundColor: '#f5f5f5' },  display: 'flex',  alignItems: 'center' }}  >
-                        <SearchIcon sx={{ mr: 1, color: '#85586F', fontSize: '1rem' }} />
-                        <Box  component="img" src={suggestion?.images?.[0] || '/placeholder.jpg'} alt={suggestion.text} sx={{ width: '40px',  height: '40px', objectFit: 'cover', borderRadius: '4px', marginRight: '10px' }}/>
-
-                        <Box>
-                          <Typography variant="body1">{suggestion.text}</Typography>
-                          {suggestion.category && (
-                            <Typography variant="caption" color="text.secondary">
-                              in {suggestion.category}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                )}
-              </Box>
-            </Box>
-          )}
+      <Box
+        component="nav"
+        sx={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 1100,
+          width: '100%',
+          bgcolor: COLORS.surface,
+          borderBottom: `1px solid ${COLORS.border}`,
+        }}
+      >
+        <Box ref={searchContainerRef}>
+          <SearchOverlay />
         </Box>
-     
-     {login && (<Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
-       
-           {login && <Login setLogin={setLogin} />}
-           
 
-        </Box> )}
-   
+        {login && (
+          <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
+            <Login setLogin={setLogin} />
+          </Box>
+        )}
 
-        <Stack direction="row" alignItems="center" px={{ xs: 1, md: 3, xl: 4 }}>
-          <Typography variant="h4" className="logo">
-            <span>
-              <Box component="img" src={require("./S.png")} alt="Logo" sx={{ width: 100, height: 55 }} />
-            </span>
-          </Typography>
-        </Stack>
-  
-        <Stack direction="row" alignItems="center" spacing={{ sm: 1, md: 2, lg: 2, xl:5 }} borderLeft={{ sm: "inset" }} borderRight={{ sm: "inset" }}  px={{ xs: 2.4, md: 10, lg: 10, xl: 25 }} sx={{ display: { xs: 'none', md: 'flex' } }}>
-          <Link component={RouterLink} to="/" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
-            Home
-          </Link>
-          <Link component={RouterLink} to="/c" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
-            Products
-          </Link>
-          <Link component={RouterLink} to="/AboutUs" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
-            About Us
-          </Link>
-          <Link component={RouterLink} to="/contact" sx={{ color: "black", fontWeight: 'bold', textDecoration: 'none', '&:hover': { color: "#F4B183", fontWeight: 'bold' } }}>
-            Contact Us
-          </Link>
-        </Stack>
+        <Box
+          sx={{
+            maxWidth: 1440,
+            mx: 'auto',
+            px: { xs: 2, md: 4, lg: 6 },
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 2,
+            minHeight: 72,
+          }}
+        >
+          {/* Logo */}
+          <Box
+            component={RouterLink}
+            to="/"
+            sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}
+          >
+            <Box
+              component="img"
+              src={require("./S.png")}
+              alt="Rewind & Revive"
+              sx={{ height: 44, objectFit: 'contain' }}
+            />
+          </Box>
 
-        <Stack direction="row" alignItems="center" sx={{ position: "relative" }} spacing={{ xs: 0, md: 2 }} px={{ xs: 1, md: 3, lg: 15 }}>
-          <IconButton onClick={() => setShoppingCart(!shoppingCart)}>
-            {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
-          </IconButton>
+          {/* Desktop nav links */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            sx={{ display: { xs: 'none', md: 'flex' }, gap: 0.5 }}
+          >
+            {NAV_ITEMS.map((item) => (
+              <NavItem key={item.to} item={item} />
+            ))}
+          </Stack>
 
-          <IconButton    onClick={handleAddClick} aria-controls={open ? 'add-product-menu' : undefined} aria-haspopup="true"  aria-expanded={open ? 'true' : undefined} sx={{ display: { xs: 'none', md: 'flex' } }} >
-            <AddIcon />
-          </IconButton>
-
-          <Menu   id="add-product-menu"  anchorEl={anchorEl}  open={open} onClose={handleClose}  MenuListProps={{ 'aria-labelledby': 'add-product-button', }} PaperProps={{  elevation: 3,  sx: {  minWidth: '200px', mt: 1,  } }} transformOrigin={{ horizontal: 'center', vertical: 'top' }}  anchorOrigin={{ horizontal: 'center', vertical: 'bottom' }}  slotProps={{paper: {  sx: { '& .MuiList-root': {   padding: 0, }, }, }, }}>
-            <MenuItem onClick={handleSimpleProduct}>
-              <ListItemIcon>
-                <ShoppingBagIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Create Simple Product</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={handleBiddingProduct}>
-              <ListItemIcon>
-                <GavelIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText>Create Bidding Product</ListItemText>
-            </MenuItem>
-          </Menu>
-          
-          {isLoggedIn && (
-            <>
-              <IconButton   onClick={navigateToProfile}  sx={{ display: { xs: 'none', md: 'flex' } }}  >
-                <PersonIcon />
+          {/* Right actions */}
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={0.5}
+            sx={{ position: 'relative' }}
+          >
+            <Tooltip title="Search">
+              <IconButton onClick={performSearch} sx={iconBtnSx}>
+                <SearchIcon />
               </IconButton>
+            </Tooltip>
 
-              <IconButton onClick={(e) => { e.stopPropagation(); handleNotificationsToggle(); }}>
-                {unreadCount > 0 ? (
-                  <Badge badgeContent={unreadCount} color="primary">
-                    <NotificationsIcon />
-                  </Badge>
-                ) : (
-                  <NotificationsNoneIcon />
-                )}
+            {/* Sell button — labeled, not just a + */}
+            <Button
+              onClick={handleAddClick}
+              startIcon={<AddIcon />}
+              sx={{
+                display: { xs: 'none', md: 'inline-flex' },
+                textTransform: 'none',
+                fontWeight: 600,
+                fontSize: 14,
+                color: COLORS.accent,
+                borderRadius: 2,
+                px: 1.5,
+                ml: 0.5,
+                '&:hover': { bgcolor: COLORS.accentSoft },
+              }}
+              endIcon={<KeyboardArrowDownIcon sx={{ fontSize: 18 }} />}
+            >
+              Sell
+            </Button>
+
+            <Menu
+              id="add-product-menu"
+              anchorEl={anchorEl}
+              open={open}
+              onClose={handleClose}
+              transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+              anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+              PaperProps={{
+                elevation: 0,
+                sx: {
+                  mt: 1,
+                  minWidth: 220,
+                  borderRadius: 2,
+                  border: `1px solid ${COLORS.border}`,
+                  boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
+                },
+              }}
+            >
+              <MenuItem onClick={handleSimpleProduct} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+                <ListItemIcon><ShoppingBagIcon fontSize="small" sx={{ color: COLORS.accent }} /></ListItemIcon>
+                <ListItemText primary="Sell an item" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+              </MenuItem>
+              <MenuItem onClick={handleBiddingProduct} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+                <ListItemIcon><GavelIcon fontSize="small" sx={{ color: COLORS.accent }} /></ListItemIcon>
+                <ListItemText primary="Start an auction" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+              </MenuItem>
+            </Menu>
+
+            <Tooltip title="Cart">
+              <IconButton onClick={() => setShoppingCart(!shoppingCart)} sx={iconBtnSx}>
+                {shoppingCart ? <LocalMallIcon /> : <LocalMallOutlinedIcon />}
               </IconButton>
-            </>
-          )}
-              
-          <IconButton onClick={performSearch}>
-            <SearchIcon fontSize="medium" />
-          </IconButton>
+            </Tooltip>
 
-        
-  {!isLoggedIn ? (
-    <Button variant="contained" color="primary" onClick={handleLogin}  sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
-      Login
-    </Button>
-  ) : (
-    <Button variant="contained" color="secondary" onClick={handleLogout}  sx={{   backgroundColor: '#85586F',  '&:hover': { backgroundColor: 'black' },  display: { xs: 'none', md: 'flex' }  }}  size="small">
-      Logout
-    </Button>
-  )}
+            {isLoggedIn && (
+              <>
+                <Tooltip title="Notifications">
+                  <IconButton
+                    onClick={(e) => { e.stopPropagation(); handleNotificationsToggle(); }}
+                    sx={iconBtnSx}
+                  >
+                    {unreadCount > 0 ? (
+                      <Badge
+                        badgeContent={unreadCount}
+                        sx={{ '& .MuiBadge-badge': { bgcolor: COLORS.accent, color: '#fff' } }}
+                      >
+                        <NotificationsIcon />
+                      </Badge>
+                    ) : (
+                      <NotificationsNoneIcon />
+                    )}
+                  </IconButton>
+                </Tooltip>
 
+                <Tooltip title="Account">
+                  <IconButton
+                    onClick={handleProfileClick}
+                    sx={{ ...iconBtnSx, display: { xs: 'none', md: 'inline-flex' } }}
+                  >
+                    <PersonOutlineIcon />
+                  </IconButton>
+                </Tooltip>
 
-          
-          <IconButton sx={{ display: { xs: 'flex', md: 'none' } }} onClick={handleDrawerToggle}>
-            <MenuIcon />
-          </IconButton>
-        </Stack>
+                <Menu
+                  anchorEl={profileAnchorEl}
+                  open={profileOpen}
+                  onClose={handleProfileClose}
+                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+                  PaperProps={{
+                    elevation: 0,
+                    sx: {
+                      mt: 1,
+                      minWidth: 220,
+                      borderRadius: 2,
+                      border: `1px solid ${COLORS.border}`,
+                      boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
+                    },
+                  }}
+                >
+                  <MenuItem onClick={navigateToProfile} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+                    <ListItemIcon><PersonIcon fontSize="small" sx={{ color: COLORS.accent }} /></ListItemIcon>
+                    <ListItemText primary="My profile" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+                  </MenuItem>
+                  <MenuItem onClick={navigateToBadges} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+                    <ListItemIcon><EmojiEventsOutlinedIcon fontSize="small" sx={{ color: COLORS.accent }} /></ListItemIcon>
+                    <ListItemText primary="My badges" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+                  </MenuItem>
+                  <Divider sx={{ borderColor: COLORS.border }} />
+                  <MenuItem onClick={handleLogout} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>
+                    <ListItemIcon><LogoutIcon fontSize="small" sx={{ color: COLORS.textSecondary }} /></ListItemIcon>
+                    <ListItemText primary="Log out" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
+                  </MenuItem>
+                </Menu>
+              </>
+            )}
 
-        {isOpen && <NotificationsDropdown />}
+            {!isLoggedIn && (
+              <Button
+                variant="contained"
+                onClick={handleLogin}
+                sx={{
+                  display: { xs: 'none', md: 'inline-flex' },
+                  ml: 1,
+                  bgcolor: COLORS.accent,
+                  borderRadius: 2,
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: 14,
+                  px: 2.5,
+                  py: 0.85,
+                  boxShadow: 'none',
+                  '&:hover': { bgcolor: COLORS.accentDark, boxShadow: 'none' },
+                }}
+              >
+                Log in
+              </Button>
+            )}
 
-      
+            <IconButton
+              sx={{ ...iconBtnSx, display: { xs: 'inline-flex', md: 'none' }, ml: 0.5 }}
+              onClick={handleDrawerToggle}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Stack>
+
+          {isOpen && <NotificationsDropdown />}
+        </Box>
+
         <MobileSidebar />
       </Box>
-      {/* {shoppingCart && <AddCart open={shoppingCart} onClose={handleCartClose} />} */}
-      {shoppingCart && (
-  <Box
-    onClick={handleCartClose} 
-    sx={{ position: "fixed",  top: 0,  left: 0,  width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "flex-end",  zIndex: 1200, }}>
-    <Box
-      onClick={(e) => e.stopPropagation()} 
-      sx={{  width: 200, height: "100%", boxShadow: "-2px 0 8px rgba(0,0,0,0.2)", }}  >
-      <AddCart onClose={handleCartClose} />
-    </Box>
-  </Box>
-)}
 
-      <Box sx={{ height: "64px" }} />
+      {shoppingCart && (
+        <Box
+          onClick={handleCartClose}
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            justifyContent: "flex-end",
+            zIndex: 1200,
+          }}
+        >
+          <Box
+            onClick={(e) => e.stopPropagation()}
+            sx={{ width: { xs: '85vw', sm: 380 }, height: "100%", boxShadow: "-2px 0 8px rgba(0,0,0,0.2)", bgcolor: COLORS.surface }}
+          >
+            <AddCart onClose={handleCartClose} />
+          </Box>
+        </Box>
+      )}
     </>
   );
 }

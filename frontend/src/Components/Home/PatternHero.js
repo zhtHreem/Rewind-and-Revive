@@ -18,9 +18,9 @@ export default function PatternHero() {
   return (
     <section className="rr-pattern" aria-label="Welcome">
       <div className="rr-pattern__copy">
-        <p className="rr-eyebrow">Pre-loved fashion · Pattern no. 01</p>
+        <p className="rr-eyebrow">Thrifted treasures, a fresh start</p>
         <h1>
-          Your next favourite piece already has a <em>past.</em>
+          Hunt, bid, and keep <em>the best.</em>
         </h1>
         <p className="rr-pattern__lead">
           Pre-loved clothes, jewellery and accessories from real people. Buy it, bid on a

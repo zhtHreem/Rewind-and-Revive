@@ -1,0 +1,20 @@
+/* Header for the simple-product creation page: the same pattern paper as the home hero. */
+.sl-hero {
+  background-color: #EFE6D3;
+  background-image: linear-gradient(#E0D4BA 1px, transparent 1px), linear-gradient(90deg, #E0D4BA 1px, transparent 1px);
+  background-size: 36px 36px;
+  padding: clamp(40px, 6vw, 80px) 0 0;
+}
+.sl-hero::after {
+  content: ''; display: block; height: 12px; margin-top: clamp(28px, 4vw, 48px);
+  background:
+    linear-gradient(135deg, #FAFAF7 25%, transparent 25%) 0 0 / 24px 24px,
+    linear-gradient(225deg, #FAFAF7 25%, transparent 25%) 0 0 / 24px 24px;
+}
+.sl-hero__in { max-width: 880px; margin: 0 auto; padding: 0 clamp(16px, 4vw, 32px); text-align: center; }
+.sl-eyebrow { font: 12px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--tag); margin: 0 0 12px; }
+.sl-hero h1 { font: 600 clamp(2.4rem, 6vw, 4.4rem)/1 var(--font-display); letter-spacing: -0.04em; margin: 0 0 16px; }
+.sl-hero h1 em { font-weight: 400; color: var(--tag); }
+.sl-lead { font-size: clamp(1rem, 1.4vw, 1.15rem); line-height: 1.6; max-width: 34em; margin: 0 auto 14px; }
+.sl-link { display: inline-block; font: 600 14px var(--font-body); color: var(--ink); text-decoration: none; border-bottom: 1.5px solid var(--tag); padding-bottom: 2px; }
+.sl-link:hover { color: var(--tag); }

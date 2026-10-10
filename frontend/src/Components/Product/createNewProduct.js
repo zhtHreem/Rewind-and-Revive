@@ -26,6 +26,8 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import Swal from "sweetalert2";
 import axios from "axios";
 import Layout from "../Layout/layout";
+import { Link as AuctionLink } from "react-router-dom";
+import "./createProductHeader.css";
 import LoadingOverlay from "../Utils/loading";
 import { useNavigate } from "react-router-dom";
 
@@ -326,6 +328,20 @@ function NewProduct() {
 
   return (
     <Layout>
+      <header className="sl-hero">
+        <div className="sl-hero__in">
+          <p className="sl-eyebrow">Sell a piece</p>
+          <h1>
+            Add a piece <em>to the rack.</em>
+          </h1>
+          <p className="sl-lead">
+            Clear photos, honest sizes and a short note about its history help it find a new owner.
+          </p>
+          <AuctionLink to="/create" className="sl-link">
+            Selling something rare? Create an auction &rarr;
+          </AuctionLink>
+        </div>
+      </header>
       <Box
         sx={{
           minHeight: "100vh",
@@ -337,44 +353,6 @@ function NewProduct() {
         <LoadingOverlay show={isLoading} />
 
         <Box sx={{ maxWidth: 880, mx: "auto" }}>
-          {/* HERO */}
-          <Box sx={{ mb: 5 }}>
-            <Typography
-              sx={{
-                fontSize: 12,
-                color: COLORS.textSecondary,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                fontWeight: 600,
-                mb: 1,
-              }}
-            >
-              New listing
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: SERIF,
-                fontSize: { xs: 32, md: 44 },
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-                lineHeight: 1.1,
-                mb: 1.5,
-              }}
-            >
-              List a product
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: 16,
-                color: COLORS.textSecondary,
-                maxWidth: 560,
-              }}
-            >
-              Share a pre-loved piece with the community. Clear photos and
-              accurate sizes get the most interest.
-            </Typography>
-          </Box>
-
           {/* FORM */}
           <Box
             component="form"

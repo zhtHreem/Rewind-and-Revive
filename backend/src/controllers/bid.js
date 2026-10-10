@@ -1,6 +1,7 @@
 import Bid from "../models/bid.js";
 import Product from "../models/biddingProduct.js";
 import User from '../models/user.js';
+import { applyRollingSchedule } from '../utils/rollingSchedule.js';
 
 // Add a new bid
 export const addBid = async (req, res) => {
@@ -25,9 +26,25 @@ export const addBid = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    // Check if the user is trying to bid on their own product
-    if (product.owner.toString() === userId) {
+    // Check if the user is trying to bid on their own product (lots without an owner are fine)
+    if (product.owner && product.owner.toString() === userId) {
       return res.status(403).json({ message: 'You cannot bid on your own product.' });
+    }
+
+    // The auction must be open, and a bid must beat the current highest bid (or the opening bid).
+    const now = new Date();
+    const schedule = applyRollingSchedule(product.toObject());
+    if (schedule.bidEndTime && new Date(schedule.bidEndTime) <= now) {
+      return res.status(400).json({ message: 'This auction has closed.' });
+    }
+    const amount = Number(bidAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return res.status(400).json({ message: 'Enter a valid bid amount.' });
+    }
+    const highest = await Bid.findOne({ productId }).sort({ bidAmount: -1 });
+    const floor = highest ? highest.bidAmount : Math.max(0, (product.startingPrice || 0) - 1);
+    if (amount <= floor) {
+      return res.status(400).json({ message: 'Your bid must be higher than the current bid.' });
     }
 
     const newBid = new Bid({

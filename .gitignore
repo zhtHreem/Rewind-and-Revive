@@ -39,3 +39,6 @@ rag-chatbot-api/.env
 rag-chatbot-api\.env
 frontend/build
 .claude/
+
+# local database backups
+backend/backups/

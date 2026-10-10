@@ -4,6 +4,7 @@ import fs from "fs";
 import axios from "axios";
 import Product from "../models/biddingProduct.js";
 import FormData from "form-data";
+import { applyRollingSchedule } from "../utils/rollingSchedule.js";
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -62,6 +63,12 @@ export const createProduct = async (req, res) => {
         bidStartTime: req.body.bidStartTime,
         bidEndTime: req.body.bidEndTime,
         biddingModel: req.body.biddingModel,
+        lotCollection: req.body.lotCollection,
+        provenance: req.body.provenance,
+        authenticity: req.body.authenticity,
+        condition: req.body.condition,
+        estimateLow: req.body.estimateLow ? Number(req.body.estimateLow) : undefined,
+        estimateHigh: req.body.estimateHigh ? Number(req.body.estimateHigh) : undefined,
         images: imageUrls,
       });
   
@@ -78,8 +85,8 @@ export const createProduct = async (req, res) => {
 export const getProducts = async (req, res) => {
   try {
     const products = await Product.find().sort({ createdAt: -1 }).lean();
-    res.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
-    res.status(200).json(products);
+    res.set('Cache-Control', 'public, s-maxage=10, stale-while-revalidate=30');
+    res.status(200).json(products.map((p) => applyRollingSchedule(p)));
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ error: "Failed to fetch products." });
@@ -93,7 +100,7 @@ export const getProductById = async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: "Product not found." });
     }
-    res.status(200).json(product);
+    res.status(200).json(applyRollingSchedule(product.toObject()));
   } catch (error) {
     console.error("Error fetching product:", error);
     res.status(500).json({ error: "Failed to fetch product." });

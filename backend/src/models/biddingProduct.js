@@ -33,9 +33,19 @@ const BidSchema = new mongoose.Schema({
     type: String, 
     enum: ["Top 3 Bidders", "Highest Bidder"] // Restrict to these values
   },
-  images: [{ 
-    type: String 
+  images: [{
+    type: String
   }],
+  // Auction-house style details (all optional, so existing lots keep working).
+  lotCollection: { type: String },    // e.g. "Red carpet", "Timepieces"
+  provenance: { type: String },        // where the piece came from
+  authenticity: { type: String },      // certificate / documentation note
+  condition: { type: String },         // short condition report
+  estimateLow: { type: Number },
+  estimateHigh: { type: Number },
+  soldFor: { type: Number },           // final price once a lot has closed
+  cycleDays: { type: Number },         // sample lots reopen every N days (see utils/rollingSchedule.js)
+  isSample: { type: Boolean, default: false }, // demo lots, see scripts/seed-sample-lots.js
   createdAt: { 
     type: Date, 
     default: Date.now 

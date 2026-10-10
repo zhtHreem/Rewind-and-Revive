@@ -55,9 +55,9 @@ const TOKENS = {
   ink: '#1F1B16',
   inkSoft: '#6B635A',
   bg: '#FFFFFF',
-  bgMuted: '#FAF8F5',
-  accent: '#867070',
-  accentDark: '#576F72',
+  bgMuted: '#F4EFE6',
+  accent: '#85586F',
+  accentDark: '#6B4459',
   sold: 'rgba(0, 0, 0, 0.55)',
 };
 
@@ -108,12 +108,13 @@ const ProductCard = React.memo(function ProductCard({ product, isFavorite, onTog
         position: 'relative',
         backgroundColor: TOKENS.bg,
         border: `1px solid ${TOKENS.border}`,
-        borderRadius: 2,
+        borderRadius: 0,
         overflow: 'hidden',
-        transition: 'border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease',
+        transition: 'border-color 0.2s ease, transform 0.3s ease, box-shadow 0.3s ease',
         '&:hover': {
           borderColor: TOKENS.borderHover,
-          boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
+          transform: 'translateY(-4px)',
+          boxShadow: '0 22px 34px -24px rgba(31,27,22,0.55)',
         },
       }}
     >
@@ -202,7 +203,10 @@ const ProductCard = React.memo(function ProductCard({ product, isFavorite, onTog
           <Typography
             variant="body2"
             sx={{
-              fontWeight: 500,
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.05rem',
+              fontWeight: 600,
+              letterSpacing: '-0.01em',
               color: TOKENS.ink,
               overflow: 'hidden',
               textOverflow: 'ellipsis',
@@ -214,7 +218,7 @@ const ProductCard = React.memo(function ProductCard({ product, isFavorite, onTog
           </Typography>
           <Typography
             variant="body1"
-            sx={{ fontWeight: 700, color: TOKENS.ink, mb: 0.25 }}
+            sx={{ fontFamily: 'var(--font-mono)', fontWeight: 500, fontSize: '0.95rem', color: TOKENS.ink, mb: 0.5 }}
           >
             {formatMoney(product.price)}
           </Typography>
@@ -226,10 +230,19 @@ const ProductCard = React.memo(function ProductCard({ product, isFavorite, onTog
             sx={{
               color: TOKENS.inkSoft,
               cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
               '&:hover': { color: TOKENS.ink, textDecoration: 'underline' },
             }}
           >
-            @{product.owner.username}
+            <Box
+              component="span"
+              sx={{ width: 20, height: 20, borderRadius: '50%', bgcolor: TOKENS.accent, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 11, fontWeight: 700 }}
+            >
+              {product.owner.username.charAt(0).toUpperCase()}
+            </Box>
+            {product.owner.username}
           </Typography>
         )}
       </CardContent>
@@ -258,9 +271,10 @@ const Facet = ({ title, defaultExpanded = true, children }) => (
     >
       <Typography
         sx={{
-          fontWeight: 600,
-          fontSize: '0.85rem',
-          letterSpacing: '0.04em',
+          fontFamily: 'var(--font-mono)',
+          fontWeight: 500,
+          fontSize: '0.75rem',
+          letterSpacing: '0.12em',
           textTransform: 'uppercase',
           color: TOKENS.ink,
         }}
@@ -469,29 +483,32 @@ const CataloguePage = () => {
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <Layout>
-      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
-
-        {/* Breadcrumbs */}
-        <Breadcrumbs separator="›" sx={{ mb: 1, fontSize: '0.85rem' }}>
-          <MuiLink component={RouterLink} to="/" underline="hover" color="inherit">Home</MuiLink>
-          <Typography color="text.primary" sx={{ fontSize: '0.85rem' }}>Shop</Typography>
-        </Breadcrumbs>
+      <Container maxWidth={false} sx={{ maxWidth: 1360, py: { xs: 3, md: 6 }, px: 'var(--gutter)' }}>
 
         {/* Page header */}
-        <Box sx={{ mb: { xs: 2, md: 3 } }}>
+        <Box sx={{ mb: { xs: 3, md: 4 } }}>
+          <Typography
+            sx={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: TOKENS.accent, mb: 1 }}
+          >
+            The shop
+          </Typography>
           <Typography
             variant="h1"
             sx={{
-              fontFamily: 'Playfair Display, Georgia, serif',
-              fontSize: { xs: '1.75rem', md: '2.25rem' },
-              fontWeight: 700,
+              fontFamily: 'var(--font-display)',
+              fontSize: { xs: '2.4rem', md: '3.8rem' },
+              fontWeight: 600,
+              letterSpacing: '-0.035em',
+              lineHeight: 1,
               color: TOKENS.ink,
-              mb: 0.5,
+              mb: 1.5,
             }}
           >
-            {searchQuery ? `Results for "${searchQuery}"` : 'Shop All'}
+            {searchQuery
+              ? `Results for "${searchQuery}"`
+              : <>Every piece, <em style={{ fontWeight: 400, color: TOKENS.accent }}>one of a kind.</em></>}
           </Typography>
-          <Typography variant="body2" sx={{ color: TOKENS.inkSoft }}>
+          <Typography sx={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: TOKENS.inkSoft }}>
             {loading
               ? 'Loading items…'
               : `${filteredProducts.length} ${filteredProducts.length === 1 ? 'item' : 'items'}${filteredProducts.length !== products.length ? ` (of ${products.length})` : ''}`}
@@ -562,7 +579,7 @@ const CataloguePage = () => {
                 value={category}
                 onChange={(e) => setCategory(e.target.value === category ? '' : e.target.value)}
               >
-                {defaultCategories.map((cat) => (
+                {defaultCategories.filter((cat) => (facetCounts.category[cat] ?? 0) > 0 || category === cat).map((cat) => (
                   <FormControlLabel
                     key={cat}
                     value={cat}
@@ -614,7 +631,7 @@ const CataloguePage = () => {
 
             {/* Product type — multi-select CHECKBOX */}
             <Facet title="Type">
-              {productTypes.map((type) => (
+              {productTypes.filter((type) => (facetCounts.type[type] ?? 0) > 0 || selectedTypes.includes(type)).map((type) => (
                 <FormControlLabel
                   key={type}
                   sx={{ display: 'flex', mr: 0 }}

@@ -34,7 +34,8 @@ const Celeb                = lazy(() => import('./Components/celebBidders/Auctio
 const Chatbot              = lazy(() => import('./Components/Chatbot/Chatbot'));
 const ConfirmationWrapper  = lazy(() => import('./Components/Payment/ConfirmationWrapper'));
 
-const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '42763443644-3vu05jba750miai4co92m874jh8pjuak.apps.googleusercontent.com';
+// Set REACT_APP_GOOGLE_CLIENT_ID in frontend/.env (and on your host). See frontend/.env.example.
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 // Wrap a lazy element in a Suspense boundary so React knows what to show while it loads.
 const withSuspense = (node) => (

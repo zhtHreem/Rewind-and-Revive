@@ -1,46 +1,24 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Box,
-  Grid,
-  Card,
-  CardContent,
-  CardMedia,
-  Typography,
-  Button,
-  Chip,
-  TextField,
-  MenuItem,
-  InputAdornment,
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Layout from '../Layout/layout';
 import SkeletonLoader from '../Utils/skeletonLoader';
-
-// ----- design tokens -----
-const COLORS = {
-  bg: '#FAFAF7',
-  surface: '#FFFFFF',
-  border: '#ECEAE4',
-  accent: '#85586F',
-  accentDark: '#6B4459',
-  textPrimary: '#1A1A1A',
-  textSecondary: '#6B6B6B',
-  live: '#E53935',
-};
+import './auctionIssue.css';
 
 // ----- countdown hook -----
-const useCountdown = (endTime) => {
+const useNow = () => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
+  return now;
+};
+
+const countdown = (endTime, now) => {
   const end = endTime ? new Date(endTime).getTime() : 0;
   const diff = Math.max(0, end - now);
-  if (diff === 0) return { ended: true, label: 'Ended' };
+  if (diff === 0) return { ended: true, label: 'Ended', urgent: false };
   const days = Math.floor(diff / 86400000);
   const hours = Math.floor((diff % 86400000) / 3600000);
   const mins = Math.floor((diff % 3600000) / 60000);
@@ -48,242 +26,121 @@ const useCountdown = (endTime) => {
   let label;
   if (days > 0) label = `${days}d ${hours}h left`;
   else if (hours > 0) label = `${hours}h ${mins}m left`;
-  else label = `${mins}m ${secs}s left`;
+  else label = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} left`;
   return { ended: false, label, urgent: diff < 3600000 };
 };
 
-// ----- skeleton -----
-const ProductCardSkeleton = () => (
-  <Card
-    sx={{
-      borderRadius: 3,
-      border: `1px solid ${COLORS.border}`,
-      boxShadow: 'none',
-    }}
-  >
-    <SkeletonLoader height="220px" />
-    <CardContent sx={{ p: 2.5 }}>
-      <SkeletonLoader.Text lines={1} width="70%" />
-      <Box sx={{ mt: 1.5 }}>
-        <SkeletonLoader.Text lines={1} width="40%" />
-      </Box>
-    </CardContent>
-  </Card>
-);
+const money = (n) => `Rs ${Number(n || 0).toLocaleString()}`;
+const lotNo = (i) => String(i + 1).padStart(2, '0');
 
-// ----- card -----
-const ProductCard = ({ product }) => {
+// ----- cover -----
+const Cover = ({ lots, now }) => {
   const navigate = useNavigate();
-  const countdown = useCountdown(product.bidEndTime);
+  // Cover star: the active lot that ends soonest, otherwise the first lot.
+  const featured =
+    [...lots]
+      .filter((p) => !countdown(p.bidEndTime, now).ended)
+      .sort((a, b) => new Date(a.bidEndTime) - new Date(b.bidEndTime))[0] || lots[0];
+  if (!featured) return null;
+  const cd = countdown(featured.bidEndTime, now);
+  const inside = lots.filter((p) => p._id !== featured._id).slice(0, 4);
 
   return (
-    <Card
-      onClick={() => navigate(`/biddingProduct/${product._id}`)}
-      sx={{
-        borderRadius: 3,
-        overflow: 'hidden',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-        border: `1px solid ${COLORS.border}`,
-        cursor: 'pointer',
-        backgroundColor: COLORS.surface,
-        transition: 'transform 0.25s ease, box-shadow 0.25s ease',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 14px 28px rgba(0,0,0,0.08)',
-        },
-        '&:hover .bid-btn': {
-          backgroundColor: COLORS.accent,
-          color: '#fff',
-        },
-        '&:hover img': {
-          transform: 'scale(1.04)',
-        },
-      }}
-    >
-      <Box
-        sx={{
-          position: 'relative',
-          width: '100%',
-          aspectRatio: '4 / 3',
-          overflow: 'hidden',
-          backgroundColor: '#f4f1ec',
-        }}
-      >
-        <CardMedia
-          component="img"
-          image={product.images?.[0] || '/placeholder.jpg'}
-          alt={product.name}
-          sx={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            transition: 'transform 0.4s ease',
-          }}
-        />
+    <section className="ai-cover" aria-label="Featured auction">
+      <aside className="ai-cover__side ai-cover__side--left">
+        <p className="ai-eyebrow">Celebrity &amp; collector auctions</p>
+        <h2>
+          Where the <em>big names</em> bid.
+        </h2>
+        <p>
+          Auctions are for celebrity-owned and collector pieces: the ones with a story worth
+          bidding for. Everyday finds live in the shop at a fixed price.
+        </p>
+        <Link className="ai-link" to="/catalogue">Shop everyday pieces &rarr;</Link>
+      </aside>
 
-        {!countdown.ended && (
-          <Chip
-            label="LIVE"
-            size="small"
-            sx={{
-              position: 'absolute',
-              top: 12,
-              left: 12,
-              bgcolor: '#fff',
-              color: COLORS.textPrimary,
-              fontWeight: 700,
-              fontSize: 10,
-              letterSpacing: 0.8,
-              height: 22,
-              '& .MuiChip-label': {
-                px: 1,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-              },
-              '&::before': {
-                content: '"●"',
-                color: COLORS.live,
-                fontSize: 10,
-                marginLeft: '8px',
-                marginRight: '-4px',
-              },
-            }}
-          />
-        )}
+      <Link to={`/biddingProduct/${featured._id}`} className="ai-cover__mag">
+        <img src={featured.images?.[0]} alt={featured.name} />
+        <span className="ai-cover__shade" />
+        <span className="ai-cover__mast">
+          REWIND
+          <br />
+          &amp;REVIVE
+          <small>The Auction Issue · No. 01</small>
+        </span>
+        <span className="ai-cover__line">
+          {featured.name}
+          <em>Opening bid {money(featured.startingPrice)}</em>
+        </span>
+        <span className={`ai-cover__timer ${cd.urgent ? 'is-urgent' : ''}`}>
+          {!cd.ended && <i className="ai-dot" />} {cd.label}
+        </span>
+        <span className="ai-cover__bar">LOT 01 · BID NOW</span>
+      </Link>
 
-        <Chip
-          icon={<AccessTimeIcon sx={{ fontSize: 12, color: '#fff !important' }} />}
-          label={countdown.label}
-          size="small"
-          sx={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            bgcolor: countdown.ended
-              ? 'rgba(0,0,0,0.55)'
-              : countdown.urgent
-              ? COLORS.live
-              : 'rgba(0,0,0,0.72)',
-            color: '#fff',
-            fontWeight: 600,
-            fontSize: 11,
-            height: 22,
-            '& .MuiChip-label': { px: 0.75 },
-          }}
-        />
-      </Box>
+      <aside className="ai-cover__side ai-cover__side--right">
+        <p className="ai-eyebrow">Inside this issue</p>
+        <ol className="ai-toc">
+          {inside.map((p, i) => (
+            <li key={p._id}>
+              <button onClick={() => navigate(`/biddingProduct/${p._id}`)}>
+                <span>{lotNo(i + 1)}</span>
+                <b>{p.name}</b>
+                <i>{money(p.startingPrice)}</i>
+              </button>
+            </li>
+          ))}
+        </ol>
+        <p className="ai-eyebrow" style={{ marginTop: 22 }}>How to bid</p>
+        <p className="ai-how">Pick a lot &middot; bid before the clock ends &middot; the winning bid takes it home.</p>
+      </aside>
+    </section>
+  );
+};
 
-      <CardContent sx={{ p: 2.5 }}>
-        <Typography
-          sx={{
-            fontWeight: 600,
-            fontSize: 16,
-            color: COLORS.textPrimary,
-            mb: 0.5,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-          }}
-        >
-          {product.name}
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: 13,
-            color: COLORS.textSecondary,
-            mb: 2,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            display: '-webkit-box',
-            WebkitLineClamp: 1,
-            WebkitBoxOrient: 'vertical',
-            minHeight: 19,
-          }}
-        >
-          {product.description || '\u00A0'}
-        </Typography>
-
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-end',
-          }}
-        >
-          <Box>
-            <Typography
-              sx={{
-                fontSize: 10,
-                color: COLORS.textSecondary,
-                textTransform: 'uppercase',
-                letterSpacing: 1,
-              }}
-            >
-              Starting bid
-            </Typography>
-            <Typography
-              sx={{
-                fontWeight: 700,
-                fontSize: 20,
-                color: COLORS.accent,
-                lineHeight: 1.2,
-              }}
-            >
-              Rs. {Number(product.startingPrice || 0).toLocaleString()}
-            </Typography>
-          </Box>
-          <Button
-            className="bid-btn"
-            variant="outlined"
+// ----- card -----
+const LotCard = ({ product, index, now }) => {
+  const navigate = useNavigate();
+  const cd = countdown(product.bidEndTime, now);
+  return (
+    <article className="ai-lot" onClick={() => navigate(`/biddingProduct/${product._id}`)}>
+      <div className="ai-lot__photo">
+        <img src={product.images?.[0] || '/placeholder.jpg'} alt={product.name} loading="lazy" decoding="async" />
+        <span className="ai-lot__no">No. {lotNo(index)}</span>
+        <span className={`ai-lot__timer ${cd.ended ? 'is-ended' : cd.urgent ? 'is-urgent' : ''}`}>
+          {!cd.ended && <i className="ai-dot" />}{cd.label}
+        </span>
+      </div>
+      <div className="ai-lot__body">
+        <h3>{product.name}</h3>
+        <p>{product.description || ' '}</p>
+        <div className="ai-lot__row">
+          <div>
+            <small>Starting bid</small>
+            <b>{money(product.startingPrice)}</b>
+          </div>
+          <button
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/biddingProduct/${product._id}`);
             }}
-            sx={{
-              borderColor: COLORS.accent,
-              color: COLORS.accent,
-              borderRadius: 2,
-              textTransform: 'none',
-              fontWeight: 600,
-              px: 2,
-              py: 0.6,
-              minWidth: 0,
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                backgroundColor: COLORS.accentDark,
-                borderColor: COLORS.accentDark,
-                color: '#fff',
-              },
-            }}
           >
             Bid now
-          </Button>
-        </Box>
-      </CardContent>
-    </Card>
+          </button>
+        </div>
+      </div>
+    </article>
   );
 };
 
-// ----- empty state -----
-const EmptyState = ({ query }) => (
-  <Box
-    sx={{
-      width: '100%',
-      textAlign: 'center',
-      py: 10,
-      color: COLORS.textSecondary,
-    }}
-  >
-    <Typography variant="h6" sx={{ color: COLORS.textPrimary, mb: 1 }}>
-      No auctions found
-    </Typography>
-    <Typography variant="body2">
-      {query
-        ? `Nothing matches "${query}". Try a different search.`
-        : 'Check back soon — new pieces are listed every day.'}
-    </Typography>
-  </Box>
+const LotSkeleton = () => (
+  <div className="ai-lot">
+    <SkeletonLoader height="300px" />
+    <div className="ai-lot__body">
+      <SkeletonLoader.Text lines={1} width="70%" />
+      <SkeletonLoader.Text lines={1} width="40%" />
+    </div>
+  </div>
 );
 
 // ----- page -----
@@ -292,14 +149,13 @@ const BidProductHome = () => {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('ending');
+  const now = useNow();
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(
-          `${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/get`
-        );
+        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/get`);
         setProducts(response.data);
       } catch (error) {
         console.error('Error fetching products:', error);
@@ -315,17 +171,13 @@ const BidProductHome = () => {
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(
-        (p) =>
-          p.name?.toLowerCase().includes(q) ||
-          p.description?.toLowerCase().includes(q)
+        (p) => p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
       );
     }
     const sorted = [...list];
     switch (sort) {
       case 'newest':
-        sorted.sort(
-          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
+        sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         break;
       case 'priceLow':
         sorted.sort((a, b) => (a.startingPrice || 0) - (b.startingPrice || 0));
@@ -335,9 +187,7 @@ const BidProductHome = () => {
         break;
       case 'ending':
       default:
-        sorted.sort(
-          (a, b) => new Date(a.bidEndTime) - new Date(b.bidEndTime)
-        );
+        sorted.sort((a, b) => new Date(a.bidEndTime) - new Date(b.bidEndTime));
         break;
     }
     return sorted;
@@ -345,145 +195,52 @@ const BidProductHome = () => {
 
   return (
     <Layout>
-      <Box
-        sx={{
-          backgroundColor: COLORS.bg,
-          minHeight: '100vh',
-          py: { xs: 4, md: 6 },
-          px: { xs: 2, sm: 4, md: 6 },
-        }}
-      >
-        <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-          {/* HERO */}
-          <Box sx={{ mb: 5 }}>
-            <Typography
-              sx={{
-                fontSize: 12,
-                color: COLORS.textSecondary,
-                letterSpacing: 2,
-                textTransform: 'uppercase',
-                fontWeight: 600,
-                mb: 1,
-              }}
-            >
-              Auctions
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: { xs: 32, md: 44 },
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-                lineHeight: 1.1,
-                mb: 1.5,
-                fontFamily: '"Playfair Display", "Fraunces", Georgia, serif',
-              }}
-            >
-              Live Bidding
-            </Typography>
-            <Typography
-              sx={{
-                fontSize: 16,
-                color: COLORS.textSecondary,
-                maxWidth: 560,
-              }}
-            >
-              Discover one-of-a-kind pre-loved pieces. Place your bid before the
-              timer runs out.
-            </Typography>
-          </Box>
+      <div className="ai-page">
+        {!loading && products.length > 0 && <Cover lots={products} now={now} />}
 
-          {/* TOOLBAR */}
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 2,
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              mb: 3,
-            }}
-          >
-            <Typography
-              sx={{
-                fontSize: 14,
-                color: COLORS.textSecondary,
-                fontWeight: 500,
-              }}
-            >
-              {loading
-                ? 'Loading auctions…'
-                : `${visibleProducts.length} active ${
-                    visibleProducts.length === 1 ? 'auction' : 'auctions'
-                  }`}
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-              <TextField
-                size="small"
-                placeholder="Search auctions"
+        <section className="ai-contents" aria-label="All lots">
+          <div className="ai-contents__head">
+            <div>
+              <p className="ai-eyebrow">Contents</p>
+              <h2>Every lot in this issue</h2>
+            </div>
+            <div className="ai-tools">
+              <span>
+                {loading
+                  ? 'Loading lots…'
+                  : `${visibleProducts.length} ${visibleProducts.length === 1 ? 'lot' : 'lots'}`}
+              </span>
+              <input
+                type="search"
+                placeholder="Search lots"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon
-                        sx={{ fontSize: 18, color: COLORS.textSecondary }}
-                      />
-                    </InputAdornment>
-                  ),
-                  sx: {
-                    backgroundColor: '#fff',
-                    borderRadius: 2,
-                    fontSize: 14,
-                    '& fieldset': { borderColor: COLORS.border },
-                    '&:hover fieldset': { borderColor: COLORS.accent },
-                  },
-                }}
-                sx={{ width: { xs: '100%', sm: 240 } }}
+                aria-label="Search lots"
               />
-              <TextField
-                select
-                size="small"
-                value={sort}
-                onChange={(e) => setSort(e.target.value)}
-                sx={{
-                  width: { xs: '100%', sm: 170 },
-                  backgroundColor: '#fff',
-                  borderRadius: 2,
-                  '& fieldset': { borderColor: COLORS.border },
-                  '& .MuiSelect-select': { fontSize: 14 },
-                }}
-              >
-                <MenuItem value="ending">Ending soon</MenuItem>
-                <MenuItem value="newest">Newly listed</MenuItem>
-                <MenuItem value="priceLow">Price: low to high</MenuItem>
-                <MenuItem value="priceHigh">Price: high to low</MenuItem>
-              </TextField>
-            </Box>
-          </Box>
+              <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort lots">
+                <option value="ending">Ending soon</option>
+                <option value="newest">Newly listed</option>
+                <option value="priceLow">Price: low to high</option>
+                <option value="priceHigh">Price: high to low</option>
+              </select>
+            </div>
+          </div>
 
-          {/* GRID */}
-          <Grid container spacing={3}>
+          <div className="ai-grid">
             {loading ? (
-              Array.from(new Array(8)).map((_, index) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
-                  <ProductCardSkeleton />
-                </Grid>
-              ))
+              Array.from({ length: 8 }).map((_, i) => <LotSkeleton key={i} />)
             ) : visibleProducts.length === 0 ? (
-              <Grid item xs={12}>
-                <EmptyState query={query} />
-              </Grid>
+              <p className="ai-empty">
+                {query ? `Nothing matches "${query}".` : 'No lots right now. New pieces are listed every day.'}
+              </p>
             ) : (
-              visibleProducts.map((product) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
-                  <ProductCard product={product} />
-                </Grid>
+              visibleProducts.map((product, i) => (
+                <LotCard key={product._id} product={product} index={i} now={now} />
               ))
             )}
-          </Grid>
-        </Box>
-      </Box>
+          </div>
+        </section>
+      </div>
     </Layout>
   );
 };

@@ -1,23 +1,30 @@
-import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, Typography, Divider } from "@mui/material";
-import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import Layout from "../Layout/layout";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import Layout from '../Layout/layout';
+import {
+  ReceiptPaper,
+  ReceiptRule,
+  ReceiptRow,
+  ReceiptBarcode,
+  ReceiptNote,
+  rs,
+  todayStamp,
+} from '../Receipt/Receipt';
 
 const Payment = () => {
   const [cart, setCart] = useState([]);
   const navigate = useNavigate();
-  const { productId } = useParams();
 
   useEffect(() => {
     const fetchCartProducts = async () => {
       try {
-        const savedCart = localStorage.getItem("cart");
+        const savedCart = localStorage.getItem('cart');
         const parsedCart = savedCart ? JSON.parse(savedCart) : [];
         const updatedCart = await Promise.all(
           parsedCart.map(async (item) => {
             if (!item.id) {
-              console.error("Product ID missing for item:", item);
+              console.error('Product ID missing for item:', item);
               return item;
             }
             const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/${item.id}`);
@@ -26,47 +33,53 @@ const Payment = () => {
         );
         setCart(updatedCart);
       } catch (error) {
-        console.error("Error fetching cart:", error);
+        console.error('Error fetching cart:', error);
       }
     };
     fetchCartProducts();
   }, []);
 
-  const getTotalPrice = () => cart.reduce((total, product) => total + product.price * product.quantity, 0);
+  const total = cart.reduce((sum, product) => sum + product.price * (product.quantity || 1), 0);
 
   return (
     <Layout>
-      <Box sx={{ maxWidth: 600, width: "90%", mx: "auto", my: 4, p: 3, bgcolor: "#fff", boxShadow: 3, borderRadius: 2 }}>
-        <Typography variant="h4" sx={{ textAlign: "center", mb: 3 }}>Payment Summary</Typography>
+      <div className="rr-receipt-page">
+        <ReceiptPaper subtitle={`order summary · ${todayStamp()}`}>
+          <ReceiptRule />
+          {cart.length === 0 ? (
+            <p className="rr-empty">Your bag is empty.</p>
+          ) : (
+            cart.map((product, i) => (
+              <div className="rr-line" key={product._id || product.id}>
+                {product.images?.[0] && <img src={product.images[0]} alt="" />}
+                <div className="rr-line__name">
+                  <b>{String(i + 1).padStart(2, '0')} {product.name}</b>
+                  <small>{product.quantity || 1} x Rs {rs(product.price)}</small>
+                </div>
+                <span className="rr-line__price">{rs(product.price * (product.quantity || 1))}</span>
+              </div>
+            ))
+          )}
+          <ReceiptRule />
+          <ReceiptRow left="SUBTOTAL" right={`Rs ${rs(total)}`} />
+          <ReceiptRow left="SECOND LIVES GIVEN" right={cart.length} />
+          <ReceiptRule />
+          <ReceiptRow strong left="TOTAL" right={`Rs ${rs(total)}`} />
+          <ReceiptNote>Review your bag, then pay</ReceiptNote>
+          <ReceiptBarcode />
+        </ReceiptPaper>
 
-        {cart.map((product) => (
-          <Grid container key={product._id} spacing={2} alignItems="center" sx={{ mb: 2 }}>
-            <Grid item xs={3}>
-              <Box component="img" src={product.images?.[0] || "https://via.placeholder.com/100"} alt={product.name} sx={{ width: "100%", borderRadius: 1 }} />
-            </Grid>
-            <Grid item xs={5}>
-              <Typography variant="body1" fontWeight={500}>{product.name}</Typography>
-            </Grid>
-            <Grid item xs={4}>
-              <Typography variant="body2">{product.quantity} x Rs.{product.price}</Typography>
-            </Grid>
-          </Grid>
-        ))}
-
-        <Divider sx={{ my: 2 }} />
-
-        <Grid container justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Total</Typography>
-          <Typography variant="h6">Rs.{getTotalPrice()}</Typography>
-        </Grid>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Box sx={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2, mt: 3 }}>
-          <Button variant="outlined" onClick={() => navigate(-1)} sx={{ color: "#85586F", borderColor: "#85586F", flex: 1, minWidth: 120 }}>Back to Cart</Button>
-          <Button variant="contained" onClick={() => navigate("/confirmation", { state: { cart } })} sx={{ backgroundColor: "#85586F", color: "#fff", "&:hover": { backgroundColor: "#6A4C58" }, flex: 1, minWidth: 120 }}>Pay Now</Button>
-        </Box>
-      </Box>
+        <div className="rr-receipt-page__actions">
+          <button className="is-ghost" onClick={() => navigate(-1)}>Back to bag</button>
+          <button
+            className="is-solid"
+            disabled={cart.length === 0}
+            onClick={() => navigate('/confirmation', { state: { cart } })}
+          >
+            Pay now
+          </button>
+        </div>
+      </div>
     </Layout>
   );
 };

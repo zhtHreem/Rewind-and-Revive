@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Swal from 'sweetalert2';
-import { Box, Typography, Button, Paper, CircularProgress } from '@mui/material';
+import { CircularProgress } from '@mui/material';
 import { useStripe, useElements, CardElement } from '@stripe/react-stripe-js';
 import Layout from '../Layout/layout';
+import { ReceiptPaper, ReceiptRule, ReceiptRow, ReceiptBarcode, ReceiptNote, rs } from '../Receipt/Receipt';
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -139,37 +140,35 @@ const PaymentForm = () => {
 
   return (
     <Layout>
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh" mt={5}>
-        <Paper elevation={3} sx={{ p: 4, width: '100%', maxWidth: 500 }}>
-          <Typography variant="h5" gutterBottom>
-            Complete Your Payment
-          </Typography>
-          <Typography variant="body1" gutterBottom>
-            Total Amount: Rs.{getTotalPrice()}
-          </Typography>
-          <form onSubmit={handleSubmit}>
-            <Box sx={{ my: 3, p: 2, border: '1px solid #ccc', borderRadius: 1 }}>
+      <div className="rr-receipt-page">
+        <form onSubmit={handleSubmit} style={{ display: 'contents' }}>
+          <ReceiptPaper subtitle="secure payment · powered by Stripe">
+            <ReceiptRule />
+            {cart.map((product, i) => (
+              <ReceiptRow
+                key={product._id || product.id}
+                left={`${String(i + 1).padStart(2, '0')} ${String(product.name || '').slice(0, 22)}`}
+                right={rs(product.price * (product.quantity || 1))}
+              />
+            ))}
+            <ReceiptRule />
+            <ReceiptRow strong left="TOTAL" right={`Rs ${rs(getTotalPrice())}`} />
+            <ReceiptRule />
+            <ReceiptNote>Card details</ReceiptNote>
+            <div className="rr-card-field">
               <CardElement options={CARD_ELEMENT_OPTIONS} />
-            </Box>
-            <Button
-              type="submit"
-              variant="contained"
-              color="inherit"
-              sx={{ mt: 2, color:"white",backgroundColor: '#85586F', '&:hover': { backgroundColor: '#6A4C58' } }}
-              fullWidth
-              disabled={!stripe || isProcessing}
-            >
-              {isProcessing ? <CircularProgress size={24} color="inherit" /> : 'Pay Now'}
-            </Button>
-          </form>
-        </Paper>
-      </Box>
+            </div>
+            <ReceiptBarcode />
+          </ReceiptPaper>
 
-      <Box display="flex" justifyContent="center" mt={1} mb={5}>
-        <Button variant="outlined" color="secondary" onClick={() => navigate(-1)}>
-          Back to Cart
-        </Button>
-      </Box>
+          <div className="rr-receipt-page__actions">
+            <button type="button" className="is-ghost" onClick={() => navigate(-1)}>Back</button>
+            <button type="submit" className="is-solid" disabled={!stripe || isProcessing || cart.length === 0}>
+              {isProcessing ? <CircularProgress size={20} color="inherit" /> : `Pay Rs ${rs(getTotalPrice())}`}
+            </button>
+          </div>
+        </form>
+      </div>
     </Layout>
   );
 };

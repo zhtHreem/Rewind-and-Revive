@@ -99,7 +99,7 @@ const FilterDrawer = ({
             <AccordionDetails>
               <RadioGroup  value={priceRange}  onChange={(e) => setPriceRange(e.target.value)} >
                 {priceRanges.map((price) => (
-                  <FormControlLabel   key={price}  value={price.toString()}  control={<Radio />}    label={`Up to Rs.${price}`}  />
+                  <FormControlLabel   key={price}  value={price.toString()}  control={<Radio />}    label={`Up to $${price}`}  />
                 ))}
               </RadioGroup>
             </AccordionDetails>

@@ -18,6 +18,7 @@ import axios from 'axios';
 import myMyo from './images/myo.jpg';
 
 import SkeletonLoader from '../Utils/skeletonLoader';
+import { formatMoney } from '../../utils/money';
 const MatchOutfitModal = ({ open, onClose, product }) => {
   const navigate = useNavigate();
   const theme = useTheme();
@@ -119,7 +120,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
                 {product?.name}   
               </Typography>
               <Typography  variant='body2' sx={{color: 'darkblue'}} >
-                 Rs. {product?.price}
+                 {formatMoney(product?.price)}
               </Typography>
              
                <Typography variant="body2" sx={{ color: 'black',backgroundColor: '#f5f5f5', padding: '4px 8px', fontWeight: 'bold' }}>
@@ -164,7 +165,7 @@ const MatchOutfitModal = ({ open, onClose, product }) => {
                          </Typography>
                         </Typography>
                       <Typography  variant='body2' sx={{color: 'white',position: 'absolute',backgroundColor: 'rgba(0, 0, 0, 0.5)',top: 0,right:0,left:0 }} >
-                        Rs.{item.price}
+                        {formatMoney(item.price)}
                       </Typography>
                  
                     </Box>

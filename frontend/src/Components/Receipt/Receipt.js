@@ -1,7 +1,7 @@
 import React from 'react';
 import './receipt.css';
 
-export const rs = (n) => Number(n || 0).toLocaleString();
+export const rs = (n) => Number(n || 0).toLocaleString('en-US', { maximumFractionDigits: 2 });
 
 export const ReceiptPaper = ({ title = 'Rewind & Revive', subtitle, children, className = '' }) => (
   <div className={`rr-receipt ${className}`}>

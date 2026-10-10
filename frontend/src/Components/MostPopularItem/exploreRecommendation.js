@@ -14,6 +14,7 @@ import axios from 'axios';
 
 import SectionHeader from '../Utils/SectionHeader';
 import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
+import { formatMoney } from '../../utils/money';
 
 axios.defaults.withCredentials = true;
 
@@ -128,7 +129,7 @@ const RecommendedCard = ({ product }) => {
               mb: 0.25,
             }}
           >
-            Rs. {product.price?.toLocaleString() ?? product.price}
+            {formatMoney(product.price)}
           </Typography>
         </Box>
         {product.owner?.username && (

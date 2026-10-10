@@ -2,8 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../Home/sections.css';
+import { formatMoney } from '../../utils/money';
 
-const money = (n) => `Rs ${Number(n || 0).toLocaleString()}`;
+const money = formatMoney;
 
 const useNow = () => {
   const [now, setNow] = useState(Date.now());

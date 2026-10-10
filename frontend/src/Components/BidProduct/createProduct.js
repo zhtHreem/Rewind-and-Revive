@@ -400,7 +400,7 @@ const CreateProductForm = () => {
                         <Typography
                           sx={{ color: COLORS.textSecondary, fontSize: 14 }}
                         >
-                          Rs.
+                          $
                         </Typography>
                       </InputAdornment>
                     ),

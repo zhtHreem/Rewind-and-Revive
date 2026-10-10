@@ -41,7 +41,7 @@ const ProductTab = () => {
               </CardMedia>
               <CardContent>
                 <Typography variant="h6">{product.name}</Typography>
-                <Typography variant="body2">Rs.{product.price}</Typography>
+                <Typography variant="body2">${product.price}</Typography>
                 <Typography variant="body2" color="text.secondary">{product.category}</Typography>
                 <Typography variant="caption" color="text.secondary">{product.ownerName || "You"}</Typography>
               </CardContent>

@@ -88,18 +88,18 @@ const AddCart = ({ onClose }) => {
                     <b>{String(i + 1).padStart(2, '0')} {item.name}</b>
                     <small>1 of 1</small>
                   </div>
-                  <span className="rr-line__price">{rs(item.price)}</span>
+                  <span className="rr-line__price">${rs(item.price)}</span>
                   <button className="rr-line__x" onClick={() => remove(id)} aria-label={`Remove ${item.name}`}>&times;</button>
                 </div>
               );
             })
           )}
           <ReceiptRule />
-          <ReceiptRow left="SUBTOTAL" right={`Rs ${rs(total)}`} />
+          <ReceiptRow left="SUBTOTAL" right={`$${rs(total)}`} />
           <ReceiptRow left="NEW CLOTHES MADE" right="0" />
           <ReceiptRow left="SECOND LIVES GIVEN" right={cart.length} />
           <ReceiptRule />
-          <ReceiptRow strong left="TOTAL" right={`Rs ${rs(total)}`} />
+          <ReceiptRow strong left="TOTAL" right={`$${rs(total)}`} />
           <ReceiptNote>Thank you for not buying new</ReceiptNote>
           <ReceiptBarcode />
         </ReceiptPaper>

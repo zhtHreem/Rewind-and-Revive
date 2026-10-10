@@ -2,6 +2,7 @@ import React, { useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import useHomeItems, { mixItems } from './useHomeProducts';
 import './home.css';
+import { formatMoney } from '../../utils/money';
 
 export default function Spotlight({ onlyProducts = false, compact = false }) {
   const ref = useRef(null);
@@ -29,7 +30,7 @@ export default function Spotlight({ onlyProducts = false, compact = false }) {
             <img src={item.image} alt={item.name} loading="lazy" decoding="async" />
             <span className="rr-spot__cap">
               {item.name}
-              <small>Rs {Number(item.price).toLocaleString()}</small>
+              <small>{formatMoney(item.price)}</small>
             </span>
           </Link>
         ))}

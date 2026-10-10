@@ -44,7 +44,7 @@ export const createPaymentIntent = async (req, res) => {
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
-      currency: 'pkr',
+      currency: 'usd',
       payment_method: paymentMethodId,
       confirm: true,
       automatic_payment_methods: {
@@ -74,7 +74,7 @@ for (const { product, quantity } of validProducts) {
     productOwner: sellerId,
     productId,
     amount: product.price,
-    currency: 'pkr',
+    currency: 'usd',
   });
 
   await paymentRecord.save();

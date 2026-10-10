@@ -40,6 +40,7 @@ import Spotlight from '../Home/Spotlight';
 import axios from 'axios';
 import sizeRanges from "../Utils/sizeRange";
 import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
+import { formatMoney } from '../../utils/money';
 
 // Lazy-load less critical components
 const SizeChartMUI = React.lazy(() => import("./sizechart"));
@@ -215,7 +216,7 @@ const ProductCard = React.memo(function ProductCard({ product, isFavorite, onTog
             variant="body1"
             sx={{ fontWeight: 700, color: TOKENS.ink, mb: 0.25 }}
           >
-            Rs. {product.price?.toLocaleString() ?? product.price}
+            {formatMoney(product.price)}
           </Typography>
         </Box>
         {product.owner?.username && (
@@ -305,7 +306,7 @@ const CataloguePage = () => {
   const defaultCategories = ['men', 'women', 'kids'];
   const productTypes = ['top', 'bottom', 'top/bottom', 'accessories'];
   const sizes = ['small', 'medium', 'large'];
-  const priceOptions = [1000, 2000, 3000];
+  const priceOptions = [10, 25, 50, 100];
 
   // ── Data fetch ────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -649,7 +650,7 @@ const CataloguePage = () => {
                     key={price}
                     value={price.toString()}
                     control={<Radio size="small" sx={{ py: 0.25 }} />}
-                    label={<Typography sx={{ fontSize: '0.875rem' }}>Up to Rs. {price.toLocaleString()}</Typography>}
+                    label={<Typography sx={{ fontSize: '0.875rem' }}>Up to ${price.toLocaleString()}</Typography>}
                     onClick={(e) => {
                       if (priceRange === price.toString()) {
                         e.preventDefault();
@@ -736,7 +737,7 @@ const CataloguePage = () => {
                 ))}
                 {priceRange && (
                   <Chip
-                    label={`Up to Rs. ${parseInt(priceRange).toLocaleString()}`}
+                    label={`Up to $${parseInt(priceRange).toLocaleString()}`}
                     onDelete={() => removeChip('price')}
                     deleteIcon={<CloseIcon />}
                     size="small"

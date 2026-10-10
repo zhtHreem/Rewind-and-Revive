@@ -40,6 +40,7 @@ import ProductChat from '../ProductChat/ProductChat';
 import SkeletonLoader from '../Utils/skeletonLoader';
 import axios from 'axios';
 import MatchOutfitModal from './matchMyOutfit';
+import { formatMoney } from '../../utils/money';
 
 // shared design tokens
 const COLORS = {
@@ -56,7 +57,6 @@ const COLORS = {
 };
 const SERIF = '"Playfair Display", "Fraunces", Georgia, serif';
 
-const formatPKR = (n) => `Rs. ${Number(n || 0).toLocaleString()}`;
 
 // ----- skeleton -----
 const ProductImageSkeleton = () => (
@@ -124,7 +124,7 @@ const MiniProductCard = ({ product, onClick }) => (
         {product.name}
       </Typography>
       <Typography sx={{ fontWeight: 700, fontSize: 14, color: COLORS.accent }}>
-        {formatPKR(product.price)}
+        {formatMoney(product.price)}
       </Typography>
     </Box>
   </Box>
@@ -623,7 +623,7 @@ const ProductPage = () => {
                         lineHeight: 1,
                       }}
                     >
-                      {formatPKR(product.price)}
+                      {formatMoney(product.price)}
                     </Typography>
                     {product.isSold && (
                       <Chip

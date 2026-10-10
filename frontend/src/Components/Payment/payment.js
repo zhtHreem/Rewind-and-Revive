@@ -54,17 +54,17 @@ const Payment = () => {
                 {product.images?.[0] && <img src={product.images[0]} alt="" />}
                 <div className="rr-line__name">
                   <b>{String(i + 1).padStart(2, '0')} {product.name}</b>
-                  <small>{product.quantity || 1} x Rs {rs(product.price)}</small>
+                  <small>{product.quantity || 1} x ${rs(product.price)}</small>
                 </div>
-                <span className="rr-line__price">{rs(product.price * (product.quantity || 1))}</span>
+                <span className="rr-line__price">${rs(product.price * (product.quantity || 1))}</span>
               </div>
             ))
           )}
           <ReceiptRule />
-          <ReceiptRow left="SUBTOTAL" right={`Rs ${rs(total)}`} />
+          <ReceiptRow left="SUBTOTAL" right={`$${rs(total)}`} />
           <ReceiptRow left="SECOND LIVES GIVEN" right={cart.length} />
           <ReceiptRule />
-          <ReceiptRow strong left="TOTAL" right={`Rs ${rs(total)}`} />
+          <ReceiptRow strong left="TOTAL" right={`$${rs(total)}`} />
           <ReceiptNote>Review your bag, then pay</ReceiptNote>
           <ReceiptBarcode />
         </ReceiptPaper>

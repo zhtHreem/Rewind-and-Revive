@@ -423,7 +423,7 @@ function NewProduct() {
                         <Typography
                           sx={{ color: COLORS.textSecondary, fontSize: 14 }}
                         >
-                          Rs.
+                          $
                         </Typography>
                       </InputAdornment>
                     ),

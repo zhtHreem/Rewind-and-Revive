@@ -152,7 +152,7 @@ const PaymentForm = () => {
               />
             ))}
             <ReceiptRule />
-            <ReceiptRow strong left="TOTAL" right={`Rs ${rs(getTotalPrice())}`} />
+            <ReceiptRow strong left="TOTAL" right={`$${rs(getTotalPrice())}`} />
             <ReceiptRule />
             <ReceiptNote>Card details</ReceiptNote>
             <div className="rr-card-field">
@@ -164,7 +164,7 @@ const PaymentForm = () => {
           <div className="rr-receipt-page__actions">
             <button type="button" className="is-ghost" onClick={() => navigate(-1)}>Back</button>
             <button type="submit" className="is-solid" disabled={!stripe || isProcessing || cart.length === 0}>
-              {isProcessing ? <CircularProgress size={20} color="inherit" /> : `Pay Rs ${rs(getTotalPrice())}`}
+              {isProcessing ? <CircularProgress size={20} color="inherit" /> : `Pay $${rs(getTotalPrice())}`}
             </button>
           </div>
         </form>

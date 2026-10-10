@@ -3,6 +3,7 @@ import { Box, Typography, Grid, Link, Card, CardMedia, CardContent, Button, Skel
 import { Navigate, useNavigate } from 'react-router-dom';
 import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
 import SkeletonLoader from '../Utils/skeletonLoader';
+import { formatMoney } from '../../utils/money';
 const PopularFabricsSection = () => {
   const navigate = useNavigate();
   const products = [
@@ -93,7 +94,7 @@ const PopularFabricsSection = () => {
                   Only For
                 </Typography>
                 <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
-                  Rs {product.price}
+                  {formatMoney(product.price)}
                 </Typography>
                 <Button variant="contained" color="primary" onClick={() => navigate('/product')} sx={{ mt: 6, background: 'linear-gradient(135deg, brown 50%, #867070 50%)', transform: 'scale(1.25)', transition: 'transform 0.3s ease', willChange: 'transform' }} onMouseEnter={(e) => e.target.style.transform = 'scale(1.25)'} onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}>
                   Buy Now

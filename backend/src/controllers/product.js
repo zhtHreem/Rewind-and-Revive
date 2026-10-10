@@ -133,6 +133,22 @@ export const getOwnedProducts = async (req, res) => {
 };
 
 
+// Public: the products listed by one seller (only fields that are safe to show).
+export const getProductsByOwner = async (req, res) => {
+  try {
+    const { ownerId } = req.params;
+    if (!/^[0-9a-fA-F]{24}$/.test(ownerId)) return res.status(400).json({ error: 'Invalid seller id' });
+    const products = await Product.find({ owner: ownerId })
+      .select('name price images type category isSold createdAt')
+      .sort({ isSold: 1, createdAt: -1 })
+      .lean();
+    res.status(200).json(products);
+  } catch (err) {
+    console.error('Error fetching seller products:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+};
+
 export const getProductCatalogueList = async (req, res) => {
   try {
     // Pagination is OPT-IN. Only kicks in when the client passes ?page or ?limit.

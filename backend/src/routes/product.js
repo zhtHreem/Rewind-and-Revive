@@ -4,7 +4,8 @@ import {
   getProduct,
   getProductCatalogueList,
   getProductRecommendations,
-  getOwnedProducts // ✅ imported here
+  getOwnedProducts,
+  getProductsByOwner
 } from "../controllers/product.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { trackUserActivity } from "../middleware/recommendationMiddleware.js";
@@ -26,6 +27,9 @@ router.get('/owned', authMiddleware, getOwnedProducts);
 router.get('/recommendations/:productId', getProductRecommendations);
 
 // Get single product
+// Public list of a seller's products (must come before "/:id")
+router.get('/by-owner/:ownerId', getProductsByOwner);
+
 router.get("/:id", trackUserActivity, getProduct);
 
 export default router;

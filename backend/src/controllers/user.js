@@ -268,13 +268,23 @@ export const getUserProfile = async (req, res) => {
 
     sellerScores.sort((a, b) => b.score - a.score);
     const rank = sellerScores.findIndex(s => s.id === id) + 1;
-    const topSellerRank = ((rank / sellerScores.length) * 100).toFixed(1);
+    const topSellerRank = sellerScores.length && rank > 0 ? Number(((rank / sellerScores.length) * 100).toFixed(1)) : null;
 
+    // Only public fields leave the server. Money stats are for the account owner alone.
+    const isOwnProfile = String(req.user && req.user.id) === String(id);
     res.status(200).json({
-      ...user.toObject(),
-      stats,
+      id: user._id,
+      username: user.username,
+      memberSince: user.createdAt,
+      averageRating: user.averageRating || 0,
+      sellerBadges: user.sellerBadges || [],
+      userBadges: user.userBadges || [],
       reviewsData: user.reviewsData,
-      topSellerRank
+      topSellerRank,
+      isOwnProfile,
+      stats: isOwnProfile
+        ? stats
+        : { productsSold: stats.productsSold, totalListed: stats.totalListed, likesReceived: stats.likesReceived },
     });
 
   } catch (error) {

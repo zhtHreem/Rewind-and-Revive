@@ -13,7 +13,6 @@ backend/node_modules
 
 # Python virtual environments
 venv/
-rag-chatbot-api/venv/
 
 # dotenv
 .env
@@ -35,8 +34,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 frontend/.env
-rag-chatbot-api/.env
-rag-chatbot-api\.env
 frontend/build
 .claude/
 

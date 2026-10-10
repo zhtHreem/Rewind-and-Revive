@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import brandLogoDark from '../../assets/brand/logo-dark.svg';
 import {
   Box,
   Grid,
@@ -85,18 +86,14 @@ const Footer = () => {
         <Grid container spacing={{ xs: 5, md: 6 }}>
           {/* Brand + about */}
           <Grid item xs={12} md={4}>
-            <Typography
-              sx={{
-                fontFamily: SERIF,
-                fontSize: 30,
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-                lineHeight: 1.1,
-                mb: 2,
-              }}
+            <Box
+              component={RouterLink}
+              to="/"
+              aria-label="Rewind & Revive home"
+              sx={{ display: 'inline-block', mb: 2 }}
             >
-              Rewind <Box component="span" sx={{ color: COLORS.accent }}>&</Box> Revive
-            </Typography>
+              <Box component="img" src={brandLogoDark} alt="Rewind & Revive" sx={{ height: 52, display: 'block' }} />
+            </Box>
             <Typography
               sx={{
                 fontSize: 14,

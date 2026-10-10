@@ -631,7 +631,7 @@ function Navbar() {
             component="img"
             src={brandLogo}
             alt="Logo"
-            sx={{ height: 40, objectFit: 'contain' }}
+            sx={{ height: 38, objectFit: 'contain' }}
           />
           <IconButton onClick={handleDrawerToggle} sx={iconBtnSx} size="small">
             <CloseIcon fontSize="small" />
@@ -829,7 +829,7 @@ function Navbar() {
               component="img"
               src={brandLogo}
               alt="Rewind & Revive"
-              sx={{ height: 40, objectFit: 'contain' }}
+              sx={{ height: 38, objectFit: 'contain' }}
             />
           </Box>
 

@@ -19,6 +19,8 @@ import {
 import CloudUploadOutlinedIcon from "@mui/icons-material/CloudUploadOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import Layout from "../Layout/layout";
+import "./auctionIssue.css";
+import "./createAuction.css";
 
 // shared design tokens (same as BidProductHome / BiddingProduct)
 const COLORS = {
@@ -34,6 +36,8 @@ const COLORS = {
 };
 
 const SERIF = '"Playfair Display", "Fraunces", Georgia, serif';
+
+const COLLECTIONS = ["Gowns", "Timeless", "Jewellery box", "Timepieces", "Stage & screen", "Designer vault"];
 
 // reusable section heading
 const SectionLabel = ({ children, hint }) => (
@@ -77,6 +81,12 @@ const CreateProductForm = () => {
     bidStartTime: "",
     bidEndTime: "",
     biddingModel: "Top 3 Bidders",
+    lotCollection: "",
+    provenance: "",
+    condition: "",
+    authenticity: "",
+    estimateLow: "",
+    estimateHigh: "",
   });
   const [image, setImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -141,6 +151,15 @@ const CreateProductForm = () => {
       return;
     }
 
+    if (
+      formData.estimateLow &&
+      formData.estimateHigh &&
+      Number(formData.estimateHigh) < Number(formData.estimateLow)
+    ) {
+      showSnack("The high estimate must be at least the low estimate");
+      return;
+    }
+
     const data = new FormData();
     data.append("name", formData.name);
     data.append("startingPrice", formData.startingPrice);
@@ -148,6 +167,9 @@ const CreateProductForm = () => {
     data.append("bidStartTime", formData.bidStartTime);
     data.append("bidEndTime", formData.bidEndTime);
     data.append("biddingModel", formData.biddingModel);
+    ["lotCollection", "provenance", "condition", "authenticity", "estimateLow", "estimateHigh"].forEach((key) => {
+      if (formData[key]) data.append(key, formData[key]);
+    });
     data.append("image", image);
 
     try {
@@ -173,6 +195,23 @@ const CreateProductForm = () => {
 
   return (
     <Layout>
+      <header className="ai-hero cp-hero">
+        <div
+          className="ai-hero__bg"
+          style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/images/lots/stage-curtain.jpg)` }}
+          aria-hidden="true"
+        />
+        <div className="ai-hero__in">
+          <p className="ai-eyebrow ai-eyebrow--lav">Consign a lot</p>
+          <h1>
+            List a piece <em>for auction.</em>
+          </h1>
+          <p className="ai-hero__lead">
+            Rare and collector pieces do best. Tell bidders where it came from, what it should
+            fetch and what condition it is in.
+          </p>
+        </div>
+      </header>
       <Box
         sx={{
           minHeight: "100vh",
@@ -182,40 +221,6 @@ const CreateProductForm = () => {
         }}
       >
         <Box sx={{ maxWidth: 760, mx: "auto" }}>
-          {/* HERO */}
-          <Box sx={{ mb: 5 }}>
-            <Typography
-              sx={{
-                fontSize: 12,
-                color: COLORS.textSecondary,
-                letterSpacing: 2,
-                textTransform: "uppercase",
-                fontWeight: 600,
-                mb: 1,
-              }}
-            >
-              New listing
-            </Typography>
-            <Typography
-              sx={{
-                fontFamily: SERIF,
-                fontSize: { xs: 32, md: 44 },
-                fontWeight: 700,
-                color: COLORS.textPrimary,
-                lineHeight: 1.1,
-                mb: 1.5,
-              }}
-            >
-              Create an auction
-            </Typography>
-            <Typography
-              sx={{ fontSize: 16, color: COLORS.textSecondary, maxWidth: 560 }}
-            >
-              List a pre-loved piece for bidding. Add clear photos and an honest
-              description to attract serious bidders.
-            </Typography>
-          </Box>
-
           {/* FORM CARD */}
           <Box
             component="form"
@@ -256,6 +261,90 @@ const CreateProductForm = () => {
                   placeholder="Tell bidders about the condition, brand, era, materials..."
                   sx={inputSx}
                 />
+              </Box>
+            </Box>
+
+            <Divider sx={{ borderColor: COLORS.border }} />
+
+            
+            {/* SECTION — lot details */}
+            <Box>
+              <SectionLabel hint="Collectors bid with confidence when they know the story.">
+                Lot details
+              </SectionLabel>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2.5 }}>
+                <FormControl fullWidth sx={inputSx}>
+                  <InputLabel id="collection-label">Collection</InputLabel>
+                  <Select
+                    labelId="collection-label"
+                    label="Collection"
+                    name="lotCollection"
+                    value={formData.lotCollection}
+                    onChange={handleChange}
+                  >
+                    <MenuItem value="">
+                      <em>None</em>
+                    </MenuItem>
+                    {COLLECTIONS.map((c) => (
+                      <MenuItem key={c} value={c}>
+                        {c}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <TextField
+                  label="Provenance"
+                  name="provenance"
+                  value={formData.provenance}
+                  onChange={handleChange}
+                  fullWidth
+                  multiline
+                  minRows={2}
+                  placeholder="Where did it come from? Who owned or wore it? Where was it bought?"
+                  sx={inputSx}
+                />
+                <TextField
+                  label="Condition report"
+                  name="condition"
+                  value={formData.condition}
+                  onChange={handleChange}
+                  fullWidth
+                  placeholder="e.g. Excellent. Light wear to the hardware."
+                  sx={inputSx}
+                />
+                <TextField
+                  label="Authenticity"
+                  name="authenticity"
+                  value={formData.authenticity}
+                  onChange={handleChange}
+                  fullWidth
+                  placeholder="e.g. Certificate of authenticity and original box included."
+                  sx={inputSx}
+                />
+                <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr" }, gap: 2.5 }}>
+                  {[
+                    ["estimateLow", "Low estimate"],
+                    ["estimateHigh", "High estimate"],
+                  ].map(([name, label]) => (
+                    <TextField
+                      key={name}
+                      label={label}
+                      name={name}
+                      type="number"
+                      inputProps={{ min: 0 }}
+                      value={formData[name]}
+                      onChange={handleChange}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <Typography sx={{ color: COLORS.textSecondary, fontSize: 14 }}>$</Typography>
+                          </InputAdornment>
+                        ),
+                      }}
+                      sx={inputSx}
+                    />
+                  ))}
+                </Box>
               </Box>
             </Box>
 

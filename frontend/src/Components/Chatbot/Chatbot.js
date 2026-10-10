@@ -13,6 +13,25 @@ import {
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 
+// Shrinks a photo to at most 1024px on its longest side as a JPEG, so uploads stay small.
+const shrinkImage = (file) =>
+  new Promise((resolve) => {
+    if (!file || file.size < 700 * 1024) return resolve(file);
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, 1024 / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((blob) => resolve(blob || file), 'image/jpeg', 0.82);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+
 const ProductCard = ({ product }) => {
   const { name, image, description, price, color, product_link } = product;
 
@@ -52,7 +71,7 @@ const ProductCard = ({ product }) => {
 const Chatbot = ({ toggleChatWindow }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([
-    { text: "👋 Hi, drop your fashion-related queries. We will be happy to suggest you products!", sender: "bot" }
+    { text: "👋 Hi! Ask me what to wear, or upload a photo of a piece and I’ll suggest what goes with it.", sender: "bot" }
   ]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -63,45 +82,50 @@ const Chatbot = ({ toggleChatWindow }) => {
   }, [messages]);
 
   const handleSendMessage = async () => {
-    if (!input.trim() && !selectedFile) return;
+    if (loading || (!input.trim() && !selectedFile)) return;
 
-    setMessages((prev) => [...prev, { text: input, sender: "user" }]);
+    const query = input.trim();
+    // the last few text messages give the stylist some memory of the conversation
+    const history = messages
+      .filter((m) => m.text)
+      .slice(-6)
+      .map((m) => ({ role: m.sender === 'user' ? 'user' : 'bot', text: m.text }));
+
+    setMessages((prev) => [...prev, { text: query || '\uD83D\uDCF7 Photo', sender: "user" }]);
+    setInput('');
+    const file = selectedFile;
+    setSelectedFile(null);
     setLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append('user_query', input);
-      if (selectedFile) formData.append('image', selectedFile);
+      formData.append('user_query', query);
+      formData.append('history', JSON.stringify(history));
+      if (file) formData.append('image', await shrinkImage(file), 'photo.jpg');
 
-      const response = await fetch(`${process.env.REACT_APP_CHATBOT_API}/chat`, {
+      const response = await fetch(`${process.env.REACT_APP_LOCAL_URL}/api/chatbot/chat`, {
         method: 'POST',
-        headers: {
-          Authorization: localStorage.getItem('token'),
-        },
         body: formData,
       });
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
-
-      if (data.reply) {
-        setMessages((prev) => [...prev, { text: data.reply, sender: "bot" }]);
+      if (!response.ok) {
+        setMessages((prev) => [...prev, { text: data.error || "The stylist couldn't answer just now.", sender: "bot" }]);
+      } else {
+        if (data.reply) setMessages((prev) => [...prev, { text: data.reply, sender: "bot" }]);
+        if (Array.isArray(data.products) && data.products.length > 0) {
+          const productMessages = data.products.map((product) => ({
+            sender: "bot",
+            component: <ProductCard key={product.name} product={product} />,
+          }));
+          setMessages((prev) => [...prev, ...productMessages]);
+        }
       }
-
-      if (Array.isArray(data.products) && data.products.length > 0) {
-        const productMessages = data.products.map((product) => ({
-          sender: "bot",
-          component: <ProductCard key={product.name} product={product} />
-        }));
-        setMessages((prev) => [...prev, ...productMessages]);
-      }
-
     } catch (error) {
       console.error("Error:", error);
-      setMessages((prev) => [...prev, { text: "Something went wrong.", sender: "bot" }]);
+      setMessages((prev) => [...prev, { text: "I couldn't reach the stylist. Check your connection and try again.", sender: "bot" }]);
     }
 
-    setInput('');
-    setSelectedFile(null);
     setLoading(false);
   };
 
@@ -147,8 +171,8 @@ const Chatbot = ({ toggleChatWindow }) => {
       <Box sx={{ p: 2, borderTop: '1px solid #eee', display: 'flex', gap: 1 }}>
         <TextField fullWidth size="small"  placeholder="Type your message..."  value={input}  onChange={(e) => setInput(e.target.value)}  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} />
         <Button  variant="contained"   component="label" sx={{ bgcolor: '#8C5367', '&:hover': { bgcolor: '#7a4659' }, color: 'white' }}>
-          Upload
-          <input hidden accept="image/*" type="file" onChange={(e) => setSelectedFile(e.target.files[0])} />
+          {selectedFile ? 'Photo \u2713' : 'Upload'}
+          <input hidden accept="image/jpeg,image/png,image/webp" type="file" onChange={(e) => setSelectedFile(e.target.files[0] || null)} />
         </Button>
         <IconButton onClick={handleSendMessage} sx={{  bgcolor: '#8C5367',    color: 'white',   '&:hover': { bgcolor: '#7a4659' },}} >
           <SendIcon />

@@ -36,6 +36,7 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import Layout from "../Layout/layout";
+import Spotlight from '../Home/Spotlight';
 import axios from 'axios';
 import sizeRanges from "../Utils/sizeRange";
 import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
@@ -335,6 +336,10 @@ const CataloguePage = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     setSearchQuery(params.get('search') || '');
+    const catParam = (params.get('category') || '').toLowerCase();
+    if (['men', 'women', 'kids'].includes(catParam)) setCategory(catParam);
+    const typeParam = (params.get('type') || '').toLowerCase();
+    if (['top', 'bottom', 'top/bottom', 'accessories'].includes(typeParam)) setSelectedTypes([typeParam]);
   }, [location.search]);
 
   // ── Filtering / sorting (logic preserved from previous version) ───────────
@@ -491,6 +496,8 @@ const CataloguePage = () => {
               : `${filteredProducts.length} ${filteredProducts.length === 1 ? 'item' : 'items'}${filteredProducts.length !== products.length ? ` (of ${products.length})` : ''}`}
           </Typography>
         </Box>
+
+        {!searchQuery && <Spotlight onlyProducts compact />}
 
         <Divider sx={{ mb: 3, borderColor: TOKENS.border }} />
 

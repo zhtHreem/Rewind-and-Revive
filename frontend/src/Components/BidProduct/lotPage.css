@@ -1,0 +1,121 @@
+/* Auction lot page: gallery on the left, a dark bid panel on the right, then the lot essay. */
+
+.lp-page { background: var(--paper-light); min-height: 100vh; padding-bottom: clamp(48px, 7vw, 100px); }
+.lp-loading { min-height: 60vh; display: grid; place-items: center; color: var(--ink-soft); background: var(--paper-light); }
+.lp-crumbs {
+  max-width: 1360px; margin: 0 auto; padding: 22px var(--gutter) 6px;
+  font: 12px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft);
+  display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+}
+.lp-crumbs a { color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--tag); }
+.lp-crumbs a:hover { color: var(--tag); }
+.lp-crumbs b { font-weight: 500; color: var(--ink); }
+
+.lp-grid {
+  max-width: 1360px; margin: 0 auto; padding: 16px var(--gutter) 0;
+  display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: clamp(20px, 4vw, 56px); align-items: start;
+}
+
+/* gallery */
+.lp-gallery { display: flex; gap: 14px; align-items: flex-start; }
+.lp-thumbs { display: flex; flex-direction: column; gap: 10px; }
+.lp-thumbs button { width: 72px; height: 90px; padding: 0; border: 2px solid var(--line); background: var(--paper); cursor: pointer; overflow: hidden; }
+.lp-thumbs button.is-on { border-color: var(--tag); }
+.lp-thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.lp-gallery__main { flex: 1; min-width: 0; aspect-ratio: 4 / 5; background: var(--paper); overflow: hidden; box-shadow: 0 30px 60px -30px rgba(31, 27, 22, 0.55); }
+.lp-gallery__main img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* bid panel */
+.lp-panel {
+  position: sticky; top: 90px; background: var(--ink); color: var(--paper);
+  padding: clamp(22px, 2.6vw, 34px); border-radius: 6px; display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 0 30px 60px -30px rgba(31, 27, 22, 0.7);
+}
+.lp-panel__top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.lp-lotno { font: 500 11px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: #D9AFC6; }
+.lp-sample { font: 500 10px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; background: #D9AFC6; color: var(--ink); padding: 3px 8px; border-radius: 3px; }
+.lp-panel h1 { font: 600 clamp(1.8rem, 2.8vw, 2.5rem)/1.05 var(--font-display); letter-spacing: -0.03em; margin: 0; }
+.lp-prov { margin: 0; padding-left: 14px; border-left: 2px solid var(--tag); font: 400 italic 1.02rem/1.5 var(--font-display); color: #e6dcd0; }
+.lp-prov span { display: block; font: 500 10px var(--font-mono); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; color: #D9AFC6; margin-bottom: 3px; }
+.lp-price { margin: 0; display: grid; grid-template-columns: 1fr; gap: 2px; padding: 14px 0; border-block: 1px solid #3a342d; }
+.lp-price dt { font: 11px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: #bdb3a3; margin-top: 8px; }
+.lp-price dt:first-child { margin-top: 0; }
+.lp-price dd { margin: 0; font: 500 16px var(--font-mono); }
+.lp-price__big { font: 500 clamp(2rem, 3.4vw, 2.8rem) var(--font-mono) !important; color: #fff; line-height: 1.1; }
+
+.lp-clock p { margin: 0 0 8px; font: 11px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: #bdb3a3; }
+.lp-clock > div { display: flex; gap: 8px; }
+.lp-clock span { flex: 1; background: #2a251f; border-radius: 6px; padding: 10px 6px 8px; text-align: center; }
+.lp-clock b { display: block; font: 500 26px var(--font-mono); }
+.lp-clock small { font: 10px var(--font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: #bdb3a3; }
+.lp-clock.is-urgent span { background: #E53935; }
+.lp-clock.is-urgent small { color: #ffd9d7; }
+
+.lp-quick { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.lp-quick button {
+  flex: 1; min-width: 80px; font: 500 14px var(--font-mono); color: var(--paper); background: transparent;
+  border: 1px solid #5a5247; border-radius: 999px; padding: 9px 10px; cursor: pointer; transition: background 0.2s ease, color 0.2s ease;
+}
+.lp-quick button:hover:not(:disabled) { background: var(--paper); color: var(--ink); }
+.lp-quick button:disabled { opacity: 0.4; cursor: not-allowed; }
+.lp-bid__row { display: flex; gap: 10px; }
+.lp-bid__field { flex: 1; display: flex; align-items: center; gap: 8px; background: #fff; color: var(--ink); border-radius: 999px; padding: 0 18px; }
+.lp-bid__field span { font: 500 18px var(--font-mono); color: var(--ink-soft); }
+.lp-bid__field input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: 500 18px var(--font-mono); padding: 14px 0; color: var(--ink); }
+.lp-bid__go {
+  font: 600 15px var(--font-body); background: var(--tag); color: #fff; border: 0; border-radius: 999px; padding: 0 26px; cursor: pointer; white-space: nowrap;
+  transition: background 0.2s ease;
+}
+.lp-bid__go:hover:not(:disabled) { background: #9a6a82; }
+.lp-bid__go:disabled { opacity: 0.45; cursor: not-allowed; }
+.lp-hint { margin: 10px 0 0; font: 12px var(--font-mono); color: #bdb3a3; }
+.lp-closed { margin: 0; padding: 14px; border: 1px dashed #5a5247; border-radius: 6px; color: #e6dcd0; }
+
+.lp-leaders { list-style: none; margin: 0; padding: 14px 0 0; border-top: 1px solid #3a342d; display: flex; flex-direction: column; gap: 10px; }
+.lp-leaders li { display: flex; align-items: center; gap: 12px; }
+.lp-leaders li > span:nth-child(2) { flex: 1; font-weight: 600; display: flex; flex-direction: column; line-height: 1.2; }
+.lp-leaders small { font: 11px var(--font-mono); font-weight: 400; color: #bdb3a3; letter-spacing: 0.06em; text-transform: uppercase; }
+.lp-leaders b { font: 500 16px var(--font-mono); color: #D9AFC6; }
+.lp-leaders__av { width: 38px; height: 38px; border-radius: 50%; background: var(--tag); display: grid; place-items: center; font: 700 15px var(--font-body); }
+
+/* essay */
+.lp-essay {
+  max-width: 1360px; margin: clamp(48px, 7vw, 96px) auto 0; padding: clamp(32px, 5vw, 56px) var(--gutter) 0; border-top: 1px solid var(--line);
+  display: grid; grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); gap: clamp(24px, 5vw, 72px);
+}
+.lp-essay h2 { font: 600 clamp(1.6rem, 2.6vw, 2.2rem) var(--font-display); letter-spacing: -0.02em; margin: 0 0 14px; }
+.lp-essay p { margin: 0; font-size: 1.05rem; line-height: 1.7; color: var(--ink); max-width: 38em; }
+.lp-report { margin: 0; display: grid; grid-template-columns: max-content 1fr; gap: 12px 24px; align-content: start; }
+.lp-report dt { font: 11px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-soft); padding-top: 4px; }
+.lp-report dd { margin: 0; font-size: 15px; line-height: 1.5; }
+
+/* related */
+.lp-related { max-width: 1360px; margin: clamp(48px, 7vw, 96px) auto 0; padding: 0 var(--gutter); }
+.lp-related h2 { font: 600 clamp(1.6rem, 2.6vw, 2.2rem) var(--font-display); letter-spacing: -0.02em; margin: 0 0 22px; }
+.lp-related__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+.lp-rel { text-decoration: none; color: var(--ink); background: #fff; border: 1px solid var(--line); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+.lp-rel:hover { transform: translateY(-4px); box-shadow: 0 22px 34px -24px rgba(31, 27, 22, 0.55); }
+.lp-rel__photo { display: block; aspect-ratio: 4 / 5; overflow: hidden; background: var(--paper); }
+.lp-rel__photo img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s ease; }
+.lp-rel:hover .lp-rel__photo img { transform: scale(1.05); }
+.lp-rel__meta { display: flex; flex-direction: column; gap: 3px; padding: 14px; }
+.lp-rel__meta b { font: 600 17px/1.2 var(--font-display); }
+.lp-rel__meta small { font: 500 13px var(--font-mono); color: var(--ink-soft); }
+
+@media (max-width: 1000px) {
+  .lp-grid { grid-template-columns: 1fr; }
+  .lp-panel { position: static; }
+  .lp-essay { grid-template-columns: 1fr; }
+  .lp-related__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .lp-gallery { flex-direction: column-reverse; }
+  .lp-thumbs { flex-direction: row; }
+  .lp-bid__row { flex-direction: column; }
+  .lp-bid__go { padding: 14px; }
+  .lp-report { grid-template-columns: 1fr; gap: 2px; }
+  .lp-report dd { margin-bottom: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-rel, .lp-rel__photo img { transition: none; }
+}

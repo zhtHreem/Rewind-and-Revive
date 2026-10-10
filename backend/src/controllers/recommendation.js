@@ -36,7 +36,7 @@ export const getProductRecommendations = async (req, res) => {
       });
     }
     
-    const product = await Product.findById(productId);
+    const product = await Product.findById(productId).select('category type materials color').lean();
     
     if (!product) {
       return res.status(404).json({
@@ -48,17 +48,14 @@ export const getProductRecommendations = async (req, res) => {
     // Find similar products based on category, type, or materials
     const recommendations = await Product.find({
       _id: { $ne: productId }, // Exclude current product
-      $or: [
-    { isSold: { $exists: false } }, // Include products where isSold field doesn't exist
-    { isSold: false }               // Include products where isSold is explicitly false
-  ],
+      isSold: { $ne: true },   // Only available items
       $or: [
         { category: product.category },
         { type: product.type },
         { materials: { $in: product.materials } },
         { color: product.color }
       ]
-    }).limit(6);
+    }).select('-featureVector').limit(6).lean();
     
     return res.status(200).json({
       success: true,
@@ -81,7 +78,9 @@ export const getTrendingProducts = async (req, res) => {
     // For now, we're just getting the most recent products
     const trendingProducts = await Product.find()
       .sort({ createdAt: -1 })
-      .limit(6);
+      .select('-featureVector')
+      .limit(6)
+      .lean();
     
     return res.status(200).json({
       success: true,

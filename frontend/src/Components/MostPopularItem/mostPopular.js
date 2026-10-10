@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Typography, Grid, Link, Card, CardMedia, CardContent, Button, Skeleton } from '@mui/material';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
 import SkeletonLoader from '../Utils/skeletonLoader';
 const PopularFabricsSection = () => {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ const PopularFabricsSection = () => {
               {/* Front of the card */}
               <Box  sx={{ position: 'absolute', width: '100%', height: '100%',  transition: 'transform 0.6s', transform: hoveredCard === product.id ? 'translateY(-100%)' : 'translateY(0%)',opacity: imagesLoaded[product.id] ? 1 : 0,}}>
                 <Card sx={{ height: '100%' }}>
-                  <CardMedia sx={{ height: 400, width: '100%', backgroundColor: '#f0f0f0' }}><img src={product.image} alt={product.name} loading="lazy" onLoad={() => handleImageLoad(product.id)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></CardMedia>
+                  <CardMedia sx={{ height: 400, width: '100%', backgroundColor: '#f0f0f0' }}><img src={optimizeImage(product.image, 600)} onError={fallbackToOriginal(product.image)} alt={product.name} loading="lazy" onLoad={() => handleImageLoad(product.id)} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></CardMedia>
                   <CardContent>
                     <Typography textAlign={'start'} variant="h6">
                       {product.name}

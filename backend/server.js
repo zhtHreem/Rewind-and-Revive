@@ -28,7 +28,6 @@ import { createServer } from 'http'; // Import to create HTTP server
 
 const app = express();
 
-connectDB();
 
 
 
@@ -58,6 +57,16 @@ app.options('*', (req, res) => {
 
 
 app.use(express.json());
+
+// Make sure the (cached) DB connection is ready before any route runs.
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(503).json({ message: 'Database unavailable' });
+  }
+});
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({
@@ -68,7 +77,7 @@ app.use((err, req, res, next) => {
 
 
 app.use(session({
-  secret: 'your-secret-key',
+  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'dev-only-secret',
   resave: true,               
   saveUninitialized: true,
   name: 'recommendSession',   
@@ -245,14 +254,16 @@ app.use('/api/notifications', notificationRoutes);
 //app.use('/api/chat', chatbotRouter);
 app.use('/api', recommendationRoutes);
 
-cron.schedule('* * * * *', async () => {
-  try {
-    await checkEndedAuctions(io);
-    console.log('Checked for ended auctions');
-  } catch (error) {
-    console.error('Error checking ended auctions:', error);
-  }
-});
+// Cron/sockets need a long-running server; Vercel functions are short-lived.
+if (!process.env.VERCEL) {
+  cron.schedule('* * * * *', async () => {
+    try {
+      await checkEndedAuctions(io);
+    } catch (error) {
+      console.error('Error checking ended auctions:', error);
+    }
+  });
+}
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
@@ -263,9 +274,11 @@ app.get('/', (req, res) => res.send('Hello World!'));
 
 
 const PORT = process.env.PORT || 5000;
-httpServer.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+if (!process.env.VERCEL) {
+  httpServer.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 
 
 export default app;

@@ -19,6 +19,7 @@ import {
 import GavelIcon from '@mui/icons-material/Gavel';
 
 import SectionHeader from '../Utils/SectionHeader';
+import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Card matching the new catalogue card style so the site feels consistent.
@@ -70,7 +71,8 @@ const BidCard = ({ product, onPlaceBid }) => {
       >
         {display && (
           <img
-            src={display}
+            src={optimizeImage(display, 400)}
+            onError={fallbackToOriginal(display)}
             alt={product.name}
             loading="lazy"
             decoding="async"

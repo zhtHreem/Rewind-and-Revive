@@ -124,7 +124,7 @@ export const createProduct = async (req, res) => {
 export const getOwnedProducts = async (req, res) => {
   try {
     const userId = req.user.id; // comes from authMiddleware
-    const products = await Product.find({ owner: userId });
+    const products = await Product.find({ owner: userId }).select('-featureVector').lean();
     res.status(200).json(products);
   } catch (err) {
     console.error("Error fetching owned products:", err);
@@ -148,6 +148,7 @@ export const getProductCatalogueList = async (req, res) => {
 
     if (!paginated) {
       const products = await baseQuery;
+      res.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
       return res.json(products);
     }
 
@@ -160,6 +161,7 @@ export const getProductCatalogueList = async (req, res) => {
       Product.estimatedDocumentCount(),
     ]);
 
+    res.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300');
     res.json({
       products,
       total,
@@ -181,8 +183,9 @@ export const getProductCatalogueList = async (req, res) => {
 export const getProduct = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
+      .select('-featureVector') // large numeric array the UI never uses
       .populate('owner', 'username') // Populate only the username field
-      .exec();
+      .lean();
     
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });

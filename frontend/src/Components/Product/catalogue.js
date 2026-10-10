@@ -38,6 +38,7 @@ import SearchOffIcon from '@mui/icons-material/SearchOff';
 import Layout from "../Layout/layout";
 import axios from 'axios';
 import sizeRanges from "../Utils/sizeRange";
+import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
 
 // Lazy-load less critical components
 const SizeChartMUI = React.lazy(() => import("./sizechart"));
@@ -129,7 +130,8 @@ const ProductCard = React.memo(function ProductCard({ product, isFavorite, onTog
       >
         {displayImage && (
           <img
-            src={displayImage}
+            src={optimizeImage(displayImage, 400)}
+            onError={fallbackToOriginal(displayImage)}
             alt={product.name}
             loading="lazy"
             decoding="async"

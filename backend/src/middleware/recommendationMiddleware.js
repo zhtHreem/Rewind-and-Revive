@@ -102,7 +102,7 @@ export const generateRecommendations = async (req, res, next) => {
         // Get the most recently viewed product
         const recentProducts = await Product.find({
           _id: { $in: viewHistory.slice(0, 3) } // Get top 3 recent products
-        });
+        }).select('category categories materials color').lean();
         
         if (recentProducts.length > 0) {
           // console.log("Found recent products:", recentProducts.map(p => p.name || p._id));
@@ -131,7 +131,7 @@ export const generateRecommendations = async (req, res, next) => {
               },
               { $or: conditions }
             ]
-          }).populate('owner', 'username').limit(6);
+          }).select('-featureVector').populate('owner', 'username').limit(6).lean();
           
           // console.log(`Found ${recommendations.length} recommendations based on product similarity`);
           req.recommendations = recommendations;
@@ -148,8 +148,10 @@ export const generateRecommendations = async (req, res, next) => {
 
       req.recommendations = await Product.find()
         .sort({ createdAt: -1 })
+        .select('-featureVector')
         .populate('owner', 'username')
-        .limit(6);
+        .limit(6)
+        .lean();
     
     }
     

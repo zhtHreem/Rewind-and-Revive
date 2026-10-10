@@ -69,6 +69,11 @@ const ProductSchema = new mongoose.Schema({
   }
 });
 
+// Indexes (ESR: sort fields match the catalogue query's sort order)
+ProductSchema.index({ isSold: 1, createdAt: -1 }); // catalogue listing
+ProductSchema.index({ owner: 1 });                 // "my products"
+ProductSchema.index({ category: 1, type: 1 });     // similar-product lookups
+
 const Product= mongoose.model('Product', ProductSchema);
 
 export default Product;

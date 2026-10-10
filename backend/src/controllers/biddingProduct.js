@@ -77,7 +77,8 @@ export const createProduct = async (req, res) => {
 // Get all products
 export const getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().sort({ createdAt: -1 }).lean();
+    res.set('Cache-Control', 'public, s-maxage=30, stale-while-revalidate=120');
     res.status(200).json(products);
   } catch (error) {
     console.error("Error fetching products:", error);

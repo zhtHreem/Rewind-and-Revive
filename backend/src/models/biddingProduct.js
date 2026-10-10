@@ -47,6 +47,9 @@ const BidSchema = new mongoose.Schema({
 }
 });
 
+BidSchema.index({ createdAt: -1 });
+BidSchema.index({ bidEndTime: 1, notificationsProcessed: 1 }); // ended-auction checks
+
 const BiddingProduct= mongoose.model('BidProduct', BidSchema);
 
 export default BiddingProduct;

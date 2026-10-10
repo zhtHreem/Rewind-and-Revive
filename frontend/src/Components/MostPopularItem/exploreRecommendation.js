@@ -13,6 +13,7 @@ import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 
 import SectionHeader from '../Utils/SectionHeader';
+import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
 
 axios.defaults.withCredentials = true;
 
@@ -76,7 +77,8 @@ const RecommendedCard = ({ product }) => {
       >
         {display && (
           <img
-            src={display}
+            src={optimizeImage(display, 400)}
+            onError={fallbackToOriginal(display)}
             alt={product.name}
             loading="lazy"
             decoding="async"

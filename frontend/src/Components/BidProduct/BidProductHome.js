@@ -4,8 +4,8 @@ import axios from 'axios';
 import Layout from '../Layout/layout';
 import SkeletonLoader from '../Utils/skeletonLoader';
 import './auctionIssue.css';
+import { formatMoney } from '../../utils/money';
 
-// ----- countdown hook -----
 const useNow = () => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -15,117 +15,150 @@ const useNow = () => {
   return now;
 };
 
-const countdown = (endTime, now) => {
-  const end = endTime ? new Date(endTime).getTime() : 0;
-  const diff = Math.max(0, end - now);
-  if (diff === 0) return { ended: true, label: 'Ended', urgent: false };
-  const days = Math.floor(diff / 86400000);
-  const hours = Math.floor((diff % 86400000) / 3600000);
-  const mins = Math.floor((diff % 3600000) / 60000);
-  const secs = Math.floor((diff % 60000) / 1000);
-  let label;
-  if (days > 0) label = `${days}d ${hours}h left`;
-  else if (hours > 0) label = `${hours}h ${mins}m left`;
-  else label = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')} left`;
-  return { ended: false, label, urgent: diff < 3600000 };
+const pad = (n) => String(n).padStart(2, '0');
+const money = formatMoney;
+const lotNo = (i) => pad(i + 1);
+
+const timeLeft = (endTime, now) => {
+  const diff = (endTime ? new Date(endTime).getTime() : 0) - now;
+  if (diff <= 0) return { open: false, label: 'Closed', parts: null, urgent: false };
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  const label = d > 0 ? `${d}d ${h}h left` : h > 0 ? `${h}h ${m}m left` : `${pad(m)}:${pad(s)} left`;
+  return { open: true, label, parts: { d, h, m, s }, urgent: diff < 3600000 };
 };
 
-const money = (n) => `Rs ${Number(n || 0).toLocaleString()}`;
-const lotNo = (i) => String(i + 1).padStart(2, '0');
+const estimate = (lot) =>
+  lot.estimateLow && lot.estimateHigh ? `${money(lot.estimateLow)} – ${money(lot.estimateHigh)}` : null;
 
-// ----- cover -----
-const Cover = ({ lots, now }) => {
-  const navigate = useNavigate();
-  // Cover star: the active lot that ends soonest, otherwise the first lot.
-  const featured =
-    [...lots]
-      .filter((p) => !countdown(p.bidEndTime, now).ended)
-      .sort((a, b) => new Date(a.bidEndTime) - new Date(b.bidEndTime))[0] || lots[0];
-  if (!featured) return null;
-  const cd = countdown(featured.bidEndTime, now);
-  const inside = lots.filter((p) => p._id !== featured._id).slice(0, 4);
-
+const Chip = ({ lot, now }) => {
+  const t = timeLeft(lot.bidEndTime, now);
   return (
-    <section className="ai-cover" aria-label="Featured auction">
-      <aside className="ai-cover__side ai-cover__side--left">
-        <p className="ai-eyebrow">Celebrity &amp; collector auctions</p>
-        <h2>
-          Where the <em>big names</em> bid.
-        </h2>
-        <p>
-          Auctions are for celebrity-owned and collector pieces: the ones with a story worth
-          bidding for. Everyday finds live in the shop at a fixed price.
+    <span className={`ai-chip ${t.open ? '' : 'is-closed'} ${t.urgent ? 'is-urgent' : ''}`}>
+      {t.open && <i className="ai-dot" />}
+      {t.label}
+    </span>
+  );
+};
+
+// ----- stage-curtain header -----
+const Header = ({ openCount, nextClose, now, collections, active, onPick }) => {
+  const next = nextClose ? timeLeft(nextClose, now) : null;
+  return (
+    <header className="ai-hero">
+      <div
+        className="ai-hero__bg"
+        style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/images/lots/stage-curtain.jpg)` }}
+        aria-hidden="true"
+      />
+      <div className="ai-hero__in">
+        <p className="ai-eyebrow ai-eyebrow--lav">The auction issue · No. 01</p>
+        <h1>
+          Lots with a <em>story.</em>
+        </h1>
+        <p className="ai-hero__lead">
+          Gowns, stage pieces, timepieces and jewels. Every lot lists where it came from, what it
+          should fetch and what condition it&rsquo;s in.
         </p>
-        <Link className="ai-link" to="/catalogue">Shop everyday pieces &rarr;</Link>
-      </aside>
-
-      <Link to={`/biddingProduct/${featured._id}`} className="ai-cover__mag">
-        <img src={featured.images?.[0]} alt={featured.name} />
-        <span className="ai-cover__shade" />
-        <span className="ai-cover__mast">
-          REWIND
-          <br />
-          &amp;REVIVE
-          <small>The Auction Issue · No. 01</small>
-        </span>
-        <span className="ai-cover__line">
-          {featured.name}
-          <em>Opening bid {money(featured.startingPrice)}</em>
-        </span>
-        <span className={`ai-cover__timer ${cd.urgent ? 'is-urgent' : ''}`}>
-          {!cd.ended && <i className="ai-dot" />} {cd.label}
-        </span>
-        <span className="ai-cover__bar">LOT 01 · BID NOW</span>
-      </Link>
-
-      <aside className="ai-cover__side ai-cover__side--right">
-        <p className="ai-eyebrow">Inside this issue</p>
-        <ol className="ai-toc">
-          {inside.map((p, i) => (
-            <li key={p._id}>
-              <button onClick={() => navigate(`/biddingProduct/${p._id}`)}>
-                <span>{lotNo(i + 1)}</span>
-                <b>{p.name}</b>
-                <i>{money(p.startingPrice)}</i>
-              </button>
-            </li>
+        <ul className="ai-hero__facts">
+          <li><b>{openCount}</b> lots open</li>
+          {next && next.open && <li>Next lot closes in <b>{next.label.replace(' left', '')}</b></li>}
+          <li>Highest bidder wins</li>
+        </ul>
+        <div className="ai-chips" role="tablist" aria-label="Collections">
+          {['All', ...collections].map((c) => (
+            <button
+              key={c}
+              role="tab"
+              aria-selected={active === c}
+              className={active === c ? 'is-on' : ''}
+              onClick={() => onPick(c)}
+            >
+              {c}
+            </button>
           ))}
-        </ol>
-        <p className="ai-eyebrow" style={{ marginTop: 22 }}>How to bid</p>
-        <p className="ai-how">Pick a lot &middot; bid before the clock ends &middot; the winning bid takes it home.</p>
-      </aside>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+// ----- featured lot -----
+const Feature = ({ lot, now }) => {
+  const navigate = useNavigate();
+  const t = timeLeft(lot.bidEndTime, now);
+  return (
+    <section className="ai-feature" aria-label="Featured lot">
+      <Link to={`/biddingProduct/${lot._id}`} className="ai-feature__photo">
+        <img src={lot.images?.[0]} alt={lot.name} />
+        <span className="ai-tag">Lot 01</span>
+      </Link>
+      <div className="ai-feature__body">
+        <p className="ai-eyebrow">{lot.lotCollection || 'Featured lot'}</p>
+        <h2>{lot.name}</h2>
+        {lot.provenance && (
+          <blockquote>
+            <span>Provenance</span>
+            {lot.provenance.replace(/^Sample lot\.\s*/i, '')}
+          </blockquote>
+        )}
+        <dl className="ai-facts">
+          {estimate(lot) && (<><dt>Estimate</dt><dd>{estimate(lot)}</dd></>)}
+          <dt>Opening bid</dt><dd>{money(lot.startingPrice)}</dd>
+          {lot.condition && (<><dt>Condition</dt><dd>{lot.condition}</dd></>)}
+          {lot.authenticity && (<><dt>Authenticity</dt><dd>{lot.authenticity}</dd></>)}
+        </dl>
+        {t.open && t.parts && (
+          <div className="ai-clock" aria-label={t.label}>
+            {[['d', 'days'], ['h', 'hrs'], ['m', 'min'], ['s', 'sec']].map(([k, label]) => (
+              <span key={k}><b>{pad(t.parts[k])}</b><small>{label}</small></span>
+            ))}
+          </div>
+        )}
+        <button className="ai-btn" onClick={() => navigate(`/biddingProduct/${lot._id}`)}>
+          {t.open ? 'Place a bid' : 'View lot'} &rarr;
+        </button>
+      </div>
     </section>
   );
 };
 
-// ----- card -----
-const LotCard = ({ product, index, now }) => {
+// ----- catalogue card -----
+const LotCard = ({ lot, index, now }) => {
   const navigate = useNavigate();
-  const cd = countdown(product.bidEndTime, now);
+  const t = timeLeft(lot.bidEndTime, now);
   return (
-    <article className="ai-lot" onClick={() => navigate(`/biddingProduct/${product._id}`)}>
+    <article
+      className={`ai-lot ${t.open ? '' : 'is-past'}`}
+      onClick={() => navigate(`/biddingProduct/${lot._id}`)}
+    >
       <div className="ai-lot__photo">
-        <img src={product.images?.[0] || '/placeholder.jpg'} alt={product.name} loading="lazy" decoding="async" />
-        <span className="ai-lot__no">No. {lotNo(index)}</span>
-        <span className={`ai-lot__timer ${cd.ended ? 'is-ended' : cd.urgent ? 'is-urgent' : ''}`}>
-          {!cd.ended && <i className="ai-dot" />}{cd.label}
-        </span>
+        <img src={lot.images?.[0] || '/placeholder.jpg'} alt={lot.name} loading="lazy" decoding="async" />
+        <span className="ai-tag">Lot {lotNo(index)}</span>
+        <Chip lot={lot} now={now} />
       </div>
       <div className="ai-lot__body">
-        <h3>{product.name}</h3>
-        <p>{product.description || ' '}</p>
+        {lot.lotCollection && <p className="ai-lot__coll">{lot.lotCollection}</p>}
+        <h3>{lot.name}</h3>
+        {lot.provenance ? (
+          <p className="ai-lot__prov">{lot.provenance.replace(/^Sample lot\.\s*/i, '')}</p>
+        ) : (
+          <p className="ai-lot__prov">{lot.description || ' '}</p>
+        )}
         <div className="ai-lot__row">
           <div>
-            <small>Starting bid</small>
-            <b>{money(product.startingPrice)}</b>
+            <small>{!t.open && lot.soldFor ? 'Sold for' : estimate(lot) ? 'Estimate' : 'Starting bid'}</small>
+            <b>{!t.open && lot.soldFor ? money(lot.soldFor) : estimate(lot) || money(lot.startingPrice)}</b>
           </div>
           <button
             onClick={(e) => {
               e.stopPropagation();
-              navigate(`/biddingProduct/${product._id}`);
+              navigate(`/biddingProduct/${lot._id}`);
             }}
           >
-            Bid now
+            {t.open ? 'Bid' : 'View'}
           </button>
         </div>
       </div>
@@ -149,6 +182,7 @@ const BidProductHome = () => {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState('ending');
+  const [collection, setCollection] = useState('All');
   const now = useNow();
 
   useEffect(() => {
@@ -166,12 +200,23 @@ const BidProductHome = () => {
     fetchProducts();
   }, []);
 
-  const visibleProducts = useMemo(() => {
+  const end = (p) => new Date(p.bidEndTime).getTime();
+
+  const collections = useMemo(
+    () => [...new Set(products.map((p) => p.lotCollection).filter(Boolean))],
+    [products]
+  );
+
+  const filtered = useMemo(() => {
     let list = products;
+    if (collection !== 'All') list = list.filter((p) => p.lotCollection === collection);
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(
-        (p) => p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
+        (p) =>
+          p.name?.toLowerCase().includes(q) ||
+          p.description?.toLowerCase().includes(q) ||
+          p.provenance?.toLowerCase().includes(q)
       );
     }
     const sorted = [...list];
@@ -187,29 +232,40 @@ const BidProductHome = () => {
         break;
       case 'ending':
       default:
-        sorted.sort((a, b) => new Date(a.bidEndTime) - new Date(b.bidEndTime));
+        sorted.sort((a, b) => end(a) - end(b));
         break;
     }
     return sorted;
-  }, [products, query, sort]);
+  }, [products, query, sort, collection]);
+
+  // Open lots first; closed lots are shown separately as "past lots".
+  const open = filtered.filter((p) => end(p) > now);
+  const past = filtered.filter((p) => end(p) <= now);
+  const allOpen = products.filter((p) => end(p) > now).sort((a, b) => end(a) - end(b));
+  const featured = allOpen.find((p) => p.images?.[0] && p.provenance) || allOpen.find((p) => p.images?.[0]);
 
   return (
     <Layout>
       <div className="ai-page">
-        {!loading && products.length > 0 && <Cover lots={products} now={now} />}
+        <Header
+          openCount={allOpen.length}
+          nextClose={allOpen[0]?.bidEndTime}
+          now={now}
+          collections={collections}
+          active={collection}
+          onPick={setCollection}
+        />
+
+        {!loading && featured && collection === 'All' && !query && <Feature lot={featured} now={now} />}
 
         <section className="ai-contents" aria-label="All lots">
           <div className="ai-contents__head">
             <div>
-              <p className="ai-eyebrow">Contents</p>
-              <h2>Every lot in this issue</h2>
+              <p className="ai-eyebrow">Catalogue</p>
+              <h2>{collection === 'All' ? 'Every open lot' : collection}</h2>
             </div>
             <div className="ai-tools">
-              <span>
-                {loading
-                  ? 'Loading lots…'
-                  : `${visibleProducts.length} ${visibleProducts.length === 1 ? 'lot' : 'lots'}`}
-              </span>
+              <span>{loading ? 'Loading lots…' : `${open.length} open · ${past.length} past`}</span>
               <input
                 type="search"
                 placeholder="Search lots"
@@ -229,16 +285,30 @@ const BidProductHome = () => {
           <div className="ai-grid">
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => <LotSkeleton key={i} />)
-            ) : visibleProducts.length === 0 ? (
+            ) : open.length === 0 ? (
               <p className="ai-empty">
-                {query ? `Nothing matches "${query}".` : 'No lots right now. New pieces are listed every day.'}
+                {query ? `Nothing matches "${query}".` : 'No open lots right now. New pieces are listed every day.'}
               </p>
             ) : (
-              visibleProducts.map((product, i) => (
-                <LotCard key={product._id} product={product} index={i} now={now} />
-              ))
+              open.map((lot, i) => <LotCard key={lot._id} lot={lot} index={i} now={now} />)
             )}
           </div>
+
+          {!loading && past.length > 0 && (
+            <>
+              <div className="ai-contents__head ai-contents__head--past">
+                <div>
+                  <p className="ai-eyebrow">Archive</p>
+                  <h2>Past lots</h2>
+                </div>
+              </div>
+              <div className="ai-grid">
+                {past.map((lot, i) => (
+                  <LotCard key={lot._id} lot={lot} index={open.length + i} now={now} />
+                ))}
+              </div>
+            </>
+          )}
         </section>
       </div>
     </Layout>

@@ -14,7 +14,8 @@ import { Link as RouterLink } from 'react-router-dom';
  *   viewAllTo  – optional react-router path; renders a "View all →" link on the right
  *   viewAllLabel – override label for the view-all link (default: "View all")
  */
-const SectionHeader = ({ title, subtitle, viewAllTo, viewAllLabel = 'View all' }) => {
+const SectionHeader = ({ title, subtitle, eyebrow, viewAllTo, viewAllLabel = 'View all', tone = 'light' }) => {
+  const dark = tone === 'dark';
   return (
     <Box
       sx={{
@@ -25,19 +26,24 @@ const SectionHeader = ({ title, subtitle, viewAllTo, viewAllLabel = 'View all' }
         gap: 1,
         mb: { xs: 3, md: 4 },
         pb: 2,
-        borderBottom: '1px solid #E5E0DA',
+        borderBottom: `1px solid ${dark ? '#3a342d' : '#E3DCCD'}`,
       }}
     >
       <Stack spacing={0.5}>
+        {eyebrow && (
+          <Typography sx={{ fontFamily: 'var(--font-mono)', fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: dark ? '#D9AFC6' : '#85586F' }}>
+            {eyebrow}
+          </Typography>
+        )}
         <Typography
           component="h2"
           sx={{
-            fontFamily: 'Playfair Display, Georgia, serif',
+            fontFamily: 'var(--font-display)',
             fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-            fontWeight: 700,
+            fontWeight: 600,
             lineHeight: 1.15,
-            color: '#1F1B16',
-            letterSpacing: '-0.01em',
+            color: dark ? '#F4EFE6' : '#1F1B16',
+            letterSpacing: '-0.025em',
           }}
         >
           {title}
@@ -45,9 +51,9 @@ const SectionHeader = ({ title, subtitle, viewAllTo, viewAllLabel = 'View all' }
         {subtitle && (
           <Typography
             sx={{
-              fontFamily: 'Lato, sans-serif',
+              fontFamily: 'var(--font-body)',
               fontSize: { xs: '0.85rem', sm: '0.95rem' },
-              color: '#6B635A',
+              color: dark ? '#bdb3a3' : '#6B635A',
             }}
           >
             {subtitle}
@@ -61,13 +67,13 @@ const SectionHeader = ({ title, subtitle, viewAllTo, viewAllLabel = 'View all' }
           to={viewAllTo}
           endIcon={<ArrowForwardIcon fontSize="small" />}
           sx={{
-            color: '#1F1B16',
+            color: dark ? '#F4EFE6' : '#1F1B16',
             textTransform: 'none',
             fontWeight: 600,
             fontSize: '0.875rem',
             '&:hover': {
               backgroundColor: 'transparent',
-              color: '#867070',
+              color: dark ? '#D9AFC6' : '#85586F',
               '& .MuiSvgIcon-root': { transform: 'translateX(3px)' },
             },
             '& .MuiSvgIcon-root': { transition: 'transform 0.2s ease' },

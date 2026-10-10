@@ -108,7 +108,7 @@ const RecommendedCard = ({ product }) => {
         >
           <Typography
             sx={{
-              fontFamily: 'Playfair Display, Georgia, serif',
+              fontFamily: 'var(--font-display)',
               fontWeight: 500,
               fontSize: '1rem',
               color: TOKENS.ink,
@@ -167,6 +167,9 @@ const RecommendedSkeleton = () => (
   </Card>
 );
 
+// Show full rows only (4 per row on desktop) so the grid never ends with a lonely card.
+const evenCount = (n) => (n >= 8 ? 8 : n >= 4 ? 4 : n);
+
 const RecommendedProductsSection = () => {
   const [recommendedProducts, setRecommendedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -209,16 +212,18 @@ const RecommendedProductsSection = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, backgroundColor: TOKENS.bgMuted, borderRadius: 0 }}>
+    <Box sx={{ bgcolor: 'var(--paper)' }}>
+    <Container maxWidth={false} sx={{ maxWidth: 1360, py: 'var(--section-y)', px: 'var(--gutter)' }}>
       <SectionHeader
-        title="Recommended For You"
-        subtitle="Fresh picks, just for you"
+        eyebrow="The shop"
+        title="Recommended for you"
+        subtitle="Fresh picks based on what you look at"
         viewAllTo="/catalogue"
         viewAllLabel="View all"
       />
 
       <Grid container spacing={2}>
-        {(loading ? Array.from({ length: 8 }) : recommendedProducts.slice(0, 8)).map((product, idx) => (
+        {(loading ? Array.from({ length: 8 }) : recommendedProducts.slice(0, evenCount(recommendedProducts.length))).map((product, idx) => (
           <Grid item xs={6} sm={4} md={3} lg={3} key={product?._id || idx}>
             {loading
               ? <RecommendedSkeleton />
@@ -227,6 +232,7 @@ const RecommendedProductsSection = () => {
         ))}
       </Grid>
     </Container>
+    </Box>
   );
 };
 

@@ -1,9 +1,11 @@
 import React, { useState, lazy, Suspense } from 'react';
 import './App.css';
-import Header from './Components/Header/header';
+import PatternHero from './Components/Home/PatternHero';
+import KineticRows from './Components/Home/KineticRows';
+import Categories from './Components/Home/Categories';
+import Features from './Components/Home/Features';
 import Bidding from './Components/Bidding/Bidding';
 import Layout from './Components/Layout/layout';
-import LimitedTimeDeals from './Components/LimitedTimeDeals/limitedtimedeals';
 import robotIcon from './assets/robot-svgrepo-com.svg';
 import RecommendedProductsSection from './Components/MostPopularItem/exploreRecommendation';
 
@@ -20,10 +22,12 @@ function App() {
   return (
     <div className="App">
       <Layout>
-        <Header />
-        <LimitedTimeDeals />
+        <PatternHero />
+        <Categories />
         <RecommendedProductsSection />
         <Bidding />
+        <Features onOpenChat={toggleChatWindow} />
+        <KineticRows />
 
         <div className="robot-icon-wrapper">
           <div className="robot-icon-container" onClick={toggleChatWindow}>

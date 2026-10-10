@@ -4,6 +4,8 @@ import { store } from './redux/store';
 import ReactDOM from 'react-dom/client';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { GoogleOAuthProvider } from '@react-oauth/google';
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme';
 import './index.css';
 
 // Home is eager — most users land here, so we want it in the initial chunk.
@@ -73,7 +75,9 @@ root.render(
   <React.StrictMode>
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <Provider store={store}>
-        <RouterProvider router={router} />
+        <ThemeProvider theme={theme}>
+          <RouterProvider router={router} />
+        </ThemeProvider>
       </Provider>
     </GoogleOAuthProvider>
   </React.StrictMode>

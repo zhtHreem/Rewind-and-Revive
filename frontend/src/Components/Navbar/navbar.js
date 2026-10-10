@@ -56,16 +56,17 @@ import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import StarsIcon from '@mui/icons-material/Stars';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { jwtDecode } from "jwt-decode";
+import brandLogo from "../../assets/brand/logo.svg";
 
 // ----- shared design tokens -----
 const COLORS = {
-  surface: '#FFFFFF',
-  border: '#ECEAE4',
+  surface: '#FBF8F2',
+  border: '#E3DCCD',
   accent: '#85586F',
   accentDark: '#6B4459',
   accentSoft: '#F5EEF1',
-  textPrimary: '#1A1A1A',
-  textSecondary: '#6B6B6B',
+  textPrimary: '#1F1B16',
+  textSecondary: '#6B635A',
   live: '#E53935',
 };
 
@@ -628,7 +629,7 @@ function Navbar() {
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
           <Box
             component="img"
-            src={require("./S.png")}
+            src={brandLogo}
             alt="Logo"
             sx={{ height: 40, objectFit: 'contain' }}
           />
@@ -826,9 +827,9 @@ function Navbar() {
           >
             <Box
               component="img"
-              src={require("./S.png")}
+              src={brandLogo}
               alt="Rewind & Revive"
-              sx={{ height: 44, objectFit: 'contain' }}
+              sx={{ height: 40, objectFit: 'contain' }}
             />
           </Box>
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import Navbar from '../Navbar/navbar';
 import Footer from '../Footer/footer';
+import ReviLauncher from '../Chatbot/ReviLauncher';
 
 
 const Layout = ({ children }) => {
@@ -10,6 +11,7 @@ const Layout = ({ children }) => {
       <Navbar />
       <main>{children}</main>
       <Footer />
+      <ReviLauncher />
     </>
   );
 };

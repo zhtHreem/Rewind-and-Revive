@@ -1,4 +1,5 @@
 import React, { useState,useEffect } from "react"; 
+import { announceAuthChange } from '../../utils/authEvents';
 import { useNavigate } from 'react-router-dom'; 
 import { Paper, Box, TextField, IconButton, Typography, Stack, Button, useMediaQuery, useTheme } from "@mui/material"; 
 import { GoogleLogin } from '@react-oauth/google';
@@ -60,6 +61,7 @@ function Login({ setLogin }) {
         try { 
             const response = await axios.post(`${process.env.REACT_APP_LOCAL_URL}/api/user/login`, loginData); 
             localStorage.setItem('token', response.data.token);
+            announceAuthChange();
             setSnackbarMessage('Login successful!'); 
             setSnackbarSeverity('success'); 
             setOpenSnackbar(true); 
@@ -80,6 +82,7 @@ function Login({ setLogin }) {
             });
 
             localStorage.setItem('token', response.data.token);
+            announceAuthChange();
             setSnackbarMessage('Google Login successful!');
             setSnackbarSeverity('success');
             setOpenSnackbar(true);

@@ -1,24 +1,14 @@
-import React, { useState, lazy, Suspense } from 'react';
-import './App.css';
+import React from 'react';
 import PatternHero from './Components/Home/PatternHero';
 import KineticRows from './Components/Home/KineticRows';
 import Categories from './Components/Home/Categories';
 import Features from './Components/Home/Features';
 import Bidding from './Components/Bidding/Bidding';
 import Layout from './Components/Layout/layout';
-import robotIcon from './assets/robot-svgrepo-com.svg';
 import RecommendedProductsSection from './Components/MostPopularItem/exploreRecommendation';
-
-// Lazy-load the chatbot — it's only mounted when the user clicks the icon
-const Chatbot = lazy(() => import('./Components/Chatbot/Chatbot'));
+import { OPEN_REVI } from './Components/Chatbot/ReviLauncher';
 
 function App() {
-  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
-
-  const toggleChatWindow = () => {
-    setIsChatbotOpen((prev) => !prev);
-  };
-
   return (
     <div className="App">
       <Layout>
@@ -26,23 +16,8 @@ function App() {
         <Categories />
         <RecommendedProductsSection />
         <Bidding />
-        <Features onOpenChat={toggleChatWindow} />
+        <Features onOpenChat={() => window.dispatchEvent(new Event(OPEN_REVI))} />
         <KineticRows />
-
-        <div className="robot-icon-wrapper">
-          <div className="robot-icon-container" onClick={toggleChatWindow}>
-            <img src={robotIcon} alt="Chat with Revi" className="robot-icon" />
-            <div className="dialog-box">👋 Hi, I’m Revi! Need a style tip?</div>
-          </div>
-
-          {isChatbotOpen && (
-            <div className="chatbot-window">
-              <Suspense fallback={<div style={{ padding: 16 }}>Loading chat…</div>}>
-                <Chatbot toggleChatWindow={toggleChatWindow} />
-              </Suspense>
-            </div>
-          )}
-        </div>
       </Layout>
     </div>
   );

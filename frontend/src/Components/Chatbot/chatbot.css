@@ -118,3 +118,49 @@
   .cb-bubble, .cb-cards, .cb-typing span { animation: none; }
   .cb-card, .cb-card__photo img, .cb-card__go { transition: none; }
 }
+
+/* ---- Revi's launcher button and window (shown on every page) ---- */
+.rv-launch { position: fixed; right: 20px; bottom: 20px; z-index: 1000; display: flex; align-items: center; flex-direction: row-reverse; gap: 12px; }
+.rv-fab {
+  width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; cursor: pointer;
+  background: var(--ink); border: 2px solid var(--tag);
+  box-shadow: 0 12px 28px -8px rgba(31, 27, 22, 0.55);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.rv-fab img { height: 34px; width: auto; display: block; }
+.rv-fab:hover { transform: translateY(-3px) scale(1.04); box-shadow: 0 18px 32px -8px rgba(133, 88, 111, 0.7); }
+.rv-fab:focus-visible { outline: 3px solid #D9AFC6; outline-offset: 3px; }
+.rv-teaser {
+  background: #fff; color: var(--ink); border: 1px solid var(--line); border-radius: 999px;
+  padding: 11px 18px; font: 500 14px var(--font-body); cursor: pointer; max-width: 230px; text-align: left;
+  box-shadow: 0 12px 28px -12px rgba(31, 27, 22, 0.45); animation: rv-pop 0.4s ease both;
+}
+.rv-teaser:hover { border-color: var(--tag); }
+@keyframes rv-pop { from { opacity: 0; transform: translateX(10px) scale(0.96); } to { opacity: 1; transform: none; } }
+.rv-window { position: fixed; right: 20px; bottom: 92px; z-index: 1100; }
+.rv-loading { width: 380px; max-width: 100vw; padding: 40px; text-align: center; background: var(--paper-light); border-radius: 20px; font: 14px var(--font-mono); color: var(--ink-soft); }
+@media (max-width: 600px) {
+  .rv-window { right: 0; bottom: 0; }
+  .rv-launch { right: 14px; bottom: 14px; }
+  .rv-fab { width: 54px; height: 54px; }
+  .rv-teaser { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .rv-fab, .rv-teaser { transition: none; animation: none; } }
+
+/* ---- seller chat (same window as Revi, filling its container) ---- */
+.cb.cb--seller { width: 100%; height: 100%; border: 0; border-radius: 0; box-shadow: none; }
+.cb-avatar {
+  flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--tag); color: #fff; font: 600 17px var(--font-display);
+}
+.cb-select { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--tag-soft); }
+.cb-select label { font: 11px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--tag-deep); flex: none; }
+.cb-select select {
+  flex: 1; min-width: 0; font: 14px var(--font-body); color: var(--ink); background: #fff;
+  border: 1px solid var(--line); border-radius: 999px; padding: 8px 12px; outline: 0;
+}
+.cb-select select:focus { border-color: var(--tag); }
+.cb-state { margin: auto; max-width: 19em; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.55; }
+.cb-state--error { color: #b3261e; }
+.cb-bubble time { display: block; margin-top: 4px; font: 10px var(--font-mono); opacity: 0.7; text-align: right; }
+.cb-bubble.is-pending { opacity: 0.65; }

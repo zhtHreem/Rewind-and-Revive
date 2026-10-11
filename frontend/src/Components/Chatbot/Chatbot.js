@@ -52,7 +52,7 @@ const ProductCard = ({ product }) => {
   );
 };
 
-const GREETING = 'Hi! Ask me what to wear, or upload a photo of a piece and I’ll suggest what goes with it.';
+const GREETING = 'Hi, I\u2019m Revi, and I\u2019m so glad you\u2019re here. Tell me what you\u2019re looking for, or share a photo of a piece you love, and we\u2019ll find the perfect look together.';
 
 const Chatbot = ({ toggleChatWindow }) => {
   const [input, setInput] = useState('');
@@ -96,7 +96,7 @@ const Chatbot = ({ toggleChatWindow }) => {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setMessages((prev) => [...prev, { text: data.error || "The stylist couldn't answer just now.", sender: 'bot' }]);
+        setMessages((prev) => [...prev, { text: data.error || "Revi couldn't answer just now.", sender: 'bot' }]);
       } else {
         const next = [];
         if (data.reply) next.push({ text: data.reply, sender: 'bot' });
@@ -105,19 +105,19 @@ const Chatbot = ({ toggleChatWindow }) => {
       }
     } catch (error) {
       console.error('Error:', error);
-      setMessages((prev) => [...prev, { text: "I couldn't reach the stylist. Check your connection and try again.", sender: 'bot' }]);
+      setMessages((prev) => [...prev, { text: "I couldn't connect just now. Check your connection and try again.", sender: 'bot' }]);
     }
 
     setLoading(false);
   };
 
   return (
-    <div className="cb" role="dialog" aria-label="Style assistant">
+    <div className="cb" role="dialog" aria-label="Revi, your style assistant">
       <header className="cb-head">
         <img src={mark} alt="" />
         <div>
-          <b>Style assistant</b>
-          <small>Ask what to wear</small>
+          <b>Revi</b>
+          <small>Your style assistant</small>
         </div>
         <button type="button" onClick={toggleChatWindow} aria-label="Close chat">
           <CloseIcon fontSize="small" />
@@ -139,7 +139,7 @@ const Chatbot = ({ toggleChatWindow }) => {
           )
         )}
         {loading && (
-          <div className="cb-bubble cb-bubble--bot cb-typing" aria-label="The stylist is typing">
+          <div className="cb-bubble cb-bubble--bot cb-typing" aria-label="Revi is typing">
             <span /><span /><span />
           </div>
         )}
@@ -174,7 +174,7 @@ const Chatbot = ({ toggleChatWindow }) => {
         <input
           className="cb-text"
           type="text"
-          placeholder="What are you looking for?"
+          placeholder="Ask Revi anything…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           maxLength={500}

@@ -4,7 +4,7 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import './sections.css';
 
-// Highlights the things only this shop does. `onOpenChat` opens the stylist chatbot.
+// Highlights the things only this shop does. `onOpenChat` opens the Revi chatbot.
 export default function Features({ onOpenChat }) {
   const navigate = useNavigate();
 
@@ -28,13 +28,13 @@ export default function Features({ onOpenChat }) {
           </article>
 
           <article className="rr-feat__card rr-feat__chat">
-            <p className="rr-eyebrow">AI stylist</p>
+            <p className="rr-eyebrow">Meet Revi</p>
             <h3>Ask anything. Get a look.</h3>
             <div className="rr-bubbles" aria-label="Example conversation">
               <span className="rr-bubble rr-bubble--me">What goes with wide-leg jeans?</span>
               <span className="rr-bubble rr-bubble--bot">A tucked-in tee and a cropped jacket. Want me to pull matching pieces?</span>
             </div>
-            <button className="rr-btn rr-btn--ghost" onClick={onOpenChat}>Chat with the stylist</button>
+            <button className="rr-btn rr-btn--ghost" onClick={onOpenChat}>Chat with Revi</button>
           </article>
 
           <article className="rr-feat__card rr-feat__small">

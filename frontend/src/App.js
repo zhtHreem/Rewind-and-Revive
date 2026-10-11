@@ -31,8 +31,8 @@ function App() {
 
         <div className="robot-icon-wrapper">
           <div className="robot-icon-container" onClick={toggleChatWindow}>
-            <img src={robotIcon} alt="Robot Icon" className="robot-icon" />
-            <div className="dialog-box">👋 Hey! Need assistance? Click here!</div>
+            <img src={robotIcon} alt="Chat with Revi" className="robot-icon" />
+            <div className="dialog-box">👋 Hi, I’m Revi! Need a style tip?</div>
           </div>
 
           {isChatbotOpen && (

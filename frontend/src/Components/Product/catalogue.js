@@ -689,7 +689,7 @@ const CataloguePage = () => {
                 Showing {visibleProducts.length} of {filteredProducts.length}
               </Typography>
 
-              <Stack direction="row" spacing={1.5} alignItems="center">
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: { xs: "100%", sm: "auto" } }}>
                 <Tooltip title="Size guide">
                   <Box>
                     <Suspense fallback={<Skeleton variant="rectangular" width={40} height={36} />}>
@@ -697,7 +697,7 @@ const CataloguePage = () => {
                     </Suspense>
                   </Box>
                 </Tooltip>
-                <FormControl size="small" sx={{ minWidth: 180 }}>
+                <FormControl size="small" sx={{ minWidth: { xs: 0, sm: 180 }, flex: { xs: 1, sm: 'none' } }}>
                   <InputLabel>Sort by</InputLabel>
                   <Select
                     value={sortBy}

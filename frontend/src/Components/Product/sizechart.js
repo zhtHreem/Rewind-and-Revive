@@ -24,8 +24,8 @@ const SizeChartMUI = () => {
 
   return (
     <>
-      <Button   variant="outlined"  size={isMobile ? "small" : "medium"} startIcon={<TableChartIcon />} onClick={handleOpen}  sx={{   minWidth: isMobile ? 'auto' : '120px',  ml: isMobile ? 1 : 2,height: isMobile ? '40px' : '56px',  '& .MuiButton-startIcon': {  mr: isMobile ? 0 : 1} }}>
-        {isMobile ? "Size Guide " : "Size Guide"}
+      <Button   variant="outlined"  size={isMobile ? "small" : "medium"} startIcon={<TableChartIcon />} onClick={handleOpen}  sx={{   minWidth: isMobile ? 'auto' : '120px',  ml: isMobile ? 0 : 2,height: isMobile ? '40px' : '56px',  '& .MuiButton-startIcon': {  mr: isMobile ? 0 : 1} }}>
+        Size Guide
       </Button>
 
       <Dialog   fullScreen={fullScreen}  maxWidth="md" fullWidth    open={open} onClose={handleClose} >

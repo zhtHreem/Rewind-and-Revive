@@ -23,7 +23,7 @@ const FilterDrawer = ({
   return (
     <>
       {/* Mobile Filter Button */}
-      <Button variant="outlined" fullWidth sx={{   m: 2,   display: { xs: 'flex', md: 'none' },  justifyContent: 'space-between' }}
+      <Button variant="outlined" fullWidth sx={{   m: 0,   display: { xs: 'flex', md: 'none' },  justifyContent: 'space-between' }}
         onClick={() => onClose(true)}  endIcon={<ExpandMoreIcon />} startIcon={<TuneIcon />}>
         Filters
       </Button>

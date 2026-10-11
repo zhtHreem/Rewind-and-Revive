@@ -207,8 +207,7 @@ export const getProduct = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
         // Add this section at the end before sending the response
-    console.log("Serving product:", req.params.id);
-    console.log("Current session viewHistory:", req.session.viewHistory || []);
+    // (session history is kept by trackUserActivity)
     
     
     res.json(product);
@@ -255,10 +254,6 @@ export const getProductRecommendations = async (req, res) => {
         const matcher = new ProductMatcher();
        // console.log('🧪 Starting ProductMatcher...\n');
 
-        // 2. Check database connection and count products
-        const totalCount = await Product.countDocuments();
-       // console.log(`Total products in database: ${totalCount}`);
-
         // 3. Get the source product with owner details
         const testProduct = await Product.findById(productId).populate('owner', 'username');
 
@@ -278,26 +273,7 @@ export const getProductRecommendations = async (req, res) => {
       //       category: testProduct.category
       //   });
 
-        // 4. Find potential matches and populate owner details
-        const potentialMatches = await Product.find({
-            _id: { $ne: testProduct._id },
-            images: { $exists: true, $ne: [] }
-        }).populate('owner', 'username averageRating');  // Populate owner details
-
-        // console.log(`\nFound ${potentialMatches.length} other products with images`);
-        // console.log('Sample of potential matches:', 
-        //     potentialMatches.slice(0, 3).map(p => ({
-        //         id: p._id,
-        //         name: p.name,
-        //         owner: p.owner?.username,  // Owner's name
-        //         type: p.type,
-        //         hasImages: p.images?.length > 0
-        //     }))
-        // );
-
-     
-      //  // 5. Get Product Recommendations with specified criteria
-      // console.log('\nTesting Product Recommendations...');
+        // 4. Ask the matcher for the best matches
       let recommendations = await matcher.recommendProducts(testProduct._id, {
     topK: Number(topK),
     matchType: matchType === 'true',
@@ -307,18 +283,21 @@ export const getProductRecommendations = async (req, res) => {
    });
 
 // Fix: Populate owner for each recommended product
-recommendations = await Promise.all(recommendations.map(async (rec) => {
-    const populatedProduct = await Product.findById(rec.product._id).populate('owner', 'username averageRating');
-    // console.log("Owner Data:", JSON.stringify(populatedProduct.owner, null, 2));
-    return {
-        product: {
-            ...populatedProduct.toObject(),
-            owner: populatedProduct.owner || { username: "Unknown", averageRating: 0 } // Default if owner is missing
-        },
-        similarity: rec.similarity,
-        matchScore: rec.matchScore
-    };
-}));
+const owned = await Product.find({ _id: { $in: recommendations.map((r) => r.product._id) } })
+    .select('-featureVector')
+    .populate('owner', 'username averageRating')
+    .lean();
+const byId = new Map(owned.map((p) => [String(p._id), p]));
+recommendations = recommendations
+    .filter((rec) => byId.has(String(rec.product._id)))
+    .map((rec) => {
+        const p = byId.get(String(rec.product._id));
+        return {
+            product: { ...p, owner: p.owner || { username: 'Unknown', averageRating: 0 } },
+            similarity: rec.similarity,
+            matchScore: rec.matchScore
+        };
+    });
        console.log('\n🎉 Recommendations generated successfully!');
 
 

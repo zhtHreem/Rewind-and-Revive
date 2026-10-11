@@ -76,7 +76,7 @@ app.use((err, req, res, next) => {
 });
 
 
-app.use(session({
+const sessionMiddleware = session({
   secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'dev-only-secret',
   resave: true,               
   saveUninitialized: true,
@@ -87,7 +87,12 @@ app.use(session({
     secure: false,            // Keep false during development
     sameSite: 'lax'           //  cross-site requests
   }
-}));
+});
+// Sessions set a cookie, and the CDN will not cache any response that sets one. Only the few
+// routes that really use the view history get a session; everything else stays cookie-free and cacheable.
+const needsSession = (req) =>
+  req.path.startsWith('/api/recommendations') || req.path.startsWith('/api/debug') || /^\/api\/product\/[0-9a-fA-F]{24}$/.test(req.path);
+app.use((req, res, next) => (needsSession(req) ? sessionMiddleware(req, res, next) : next()));
 // Add this to your routes
 app.get('/api/debug/session', (req, res) => {
   res.json({

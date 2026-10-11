@@ -1,5 +1,12 @@
-import * as tf from '@tensorflow/tfjs';
-import sharp from 'sharp';
+// TensorFlow and sharp are heavy: they are loaded the first time the outfit matcher needs them,
+// so they do not slow down the start-up of every other endpoint.
+let tf;
+let sharp;
+const loadLibs = async () => {
+  if (!tf) tf = await import('@tensorflow/tfjs');
+  if (!sharp) sharp = (await import('sharp')).default;
+};
+
 import Product from '../models/product.js';
 import https from 'https';
 import http from 'http';
@@ -34,6 +41,7 @@ class ProductMatcher {
     }
 
     async loadFeatureExtractor() {
+        await loadLibs();
         if (!this.modelLoaded) {
             try {
                 const model = await tf.loadLayersModel('https://storage.googleapis.com/tfjs-models/tfjs/mobilenet_v1_0.25_224/model.json');

@@ -54,11 +54,39 @@ const ProductCard = ({ product }) => {
 
 const GREETING = 'Hi, I\u2019m Revi, and I\u2019m so glad you\u2019re here. Tell me what you\u2019re looking for, or share a photo of a piece you love, and we\u2019ll find the perfect look together.';
 
+// Little thrift-flavoured status lines shown while Revi works on an answer.
+const THINKING = [
+  'Flipping through the racks',
+  'Checking the tags and stitching',
+  'Pairing a few pieces together',
+  'Holding things up to the light',
+  'Digging through the one-of-a-kinds',
+  'Smoothing out the wrinkles',
+  'Hunting for the perfect find',
+  'Matching colours and fabrics',
+];
+
+const Thinking = ({ withPhoto }) => {
+  const [i, setI] = useState(() => Math.floor(Math.random() * THINKING.length));
+  useEffect(() => {
+    const t = setInterval(() => setI((n) => (n + 1) % THINKING.length), 2200);
+    return () => clearInterval(t);
+  }, []);
+  return (
+    <div className="cb-bubble cb-bubble--bot cb-thinking" role="status" aria-label="Revi is thinking">
+      <span className="cb-needle" aria-hidden="true" />
+      <span key={i} className="cb-thinking__line">{withPhoto && i % 3 === 0 ? 'Looking closely at your photo' : THINKING[i]}</span>
+      <span className="cb-ellipsis" aria-hidden="true"><i /><i /><i /></span>
+    </div>
+  );
+};
+
 const Chatbot = ({ toggleChatWindow }) => {
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState([{ text: GREETING, sender: 'bot' }]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [sentPhoto, setSentPhoto] = useState(false);
   const chatEndRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -79,6 +107,7 @@ const Chatbot = ({ toggleChatWindow }) => {
     setMessages((prev) => [...prev, { text: query || '📷 Photo', sender: 'user' }]);
     setInput('');
     const file = selectedFile;
+    setSentPhoto(!!file);
     setSelectedFile(null);
     if (fileRef.current) fileRef.current.value = '';
     setLoading(true);
@@ -138,11 +167,7 @@ const Chatbot = ({ toggleChatWindow }) => {
             </div>
           )
         )}
-        {loading && (
-          <div className="cb-bubble cb-bubble--bot cb-typing" aria-label="Revi is typing">
-            <span /><span /><span />
-          </div>
-        )}
+        {loading && <Thinking withPhoto={sentPhoto} />}
         <div ref={chatEndRef} />
       </div>
 

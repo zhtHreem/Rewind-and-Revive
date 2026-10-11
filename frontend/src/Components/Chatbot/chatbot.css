@@ -164,3 +164,15 @@
 .cb-state--error { color: #b3261e; }
 .cb-bubble time { display: block; margin-top: 4px; font: 10px var(--font-mono); opacity: 0.7; text-align: right; }
 .cb-bubble.is-pending { opacity: 0.65; }
+
+/* ---- Revi thinking lines ---- */
+.cb-thinking { display: flex; align-items: center; gap: 9px; color: var(--ink-soft); font-style: italic; font-size: 14px; }
+.cb-thinking__line { animation: cb-line 0.5s ease both; }
+@keyframes cb-line { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+.cb-needle { flex: none; width: 16px; height: 16px; border-radius: 50%; border: 2px dashed var(--tag); animation: cb-spin 2.4s linear infinite; }
+@keyframes cb-spin { to { transform: rotate(360deg); } }
+.cb-ellipsis { display: inline-flex; gap: 3px; }
+.cb-ellipsis i { width: 4px; height: 4px; border-radius: 50%; background: var(--tag); opacity: 0.35; animation: cb-dot 1.1s infinite; }
+.cb-ellipsis i:nth-child(2) { animation-delay: 0.15s; }
+.cb-ellipsis i:nth-child(3) { animation-delay: 0.3s; }
+@media (prefers-reduced-motion: reduce) { .cb-needle, .cb-thinking__line, .cb-ellipsis i { animation: none; } }

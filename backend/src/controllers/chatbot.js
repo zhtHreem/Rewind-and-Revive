@@ -7,7 +7,7 @@ import Product from '../models/product.js';
 //   GEMINI_MODEL     optional. Comma-separated, tried in order. A retired model
 //                    (404) falls through to the next one.
 // ---------------------------------------------------------------------------
-const DEFAULT_MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-2.5-flash'];
+const DEFAULT_MODELS = ['gemini-3.5-flash-lite', 'gemini-2.5-flash', 'gemini-3.6-flash', 'gemini-3.8-flash'];
 const models = () => {
   const fromEnv = (process.env.GEMINI_MODEL || '').split(',').map((m) => m.trim()).filter(Boolean);
   return [...new Set([...fromEnv, ...DEFAULT_MODELS])];
@@ -124,7 +124,7 @@ const textOf = (interaction) => {
 
 const isMissingModel = (err) => /not found|404|no longer available|deprecated/i.test(`${err?.status || ''} ${err?.message || ''}`);
 
-const BUDGET_MS = 9000; // stay well inside the host's time limit
+const BUDGET_MS = 7500; // stay well inside the host's time limit
 const ask = async ({ system, input }) => {
   const ai = gemini();
   const started = Date.now();
@@ -134,10 +134,10 @@ const ask = async ({ system, input }) => {
     if (left < 1500) break;
     const t0 = Date.now();
     try {
-      // a slow model should not use up the whole request: give up on it after 15s and try the next
+      // a slow model should not use up the whole request: give up on it after 4.5s and try the next
       const interaction = await Promise.race([
         ai.interactions.create({ model, system_instruction: system, input, store: false }),
-        new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error('model timed out, not found'), { status: 404 })), Math.min(15000, left))),
+        new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error('model timed out, not found'), { status: 404 })), Math.min(4500, left))),
       ]);
       const text = textOf(interaction).trim();
       console.log(`[revi] ${model} answered in ${Date.now() - t0}ms`);

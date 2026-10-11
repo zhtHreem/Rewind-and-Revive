@@ -52,11 +52,13 @@ import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import ContactsIcon from '@mui/icons-material/Contacts';
 import LogoutIcon from '@mui/icons-material/Logout';
-import EmojiEventsOutlinedIcon from '@mui/icons-material/EmojiEventsOutlined';
 import StarsIcon from '@mui/icons-material/Stars';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { jwtDecode } from "jwt-decode";
 import brandLogo from "../../assets/brand/logo.svg";
+import NavSearch from "./NavSearch";
+import './notifPanel.css';
+import { AUTH_EVENT, OPEN_LOGIN_EVENT, announceAuthChange } from "../../utils/authEvents";
 
 // ----- shared design tokens -----
 const COLORS = {
@@ -160,6 +162,18 @@ function Navbar() {
   const [shoppingCart, setShoppingCart] = useState(false);
   const [login, setLogin] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem('token'));
+
+  // Other parts of the page can ask for the login window, and tell us when someone logged in.
+  useEffect(() => {
+    const openLogin = () => setLogin(true);
+    const sync = () => setIsLoggedIn(localStorage.getItem('token'));
+    window.addEventListener(OPEN_LOGIN_EVENT, openLogin);
+    window.addEventListener(AUTH_EVENT, sync);
+    return () => {
+      window.removeEventListener(OPEN_LOGIN_EVENT, openLogin);
+      window.removeEventListener(AUTH_EVENT, sync);
+    };
+  }, []);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -319,302 +333,48 @@ function Navbar() {
     }
   };
 
-  const navigateToBadges = () => {
-    handleProfileClose();
-    setDrawerOpen(false);
-    navigate('/badge');
-  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
+    announceAuthChange();
     setIsLoggedIn(false);
     setDrawerOpen(false);
     handleProfileClose();
   };
 
+  // The search panel itself lives in NavSearch.js; the navbar only opens and closes it.
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const searchInputRef = useRef(null);
-  const searchContainerRef = useRef(null);
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
-        setSearchOpen(false);
-      }
-    }
-    if (searchOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [searchOpen]);
-
-  useEffect(() => {
-    if (searchOpen && searchInputRef.current) {
-      searchInputRef.current.focus();
-    }
-  }, [searchOpen]);
-
   const performSearch = () => setSearchOpen(true);
-
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/catalogue?search=${encodeURIComponent(searchQuery.trim())}`);
-      setSearchOpen(false);
-      setSearchQuery('');
-    }
-  };
-
-  const [searchSuggestions, setSearchSuggestions] = useState([]);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const catalogueCacheRef = useRef(null);
-  const searchDebounceRef = useRef(null);
-
-  const handleSearchInputChange = (e) => {
-    const value = e.target.value;
-    setSearchQuery(value);
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    if (value && value.length >= 2) {
-      searchDebounceRef.current = setTimeout(() => {
-        generateSearchSuggestions(value);
-      }, 250);
-    } else {
-      setShowSuggestions(false);
-      setSearchSuggestions([]);
-    }
-  };
-
-  const generateSearchSuggestions = async (query) => {
-    if (!query || query.length <= 0) {
-      setSearchSuggestions([]);
-      setShowSuggestions(false);
-      return;
-    }
-    try {
-      if (!catalogueCacheRef.current) {
-        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`);
-        catalogueCacheRef.current = response.data || [];
-      }
-      const data = catalogueCacheRef.current;
-      if (data.length > 0) {
-        const lowerQuery = query.toLowerCase();
-        const filteredProducts = data.filter(product =>
-          product.name && product.name.toLowerCase().includes(lowerQuery)
-        );
-        const suggestions = filteredProducts.slice(0, 5).map(product => ({
-          id: product._id,
-          text: product.name,
-          category: product.category,
-          images: product.images,
-        }));
-        setSearchSuggestions(suggestions);
-        setShowSuggestions(suggestions.length > 0);
-      } else {
-        setSearchSuggestions([]);
-        setShowSuggestions(false);
-      }
-    } catch (error) {
-      console.error("Error fetching suggestions:", error);
-      setSearchSuggestions([]);
-      setShowSuggestions(false);
-    }
-  };
-
-  const handleSuggestionClick = (suggestion) => {
-    setSearchQuery(suggestion.text);
-    setShowSuggestions(false);
-    navigate(`/catalogue?search=${encodeURIComponent(suggestion.text)}`);
-    setSearchOpen(false);
-  };
-
-  // ----- search overlay (shared between desktop + mobile) -----
-  const SearchOverlay = () => (
-    searchOpen && (
-      <Box
-        component="form"
-        onSubmit={handleSearchSubmit}
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bgcolor: COLORS.surface,
-          borderBottom: `1px solid ${COLORS.border}`,
-          boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
-          py: 2.5,
-          px: { xs: 2, md: 6 },
-          zIndex: 10000,
-        }}
-      >
-        <Box sx={{ maxWidth: 760, mx: 'auto', position: 'relative' }}>
-          <TextField
-            fullWidth
-            inputRef={searchInputRef}
-            value={searchQuery}
-            onChange={handleSearchInputChange}
-            placeholder="Search for products, brands, eras..."
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ color: COLORS.textSecondary }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => { setSearchOpen(false); setSearchQuery(''); }}
-                    sx={iconBtnSx}
-                  >
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ),
-              sx: {
-                borderRadius: 2,
-                fontSize: 16,
-                '& fieldset': { borderColor: COLORS.border },
-                '&:hover fieldset': { borderColor: COLORS.accent },
-                '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-              },
-            }}
-          />
-          {showSuggestions && searchSuggestions.length > 0 && (
-            <Paper
-              sx={{
-                position: 'absolute',
-                top: '100%',
-                left: 0,
-                right: 0,
-                mt: 1,
-                borderRadius: 2,
-                border: `1px solid ${COLORS.border}`,
-                boxShadow: '0 12px 32px rgba(0,0,0,0.08)',
-                maxHeight: 380,
-                overflowY: 'auto',
-                zIndex: 10001,
-              }}
-              elevation={0}
-            >
-              {searchSuggestions.map((suggestion, index) => (
-                <Box
-                  key={suggestion.id || index}
-                  onClick={() => handleSuggestionClick(suggestion)}
-                  sx={{
-                    p: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    cursor: 'pointer',
-                    borderBottom: index < searchSuggestions.length - 1 ? `1px solid ${COLORS.border}` : 'none',
-                    '&:hover': { bgcolor: COLORS.accentSoft },
-                  }}
-                >
-                  <Box
-                    component="img"
-                    src={suggestion?.images?.[0] || '/placeholder.jpg'}
-                    alt={suggestion.text}
-                    sx={{ width: 44, height: 44, objectFit: 'cover', borderRadius: 1.5, flexShrink: 0 }}
-                  />
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
-                    <Typography sx={{ fontSize: 14, fontWeight: 600, color: COLORS.textPrimary }}>
-                      {suggestion.text}
-                    </Typography>
-                    {suggestion.category && (
-                      <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>
-                        in {suggestion.category}
-                      </Typography>
-                    )}
-                  </Box>
-                </Box>
-              ))}
-            </Paper>
-          )}
-        </Box>
-      </Box>
-    )
-  );
 
   // ----- notifications dropdown -----
   const NotificationsDropdown = () => (
-    <Paper
-      ref={dropdownRef}
-      elevation={0}
-      sx={{
-        position: 'absolute',
-        top: 'calc(100% + 8px)',
-        right: { xs: 8, md: 24 },
-        width: { xs: 'calc(100vw - 16px)', sm: 360 },
-        maxHeight: '75vh',
-        overflow: 'auto',
-        zIndex: 10,
-        borderRadius: 3,
-        border: `1px solid ${COLORS.border}`,
-        boxShadow: '0 16px 40px rgba(0,0,0,0.10)',
-        bgcolor: COLORS.surface,
-      }}
-    >
-      <Box sx={{ p: 2.5, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${COLORS.border}` }}>
-        <Box>
-          <Typography sx={{ fontWeight: 700, color: COLORS.textPrimary }}>Notifications</Typography>
-          <Typography sx={{ fontSize: 12, color: COLORS.textSecondary }}>
-            {unreadCount} unread
-          </Typography>
-        </Box>
-        <Button
-          size="small"
-          onClick={() => dispatch(markAllNotificationsAsRead())}
-          sx={{
-            textTransform: 'none',
-            color: COLORS.accent,
-            fontWeight: 600,
-            '&:hover': { bgcolor: COLORS.accentSoft },
-          }}
-        >
-          Mark all read
-        </Button>
-      </Box>
+    <div className="np" ref={dropdownRef} role="dialog" aria-label="Notifications">
+      <div className="np__head">
+        <div>
+          <b>Notifications</b>
+          <small>{unreadCount} unread</small>
+        </div>
+        <button type="button" onClick={() => dispatch(markAllNotificationsAsRead())}>Mark all read</button>
+      </div>
       {notifications.length > 0 ? (
-        notifications.map((notification) => (
-          <Box
-            key={notification.id}
-            onClick={() => handleMarkAsRead(notification)}
-            sx={{
-              p: 2,
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 1.5,
-              cursor: 'pointer',
-              borderBottom: `1px solid ${COLORS.border}`,
-              opacity: notification.isRead ? 0.6 : 1,
-              bgcolor: notification.isRead ? 'transparent' : COLORS.accentSoft,
-              '&:hover': { bgcolor: notification.isRead ? COLORS.accentSoft : '#EEDCE4' },
-            }}
-          >
-            <Box sx={{ flex: 1, minWidth: 0 }}>
-              <Typography sx={{ fontWeight: notification.isRead ? 500 : 700, fontSize: 14, color: COLORS.textPrimary }}>
-                {notification.title}
-              </Typography>
-              <Typography sx={{ fontSize: 13, color: COLORS.textSecondary, mt: 0.25 }}>
-                {notification.description}
-              </Typography>
-              <Typography sx={{ fontSize: 11, color: COLORS.textSecondary, mt: 0.5 }}>
-                {notification.time}
-              </Typography>
-            </Box>
-          </Box>
-        ))
+        <ul className="np__list">
+          {notifications.map((notification) => (
+            <li key={notification.id}>
+              <button type="button" className={`np__item ${notification.isRead ? '' : 'is-new'}`} onClick={() => handleMarkAsRead(notification)}>
+                <span className="np__dot" aria-hidden="true" />
+                <span>
+                  <span className="np__title">{notification.title}</span>
+                  <span className="np__desc">{notification.description}</span>
+                  <span className="np__time">{notification.time}</span>
+                </span>
+              </button>
+            </li>
+          ))}
+        </ul>
       ) : (
-        <Box sx={{ textAlign: 'center', py: 5 }}>
-          <Typography sx={{ fontSize: 14, color: COLORS.textSecondary }}>
-            No notifications yet
-          </Typography>
-        </Box>
+        <div className="np__empty">You are all caught up. New messages and bids will show up here.</div>
       )}
-    </Paper>
+    </div>
   );
 
   // ----- mobile drawer -----
@@ -731,12 +491,6 @@ function Navbar() {
               </ListItemIcon>
               <ListItemText primary="My profile" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
             </ListItem>
-            <ListItem button onClick={navigateToBadges} sx={{ borderRadius: 2, py: 1, '&:hover': { bgcolor: COLORS.accentSoft } }}>
-              <ListItemIcon sx={{ minWidth: 36, color: COLORS.textPrimary }}>
-                <EmojiEventsOutlinedIcon fontSize="small" />
-              </ListItemIcon>
-              <ListItemText primary="My badges" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
-            </ListItem>
           </List>
         )}
 
@@ -797,9 +551,7 @@ function Navbar() {
           borderBottom: `1px solid ${COLORS.border}`,
         }}
       >
-        <Box ref={searchContainerRef}>
-          <SearchOverlay />
-        </Box>
+        <NavSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
 
         {login && (
           <Box sx={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 5 }}>
@@ -960,10 +712,6 @@ function Navbar() {
                   <MenuItem onClick={navigateToProfile} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>
                     <ListItemIcon><PersonIcon fontSize="small" sx={{ color: COLORS.accent }} /></ListItemIcon>
                     <ListItemText primary="My profile" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
-                  </MenuItem>
-                  <MenuItem onClick={navigateToBadges} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>
-                    <ListItemIcon><EmojiEventsOutlinedIcon fontSize="small" sx={{ color: COLORS.accent }} /></ListItemIcon>
-                    <ListItemText primary="My badges" primaryTypographyProps={{ fontSize: 14, fontWeight: 600 }} />
                   </MenuItem>
                   <Divider sx={{ borderColor: COLORS.border }} />
                   <MenuItem onClick={handleLogout} sx={{ py: 1.25, '&:hover': { bgcolor: COLORS.accentSoft } }}>

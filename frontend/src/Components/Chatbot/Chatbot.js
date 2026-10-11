@@ -1,17 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Box,
-  Button,
-  TextField,
-  IconButton,
-  Paper,
-  Typography,
-  Card,
-  CardMedia,
-  CardContent,
-} from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
+import NorthEastIcon from '@mui/icons-material/NorthEast';
+import PhotoCameraOutlinedIcon from '@mui/icons-material/PhotoCameraOutlined';
+import mark from '../../assets/brand/mark-dark.svg';
+import { formatMoney } from '../../utils/money';
+import './chatbot.css';
 
 // Shrinks a photo to at most 1024px on its longest side as a JPEG, so uploads stay small.
 const shrinkImage = (file) =>
@@ -32,54 +26,45 @@ const shrinkImage = (file) =>
     img.src = url;
   });
 
+// The whole card is one link that opens the product in a new tab.
 const ProductCard = ({ product }) => {
-  const { name, image, description, price, color, product_link } = product;
-
+  const { name, image, price, color, product_link } = product;
   return (
-    <Card sx={{ display: 'flex', flexDirection: 'row', mb: 1, p: 1, width: 300 }}>
-      {image && (
-        <CardMedia
-          component="img"
-          sx={{ width: 60, height: 60, borderRadius: 1, objectFit: 'cover', mr: 1 }}
-          image={image}
-          alt={name}
-        />
-      )}
-      <CardContent sx={{ p: 0, '&:last-child': { pb: 0 } }}>
-        <Typography variant="body2" fontWeight="bold">{name}</Typography>
-        {description && (
-          <Typography variant="caption" color="text.secondary" noWrap>{description}</Typography>
-        )}
-        <Typography variant="caption">${price} | Color: {color}</Typography>
-        {product_link && (
-          <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }}>
-            <a
-              href={product_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: '#8C5367', textDecoration: 'none' }}
-            >
-              View Product
-            </a>
-          </Typography>
-        )}
-      </CardContent>
-    </Card>
+    <a
+      className="cb-card"
+      href={product_link}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`${name}, ${formatMoney(price)}. Opens in a new tab`}
+    >
+      <span className="cb-card__photo">
+        {image ? <img src={image} alt="" decoding="async" /> : null}
+      </span>
+      <span className="cb-card__body">
+        <b>{name}</b>
+        <span className="cb-card__meta">
+          <i>{formatMoney(price)}</i>
+          {color && <em>{color}</em>}
+        </span>
+      </span>
+      <span className="cb-card__go" aria-hidden="true"><NorthEastIcon fontSize="inherit" /></span>
+    </a>
   );
 };
 
+const GREETING = 'Hi! Ask me what to wear, or upload a photo of a piece and I’ll suggest what goes with it.';
+
 const Chatbot = ({ toggleChatWindow }) => {
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState([
-    { text: "👋 Hi! Ask me what to wear, or upload a photo of a piece and I’ll suggest what goes with it.", sender: "bot" }
-  ]);
+  const [messages, setMessages] = useState([{ text: GREETING, sender: 'bot' }]);
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const chatEndRef = useRef(null);
+  const fileRef = useRef(null);
 
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, [messages, loading]);
 
   const handleSendMessage = async () => {
     if (loading || (!input.trim() && !selectedFile)) return;
@@ -91,10 +76,11 @@ const Chatbot = ({ toggleChatWindow }) => {
       .slice(-6)
       .map((m) => ({ role: m.sender === 'user' ? 'user' : 'bot', text: m.text }));
 
-    setMessages((prev) => [...prev, { text: query || '\uD83D\uDCF7 Photo', sender: "user" }]);
+    setMessages((prev) => [...prev, { text: query || '📷 Photo', sender: 'user' }]);
     setInput('');
     const file = selectedFile;
     setSelectedFile(null);
+    if (fileRef.current) fileRef.current.value = '';
     setLoading(true);
 
     try {
@@ -110,75 +96,95 @@ const Chatbot = ({ toggleChatWindow }) => {
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setMessages((prev) => [...prev, { text: data.error || "The stylist couldn't answer just now.", sender: "bot" }]);
+        setMessages((prev) => [...prev, { text: data.error || "The stylist couldn't answer just now.", sender: 'bot' }]);
       } else {
-        if (data.reply) setMessages((prev) => [...prev, { text: data.reply, sender: "bot" }]);
-        if (Array.isArray(data.products) && data.products.length > 0) {
-          const productMessages = data.products.map((product) => ({
-            sender: "bot",
-            component: <ProductCard key={product.name} product={product} />,
-          }));
-          setMessages((prev) => [...prev, ...productMessages]);
-        }
+        const next = [];
+        if (data.reply) next.push({ text: data.reply, sender: 'bot' });
+        if (Array.isArray(data.products) && data.products.length > 0) next.push({ products: data.products, sender: 'bot' });
+        setMessages((prev) => [...prev, ...next]);
       }
     } catch (error) {
-      console.error("Error:", error);
-      setMessages((prev) => [...prev, { text: "I couldn't reach the stylist. Check your connection and try again.", sender: "bot" }]);
+      console.error('Error:', error);
+      setMessages((prev) => [...prev, { text: "I couldn't reach the stylist. Check your connection and try again.", sender: 'bot' }]);
     }
 
     setLoading(false);
   };
 
   return (
-<Paper
-  elevation={6}
-  sx={{
-    width: { xs: '100vw', sm: 360 },
-    height: { xs: '100vh', sm: 440 },
-    borderRadius: { xs: 0, sm: 2 },
-    display: 'flex',
-    flexDirection: 'column',
-  }}
->
-      {/* Header with purple background */}
-      <Box sx={{ p: 2, bgcolor: '#8C5367', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="subtitle1">Chat with us</Typography>
-        <IconButton onClick={toggleChatWindow} sx={{ color: 'white' }}>
-          <CloseIcon />
-        </IconButton>
-      </Box>
+    <div className="cb" role="dialog" aria-label="Style assistant">
+      <header className="cb-head">
+        <img src={mark} alt="" />
+        <div>
+          <b>Style assistant</b>
+          <small>Ask what to wear</small>
+        </div>
+        <button type="button" onClick={toggleChatWindow} aria-label="Close chat">
+          <CloseIcon fontSize="small" />
+        </button>
+      </header>
 
-      {/* Chat messages */}
-      <Box sx={{ flex: 1, px: 1.5, py: 1, overflowY: 'auto' }}>
-        {messages.map((msg, index) => (
-          <Box key={index} sx={{ mb: 1, alignSelf: msg.sender === 'user' ? 'flex-end' : 'flex-start' }}>
-            {msg.component || (
-              <Box sx={{  p: 1.5,  bgcolor: msg.sender === 'user' ? '#8C5367' : 'grey.200',  color: msg.sender === 'user' ? 'white' : 'initial', borderRadius: 2, maxWidth: '80%', }} >
-                <Typography variant="body2">{msg.text}</Typography>
-              </Box>
-            )}
-          </Box>
-        ))}
+      <div className="cb-feed" aria-live="polite">
+        {messages.map((msg, index) =>
+          msg.products ? (
+            <div className="cb-cards" key={index}>
+              {msg.products.map((p) => (
+                <ProductCard key={p.product_link || p.name} product={p} />
+              ))}
+            </div>
+          ) : (
+            <div key={index} className={`cb-bubble cb-bubble--${msg.sender}`}>
+              {msg.text}
+            </div>
+          )
+        )}
         {loading && (
-          <Box sx={{ bgcolor: 'grey.100', p: 1.5, borderRadius: 2 }}>
-            <Typography variant="body2">🕐 Processing your request...</Typography>
-          </Box>
+          <div className="cb-bubble cb-bubble--bot cb-typing" aria-label="The stylist is typing">
+            <span /><span /><span />
+          </div>
         )}
         <div ref={chatEndRef} />
-      </Box>
+      </div>
 
-      {/* Input, Upload, Send */}
-      <Box sx={{ p: 2, borderTop: '1px solid #eee', display: 'flex', gap: 1 }}>
-        <TextField fullWidth size="small"  placeholder="Type your message..."  value={input}  onChange={(e) => setInput(e.target.value)}  onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()} />
-        <Button  variant="contained"   component="label" sx={{ bgcolor: '#8C5367', '&:hover': { bgcolor: '#7a4659' }, color: 'white' }}>
-          {selectedFile ? 'Photo \u2713' : 'Upload'}
-          <input hidden accept="image/jpeg,image/png,image/webp" type="file" onChange={(e) => setSelectedFile(e.target.files[0] || null)} />
-        </Button>
-        <IconButton onClick={handleSendMessage} sx={{  bgcolor: '#8C5367',    color: 'white',   '&:hover': { bgcolor: '#7a4659' },}} >
-          <SendIcon />
-        </IconButton>
-      </Box>
-    </Paper>
+      {selectedFile && (
+        <div className="cb-attach">
+          <PhotoCameraOutlinedIcon fontSize="small" />
+          <span>{selectedFile.name}</span>
+          <button
+            type="button"
+            aria-label="Remove photo"
+            onClick={() => { setSelectedFile(null); if (fileRef.current) fileRef.current.value = ''; }}
+          >
+            <CloseIcon fontSize="inherit" />
+          </button>
+        </div>
+      )}
+
+      <form className="cb-input" onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}>
+        <label className={`cb-btn cb-btn--ghost ${selectedFile ? 'is-on' : ''}`} title="Upload a photo">
+          <PhotoCameraOutlinedIcon fontSize="small" />
+          <input
+            ref={fileRef}
+            hidden
+            accept="image/jpeg,image/png,image/webp"
+            type="file"
+            onChange={(e) => setSelectedFile(e.target.files[0] || null)}
+          />
+        </label>
+        <input
+          className="cb-text"
+          type="text"
+          placeholder="What are you looking for?"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          maxLength={500}
+          aria-label="Your message"
+        />
+        <button type="submit" className="cb-btn cb-btn--solid" disabled={loading || (!input.trim() && !selectedFile)} aria-label="Send">
+          <SendIcon fontSize="small" />
+        </button>
+      </form>
+    </div>
   );
 };
 

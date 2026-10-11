@@ -145,7 +145,6 @@ const Footer = () => {
               <FooterLink to="/">Home</FooterLink>
               <FooterLink to="/catalogue">Shop</FooterLink>
               <FooterLink to="/bidProduct">Auctions</FooterLink>
-              <FooterLink to="/celeb">Celebrity</FooterLink>
             </Box>
           </Grid>
 
@@ -155,7 +154,6 @@ const Footer = () => {
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
               <FooterLink to="/AboutUs">About us</FooterLink>
               <FooterLink to="/contact">Contact</FooterLink>
-              <FooterLink to="/collaborator">Collaborators</FooterLink>
             </Box>
           </Grid>
 

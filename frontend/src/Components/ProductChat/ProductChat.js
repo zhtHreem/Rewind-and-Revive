@@ -3,13 +3,20 @@ import io from "socket.io-client";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import { useLocation } from "react-router-dom";
+import SendIcon from "@mui/icons-material/Send";
+import CloseIcon from "@mui/icons-material/Close";
+import "../Chatbot/chatbot.css";
 import { Box,Typography, TextField, Button, Paper, CircularProgress, List, ListItem,ListItemText, Divider, Select, MenuItem, FormControl, InputLabel,} from "@mui/material";
 
 let socket;
 
-const ProductChat = ({ productId, ownerId }) => {
+const ProductChat = ({ productId, ownerId, onClose }) => {
   const [messages, setMessages] = useState([]);
-  const [newMessage, setNewMessage] = useState("");
+  // A message typed before logging in is kept (see SellerChatGate) and waits here.
+  const draftStorageKey = `rr_chat_draft:${productId}`;
+  const [newMessage, setNewMessage] = useState(() => {
+    try { return sessionStorage.getItem(draftStorageKey) || ""; } catch { return ""; }
+  });
   const [userId, setUserId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -305,6 +312,14 @@ useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Keep what is being typed, and forget it once it is sent.
+  useEffect(() => {
+    try {
+      if (newMessage) sessionStorage.setItem(draftStorageKey, newMessage);
+      else sessionStorage.removeItem(draftStorageKey);
+    } catch { /* storage unavailable */ }
+  }, [newMessage, draftStorageKey]);
+
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !userId || !receiverId || !productId || !socket) return;
@@ -379,89 +394,86 @@ useEffect(() => {
     }
   };
 
+  const partnerName = chatPartner || (isSeller ? 'Buyer' : 'Seller');
+
   return (
-    <Paper elevation={3} sx={{  width: 360,  height: 500,  display: "flex", flexDirection: "column",  overflow: "hidden", }}>
-      
-      <Box sx={{ bgcolor: "#8C5367", color: "white", px: 2, py: 1.5, textAlign: "center" }}>
-        <Typography variant="h6" fontSize="1rem">
-          {isSeller 
-            ? `Chat with ${chatPartner || 'Buyer'}`
-            : `Chat with ${chatPartner || 'Seller'}`}
-        </Typography>
-      </Box>
-      
-      
+    <div className="cb cb--seller" role="dialog" aria-label={`Chat with ${partnerName}`}>
+      <header className="cb-head">
+        <span className="cb-avatar" aria-hidden="true">{partnerName.charAt(0).toUpperCase()}</span>
+        <div>
+          <b>{partnerName}</b>
+          <small>{isSeller ? 'Buyer' : 'Seller'} &middot; about this piece</small>
+        </div>
+        {onClose && (
+          <button type="button" onClick={onClose} aria-label="Close chat">
+            <CloseIcon fontSize="small" />
+          </button>
+        )}
+      </header>
+
       {isSeller && (
-        <Box sx={{ px: 2, py: 1, bgcolor: "#f5f5f5" }}>
-          <FormControl fullWidth size="small">
-            <InputLabel id="buyer-select-label">Select Buyer</InputLabel>
-            <Select
-              labelId="buyer-select-label"   value={selectedBuyer} label="Select Buyer" onChange={(e) => setSelectedBuyer(e.target.value)}   disabled={loadingBuyers} >
-              {loadingBuyers ? (
-                <MenuItem value="">  <em>Loading buyers...</em></MenuItem>
-              ) : buyersList.length === 0 ? (
-                <MenuItem value="">   <em>No buyers available</em>  </MenuItem>
-              ) : (
-                buyersList.map((buyer) => (
-                  <MenuItem key={buyer._id} value={buyer._id}>  {(() => {
-                               const nameParts = (buyer.username || 'Unknown Buyer').split(' ');
-                               const displayName = nameParts.slice(0, 3).join(' ');
-                               return displayName;
-                  })()} </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
-        </Box>
+        <div className="cb-select">
+          <label htmlFor="cb-buyer">Chatting with</label>
+          <select id="cb-buyer" value={selectedBuyer} onChange={(e) => setSelectedBuyer(e.target.value)} disabled={loadingBuyers}>
+            {loadingBuyers ? (
+              <option value="">Loading buyers&hellip;</option>
+            ) : buyersList.length === 0 ? (
+              <option value="">No buyers yet</option>
+            ) : (
+              <>
+                <option value="" disabled>Choose a buyer</option>
+                {buyersList.map((buyer) => (
+                  <option key={buyer._id} value={buyer._id}>
+                    {(buyer.username || 'Unknown buyer').split(' ').slice(0, 3).join(' ')}
+                  </option>
+                ))}
+              </>
+            )}
+          </select>
+        </div>
       )}
 
-      
-      <Box   sx={{ flex: 1,  overflowY: "auto",   p: 2,   bgcolor: "#f9f9f9",  display: "flex", overflowX: "hidden", flexDirection: "column" }}  >
+      <div className="cb-feed" aria-live="polite">
         {isLoading ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-            <CircularProgress />
-          </Box>
+          <div className="cb-state">Loading the conversation&hellip;</div>
         ) : error ? (
-          <Typography color="error" align="center">  {error} </Typography>
+          <div className="cb-state cb-state--error">{error}</div>
         ) : messages.length === 0 ? (
-          <Box display="flex" justifyContent="center" alignItems="center" height="100%">
-            <Typography color="text.secondary">  No messages yet. Send a message to start the conversation. </Typography>
-          </Box>
+          <div className="cb-state">No messages yet. Say hello and ask about fit, condition or shipping.</div>
         ) : (
           messages.map((msg, idx) => {
             const isOwn = String(msg.sender?._id || msg.sender) === String(userId);
-            
             return (
-              <Box  key={msg._id || `msg-${idx}`}   display="flex"   justifyContent={isOwn ? "flex-end" : "flex-start"}   mb={1}  sx={msg.isTemp ? { opacity: 0.7 } : {}} >
-                <Box sx={{   bgcolor: isOwn ? "#8C5367" : "#e0e0e0",  color: isOwn ? "white" : "black",   borderRadius: 2,  p: 1,  maxWidth: "75%", wordBreak: "break-word", overflowWrap: "break-word" }}  >
-                  <Typography variant="subtitle2" fontWeight="bold">
-                    {isOwn     ? "You"    : typeof msg.sender === "object"   ? msg.sender?.username || "Unknown" : "Unknown"}
-                  </Typography>
-                  <Typography variant="body2">{msg.message}</Typography>
-                  {msg.timestamp && (
-                    <Typography  variant="caption"   sx={{ mt: 0.5, display: "block", textAlign: "right" }} >
-                      {new Date(msg.timestamp).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
+              <div
+                key={msg._id || `msg-${idx}`}
+                className={`cb-bubble cb-bubble--${isOwn ? 'user' : 'bot'} ${msg.isTemp ? 'is-pending' : ''}`}
+              >
+                {msg.message}
+                {msg.timestamp && (
+                  <time>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</time>
+                )}
+              </div>
             );
           })
         )}
         <div ref={messagesEndRef} />
-      </Box>
+      </div>
 
-      {/* Input */}
-      <Box  sx={{  display: "flex",  alignItems: "center",   borderTop: "1px solid #ccc",   px: 2,  py: 1,bgcolor: "#fff",  gap: 1,}} >
-        <TextField   placeholder="Type a message..."  value={newMessage}  onChange={(e) => setNewMessage(e.target.value)} onKeyPress={handleKeyPress}  variant="outlined" fullWidth  InputProps={{  sx: {  height: 36, '& .MuiInputBase-input': {    padding: '6px 8px',    },   },  }} sx={{ flex: 1 }} disabled={isLoading || !!error} />
-        <Button  variant="contained"  onClick={sendMessage} disabled={isLoading || !!error || !newMessage.trim()}  sx={{  height: 36, px: 2,  fontSize: 14, bgcolor: "#8C5367", "&:hover": {   bgcolor: "#7a475b",  },   }} >
-          Send
-        </Button>
-      </Box>
-    </Paper>
+      <form className="cb-input" onSubmit={(e) => { e.preventDefault(); sendMessage(); }}>
+        <input
+          className="cb-text"
+          type="text"
+          placeholder="Write a message…"
+          value={newMessage}
+          onChange={(e) => { setNewMessage(e.target.value); if (error) setError(null); }}
+          maxLength={1000}
+          aria-label="Your message"
+        />
+        <button type="submit" className="cb-btn cb-btn--solid" disabled={isLoading || !newMessage.trim()} aria-label="Send">
+          <SendIcon fontSize="small" />
+        </button>
+      </form>
+    </div>
   );
 };
 

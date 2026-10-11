@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { jwtDecode } from 'jwt-decode';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import {
   Grid,
@@ -37,7 +38,10 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import AddCart from '../ShoppingCart/AddCart';
 import Layout from '../Layout/layout';
 import ProductChat from '../ProductChat/ProductChat';
-import SkeletonLoader from '../Utils/skeletonLoader';
+import SellerChatGate from '../ProductChat/SellerChatGate';
+import { useIsLoggedIn } from '../../utils/authEvents';
+import { CLOSE_REVI, CLOSE_SELLER_CHAT } from '../Chatbot/ReviLauncher';
+import { ProductPageSkeleton } from '../Skeleton/Skeleton';
 import axios from 'axios';
 import MatchOutfitModal from './matchMyOutfit';
 import { formatMoney } from '../../utils/money';
@@ -57,31 +61,6 @@ const COLORS = {
 };
 const SERIF = '"Playfair Display", "Fraunces", Georgia, serif';
 
-
-// ----- skeleton -----
-const ProductImageSkeleton = () => (
-  <Box sx={{ display: 'flex', gap: 2 }}>
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-      {Array(5).fill(0).map((_, i) => (
-        <SkeletonLoader key={i} width="64px" height="64px" />
-      ))}
-    </Box>
-    <Box sx={{ flex: 1, aspectRatio: '1 / 1', borderRadius: 3, overflow: 'hidden' }}>
-      <SkeletonLoader height="100%" />
-    </Box>
-  </Box>
-);
-
-const ProductDetailsSkeleton = () => (
-  <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-    <SkeletonLoader.Text lines={1} width="60%" />
-    <SkeletonLoader.Text lines={1} width="40%" />
-    <SkeletonLoader height="56px" width="100%" />
-    {Array(3).fill(0).map((_, i) => (
-      <SkeletonLoader key={i} height="48px" width="100%" />
-    ))}
-  </Box>
-);
 
 // ----- mini product card for the bottom strips -----
 const MiniProductCard = ({ product, onClick }) => (
@@ -182,13 +161,24 @@ const ProductPage = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [image, setImage] = useState(null);
-  const [isLoggedIn] = useState(localStorage.getItem('token'));
+  const isLoggedIn = useIsLoggedIn();
+  const viewerId = useMemo(() => {
+    try { return isLoggedIn ? jwtDecode(localStorage.getItem('token')).id : null; } catch { return null; }
+  }, [isLoggedIn]);
 
   const [snack, setSnack] = useState({ open: false, msg: '', severity: 'error' });
   const showSnack = (msg, severity = 'error') => setSnack({ open: true, msg, severity });
 
   const [moreFromSeller, setMoreFromSeller] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
+  const visibleRecs = useMemo(() => {
+    const shown = new Set(moreFromSeller.map((p) => p._id));
+    if (product?._id) shown.add(product._id);
+    const sellerName = product?.owner?.username;
+    return recommendations
+      .filter((p) => !shown.has(p._id) && !(sellerName && p.owner?.username === sellerName))
+      .slice(0, 4);
+  }, [recommendations, moreFromSeller, product]);
 
   const resetReviewForm = () => {
     setRating(0);
@@ -209,6 +199,18 @@ const ProductPage = () => {
   const openChat = queryParams.get('openChat') === 'true';
   const buyerId = queryParams.get('buyer');
   const [isChatOpen, setIsChatOpen] = useState(openChat);
+
+  // Opening the seller chat closes Revi, and the other way round, so they never overlap.
+  const toggleSellerChat = () => {
+    const next = !isChatOpen;
+    if (next) window.dispatchEvent(new Event(CLOSE_REVI));
+    setIsChatOpen(next);
+  };
+  useEffect(() => {
+    const close = () => setIsChatOpen(false);
+    window.addEventListener(CLOSE_SELLER_CHAT, close);
+    return () => window.removeEventListener(CLOSE_SELLER_CHAT, close);
+  }, []);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -248,10 +250,12 @@ const ProductPage = () => {
     const fetchRecs = async () => {
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_LOCAL_URL}/api/product/recommendations/${productId}?topK=4`
+          `${process.env.REACT_APP_LOCAL_URL}/api/product/recommendations/${productId}?topK=12`
         );
-        const items = res.data?.recommendations || res.data?.products || res.data || [];
-        setRecommendations(Array.isArray(items) ? items.slice(0, 4) : []);
+        const raw = res.data?.recommendations || res.data?.products || res.data || [];
+        // The API wraps each suggestion as { product, similarity, matchScore }: use the product itself.
+        const items = Array.isArray(raw) ? raw.map((r) => (r && r.product ? r.product : r)).filter((p) => p && p._id && p.name) : [];
+        setRecommendations(items.slice(0, 8));
       } catch (e) {
         console.error('Error fetching recommendations:', e);
       }
@@ -326,14 +330,7 @@ const ProductPage = () => {
   if (!product) {
     return (
       <Layout>
-        <Box sx={{ minHeight: '100vh', bgcolor: COLORS.bg, py: { xs: 4, md: 6 }, px: { xs: 2, sm: 4, md: 6 } }}>
-          <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-            <Grid container spacing={5}>
-              <Grid item xs={12} md={7}><ProductImageSkeleton /></Grid>
-              <Grid item xs={12} md={5}><ProductDetailsSkeleton /></Grid>
-            </Grid>
-          </Box>
-        </Box>
+        <ProductPageSkeleton />
       </Layout>
     );
   }
@@ -562,6 +559,25 @@ const ProductPage = () => {
                     </Typography>
                     <VerifiedOutlinedIcon sx={{ fontSize: 14, color: COLORS.accent }} />
                   </Box>
+
+                  <Button
+                    onClick={toggleSellerChat}
+                    startIcon={<ChatBubbleOutlineIcon />}
+                    sx={{
+                      alignSelf: 'flex-start',
+                      mt: -1,
+                      px: 0,
+                      color: COLORS.accent,
+                      fontWeight: 600,
+                      fontSize: 14,
+                      textTransform: 'none',
+                      '&:hover': { bgcolor: 'transparent', color: COLORS.accentDark },
+                    }}
+                  >
+                    {viewerId && String(viewerId) === String(product.owner._id)
+                      ? 'Buyer messages'
+                      : `Message ${product.owner.username}`}
+                  </Button>
 
                   {/* Title */}
                   <Box>
@@ -981,7 +997,7 @@ const ProductPage = () => {
             )}
 
             {/* YOU MAY ALSO LIKE */}
-            {recommendations.length > 0 && (
+            {visibleRecs.length > 0 && (
               <Box sx={{ mb: 4 }}>
                 <SectionHeading
                   eyebrow="Curated for you"
@@ -1001,7 +1017,7 @@ const ProductPage = () => {
                   }
                 />
                 <Grid container spacing={2.5}>
-                  {recommendations.map((p) => (
+                  {visibleRecs.map((p) => (
                     <Grid item xs={6} sm={4} md={3} key={p._id}>
                       <MiniProductCard product={p} onClick={() => navigate(`/product/${p._id}`)} />
                     </Grid>
@@ -1113,46 +1129,33 @@ const ProductPage = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Floating chat */}
-      {isLoggedIn && (
-        <>
-          <IconButton
-            onClick={() => setIsChatOpen((prev) => !prev)}
-            sx={{
-              position: 'fixed',
-              bottom: 24,
-              right: 24,
-              width: 56,
-              height: 56,
-              bgcolor: COLORS.accent,
-              color: '#fff',
-              boxShadow: '0 8px 24px rgba(133,88,111,0.35)',
-              zIndex: 1000,
-              '&:hover': { bgcolor: COLORS.accentDark },
-            }}
-          >
-            {isChatOpen ? <CloseIcon /> : <ChatBubbleOutlineIcon />}
-          </IconButton>
-          {isChatOpen && product && product.owner && (
-            <Box
-              sx={{
-                position: 'fixed',
-                bottom: 96,
-                right: 24,
-                width: { xs: 'calc(100vw - 32px)', sm: 380 },
-                height: 520,
-                bgcolor: COLORS.surface,
-                borderRadius: 3,
-                border: `1px solid ${COLORS.border}`,
-                boxShadow: '0 20px 48px rgba(0,0,0,0.18)',
-                overflow: 'hidden',
-                zIndex: 1000,
-              }}
-            >
-              <ProductChat productId={productId} ownerId={product.owner._id} buyerId={buyerId} />
-            </Box>
+      {/* Seller chat: open to everyone. Logged-out visitors can write their message, then log in to send it. */}
+      {isChatOpen && product && product.owner && (
+        <Box
+          sx={{
+            position: 'fixed',
+            bottom: { xs: 0, sm: 92 },
+            right: { xs: 0, sm: 20 },
+            width: { xs: '100vw', sm: 380 },
+            height: { xs: '100vh', sm: 520 },
+            bgcolor: COLORS.surface,
+            borderRadius: { xs: 0, sm: 3 },
+            border: `1px solid ${COLORS.border}`,
+            boxShadow: '0 20px 48px rgba(0,0,0,0.18)',
+            overflow: 'hidden',
+            zIndex: 1100,
+          }}
+        >
+          {isLoggedIn ? (
+            <ProductChat productId={productId} ownerId={product.owner._id} buyerId={buyerId} onClose={() => setIsChatOpen(false)} />
+          ) : (
+            <SellerChatGate
+              productId={productId}
+              sellerName={product.owner.username}
+              onClose={() => setIsChatOpen(false)}
+            />
           )}
-        </>
+        </Box>
       )}
 
       <Modal open={shoppingCart} onClose={handleCartOpenClose}>

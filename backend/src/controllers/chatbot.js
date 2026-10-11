@@ -124,21 +124,28 @@ const textOf = (interaction) => {
 
 const isMissingModel = (err) => /not found|404|no longer available|deprecated/i.test(`${err?.status || ''} ${err?.message || ''}`);
 
+const BUDGET_MS = 9000; // stay well inside the host's time limit
 const ask = async ({ system, input }) => {
   const ai = gemini();
+  const started = Date.now();
   let lastErr;
   for (const model of models()) {
+    const left = BUDGET_MS - (Date.now() - started);
+    if (left < 1500) break;
+    const t0 = Date.now();
     try {
       // a slow model should not use up the whole request: give up on it after 15s and try the next
       const interaction = await Promise.race([
         ai.interactions.create({ model, system_instruction: system, input, store: false }),
-        new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error('model timed out, not found'), { status: 404 })), 15000)),
+        new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error('model timed out, not found'), { status: 404 })), Math.min(15000, left))),
       ]);
       const text = textOf(interaction).trim();
+      console.log(`[revi] ${model} answered in ${Date.now() - t0}ms`);
       if (text) return text;
       lastErr = new Error('Empty reply');
     } catch (err) {
       lastErr = err;
+      console.log(`[revi] ${model} failed after ${Date.now() - t0}ms: ${err?.status || ''} ${String(err?.message).slice(0, 80)}`);
       if (!isMissingModel(err)) throw err; // quota, auth, network: stop and report
     }
   }
@@ -180,9 +187,12 @@ export const chat = async (req, res) => {
     }
 
     const history = cleanHistory(req.body?.history);
+    const tDb = Date.now();
     const products = await loadProducts();
+    console.log(`[revi] products loaded in ${Date.now() - tDb}ms`);
 
     let garment = detectType(query);
+    req._fallback = () => ({ reply: 'Here are a few pieces I think you will love while I catch my breath.', products: pickProducts(products, query, garment).map(toCard) });
     const candidates = () => pickProducts(products, query, garment);
 
     const historyBlock = history.length
@@ -231,6 +241,7 @@ export const chat = async (req, res) => {
       return res.status(503).json({ error: 'Revi is not set up correctly yet.' });
     }
     console.error('Chatbot error:', err?.message);
+    if (req._fallback) return res.json(req._fallback());
     res.status(502).json({ error: 'Revi could not answer just now. Please try again.' });
   }
 };

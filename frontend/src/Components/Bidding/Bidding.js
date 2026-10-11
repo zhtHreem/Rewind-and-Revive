@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import '../Home/sections.css';
 import { formatMoney } from '../../utils/money';
+import { loadAuctions } from '../Home/useHomeProducts';
 import { AuctionBandSkeleton } from '../Skeleton/Skeleton';
 
 const money = formatMoney;
@@ -48,8 +48,8 @@ const Bidding = () => {
     let cancelled = false;
     (async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/get`);
-        if (!cancelled) setLots(response.data || []);
+        const data = await loadAuctions();
+        if (!cancelled) setLots(data || []);
       } catch (error) {
         console.error('Error fetching bidding products:', error);
       } finally {

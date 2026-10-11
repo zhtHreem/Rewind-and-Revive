@@ -12,6 +12,8 @@ export const FALLBACK_IMAGES = [fallbackA, fallbackR, fallback1, fallback2, fall
 // One shared request per endpoint for every home section that needs photos.
 let cachedProducts = null;
 let cachedAuctions = null;
+let auctionsAt = 0;
+const FRESH_MS = 30 * 1000; // reuse an answer for 30s so sections and page changes do not refetch
 
 const loadProducts = () => {
   if (!cachedProducts) {
@@ -26,8 +28,9 @@ const loadProducts = () => {
   return cachedProducts;
 };
 
-const loadAuctions = () => {
-  if (!cachedAuctions) {
+export const loadAuctions = () => {
+  if (!cachedAuctions || Date.now() - auctionsAt > FRESH_MS) {
+    auctionsAt = Date.now();
     cachedAuctions = axios
       .get(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/get`)
       .then((res) => (Array.isArray(res.data) ? res.data : []))

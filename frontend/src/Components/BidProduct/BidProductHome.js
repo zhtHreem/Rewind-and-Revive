@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import Layout from '../Layout/layout';
 import { LotCardSkeleton, AuctionFeatureSkeleton } from '../Skeleton/Skeleton';
 import './auctionIssue.css';
+import { loadAuctions } from '../Home/useHomeProducts';
 import { formatMoney } from '../../utils/money';
 
 const useNow = () => {
@@ -180,8 +180,8 @@ const BidProductHome = () => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/biddingProduct/get`);
-        setProducts(response.data);
+        const data = await loadAuctions();
+        setProducts(data);
       } catch (error) {
         console.error('Error fetching products:', error);
       } finally {

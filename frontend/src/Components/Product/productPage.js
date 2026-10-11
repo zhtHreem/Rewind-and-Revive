@@ -176,7 +176,7 @@ const ProductPage = () => {
     if (product?._id) shown.add(product._id);
     const sellerName = product?.owner?.username;
     return recommendations
-      .filter((p) => !shown.has(p._id) && !(sellerName && p.owner?.username === sellerName))
+      .filter((p) => !shown.has(p._id) && !(sellerName && p.owner?.username === sellerName) && !(product?.owner?._id && String(p.owner?._id || p.owner) === String(product.owner._id)))
       .slice(0, 4);
   }, [recommendations, moreFromSeller, product]);
 
@@ -250,7 +250,7 @@ const ProductPage = () => {
     const fetchRecs = async () => {
       try {
         const res = await axios.get(
-          `${process.env.REACT_APP_LOCAL_URL}/api/product/recommendations/${productId}?topK=12`
+          `${process.env.REACT_APP_LOCAL_URL}/api/recommendations/product/${productId}`
         );
         const raw = res.data?.recommendations || res.data?.products || res.data || [];
         // The API wraps each suggestion as { product, similarity, matchScore }: use the product itself.

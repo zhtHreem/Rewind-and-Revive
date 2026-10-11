@@ -15,6 +15,7 @@ import axios from 'axios';
 import SectionHeader from '../Utils/SectionHeader';
 import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
 import { formatMoney } from '../../utils/money';
+import { ProductCardSkeleton } from '../Skeleton/Skeleton';
 
 axios.defaults.withCredentials = true;
 
@@ -150,23 +151,6 @@ const RecommendedCard = ({ product }) => {
   );
 };
 
-const RecommendedSkeleton = () => (
-  <Card
-    elevation={0}
-    sx={{
-      border: `1px solid ${TOKENS.border}`,
-      borderRadius: 2,
-      overflow: 'hidden',
-    }}
-  >
-    <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '4/5' }} />
-    <CardContent sx={{ p: 1.5 }}>
-      <Skeleton variant="text" width="80%" height={20} />
-      <Skeleton variant="text" width="40%" height={20} />
-      <Skeleton variant="text" width="60%" height={16} />
-    </CardContent>
-  </Card>
-);
 
 // Show full rows only (4 per row on desktop) so the grid never ends with a lonely card.
 const evenCount = (n) => (n >= 8 ? 8 : n >= 4 ? 4 : n);
@@ -227,7 +211,7 @@ const RecommendedProductsSection = () => {
         {(loading ? Array.from({ length: 8 }) : recommendedProducts.slice(0, evenCount(recommendedProducts.length))).map((product, idx) => (
           <Grid item xs={6} sm={4} md={3} lg={3} key={product?._id || idx}>
             {loading
-              ? <RecommendedSkeleton />
+              ? <ProductCardSkeleton />
               : <RecommendedCard product={product} />}
           </Grid>
         ))}

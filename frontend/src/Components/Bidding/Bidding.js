@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../Home/sections.css';
 import { formatMoney } from '../../utils/money';
+import { AuctionBandSkeleton } from '../Skeleton/Skeleton';
 
 const money = formatMoney;
 
@@ -91,7 +92,7 @@ const Bidding = () => {
         </header>
 
         {loading ? (
-          <div className="rr-auc rr-auc--skeleton" aria-hidden="true" />
+          <AuctionBandSkeleton />
         ) : (
           <div className="rr-auc">
             <Link to={`/biddingProduct/${feature._id}`} className="rr-auc__feature">

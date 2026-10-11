@@ -10,6 +10,7 @@ import './index.css';
 
 // Home is eager — most users land here, so we want it in the initial chunk.
 import App from './App';
+import { PageSkeleton } from './Components/Skeleton/Skeleton';
 
 // Every other route is lazy-loaded so the home page only ships home page code.
 const EmailVerification    = lazy(() => import('./Components/Login/emailVerification'));
@@ -40,7 +41,7 @@ const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID;
 
 // Wrap a lazy element in a Suspense boundary so React knows what to show while it loads.
 const withSuspense = (node) => (
-  <Suspense fallback={<div style={{ padding: 24, textAlign: 'center' }}>Loading…</div>}>
+  <Suspense fallback={<PageSkeleton />}>
     {node}
   </Suspense>
 );

@@ -4,6 +4,7 @@ import axios from 'axios';
 import Layout from '../Layout/layout';
 import { formatMoney } from '../../utils/money';
 import './profile.css';
+import { ProfileSkeleton } from '../Skeleton/Skeleton';
 
 const badgeImages = {
   'Starter Seller': require('./badges/startseller.png'),
@@ -148,7 +149,7 @@ const UserProfilePage = () => {
   const rating = useMemo(() => ratingFrom(profile?.reviewsData), [profile]);
 
   if (status === 'loading') {
-    return (<Layout><div className="pf-state">Loading profile…</div></Layout>);
+    return (<Layout><ProfileSkeleton /></Layout>);
   }
   if (status === 'signin' || status === 'error') {
     return (

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Layout from '../Layout/layout';
-import SkeletonLoader from '../Utils/skeletonLoader';
+import { LotCardSkeleton, AuctionFeatureSkeleton } from '../Skeleton/Skeleton';
 import './auctionIssue.css';
 import { formatMoney } from '../../utils/money';
 
@@ -166,15 +166,6 @@ const LotCard = ({ lot, index, now }) => {
   );
 };
 
-const LotSkeleton = () => (
-  <div className="ai-lot">
-    <SkeletonLoader height="300px" />
-    <div className="ai-lot__body">
-      <SkeletonLoader.Text lines={1} width="70%" />
-      <SkeletonLoader.Text lines={1} width="40%" />
-    </div>
-  </div>
-);
 
 // ----- page -----
 const BidProductHome = () => {
@@ -256,6 +247,7 @@ const BidProductHome = () => {
           onPick={setCollection}
         />
 
+        {loading && <AuctionFeatureSkeleton />}
         {!loading && featured && collection === 'All' && !query && <Feature lot={featured} now={now} />}
 
         <section className="ai-contents" aria-label="All lots">
@@ -284,7 +276,7 @@ const BidProductHome = () => {
 
           <div className="ai-grid">
             {loading ? (
-              Array.from({ length: 8 }).map((_, i) => <LotSkeleton key={i} />)
+              Array.from({ length: 8 }).map((_, i) => <LotCardSkeleton key={i} />)
             ) : open.length === 0 ? (
               <p className="ai-empty">
                 {query ? `Nothing matches "${query}".` : 'No open lots right now. New pieces are listed every day.'}

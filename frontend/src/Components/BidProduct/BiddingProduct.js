@@ -4,6 +4,7 @@ import { Snackbar, Alert } from '@mui/material';
 import Layout from '../Layout/layout';
 import { formatMoney, bidIncrement } from '../../utils/money';
 import './lotPage.css';
+import { LotPageSkeleton } from '../Skeleton/Skeleton';
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -162,7 +163,7 @@ const BiddingProduct = () => {
   if (loading || !product) {
     return (
       <Layout>
-        <div className="lp-loading">Loading lot…</div>
+        <LotPageSkeleton />
       </Layout>
     );
   }

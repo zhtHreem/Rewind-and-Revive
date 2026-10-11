@@ -41,6 +41,7 @@ import axios from 'axios';
 import sizeRanges from "../Utils/sizeRange";
 import { optimizeImage, fallbackToOriginal } from "../Utils/optimizeImage";
 import { formatMoney } from '../../utils/money';
+import { ProductCardSkeleton } from '../Skeleton/Skeleton';
 
 // Lazy-load less critical components
 const SizeChartMUI = React.lazy(() => import("./sizechart"));
@@ -66,16 +67,6 @@ const SIDEBAR_WIDTH = 260;
 // ─────────────────────────────────────────────────────────────────────────────
 // Skeleton matching the real product card so loading doesn't shift layout
 // ─────────────────────────────────────────────────────────────────────────────
-const ProductCardSkeleton = () => (
-  <Card elevation={0} sx={{ border: `1px solid ${TOKENS.border}`, borderRadius: 2, overflow: 'hidden' }}>
-    <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '4/5' }} />
-    <CardContent sx={{ p: 1.5 }}>
-      <Skeleton variant="text" width="80%" height={20} />
-      <Skeleton variant="text" width="40%" height={20} />
-      <Skeleton variant="text" width="60%" height={16} />
-    </CardContent>
-  </Card>
-);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Product card — single component, sane click targets, hover effect, no full-page reloads

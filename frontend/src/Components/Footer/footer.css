@@ -30,9 +30,23 @@
   .rf__in { grid-template-columns: 1fr 1fr; }
   .rf__brand { grid-column: 1 / -1; }
 }
-@media (max-width: 480px) {
+@media (max-width: 0px) {
   .rf__in { grid-template-columns: 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .rf__group a { transition: none; }
+}
+
+/* phones: shorter footer, link groups side by side */
+@media (max-width: 600px) {
+  .rf__in { grid-template-columns: 1fr 1fr; gap: 26px 20px; padding-top: 36px; padding-bottom: 26px; }
+  .rf__brand { grid-column: 1 / -1; }
+  .rf__brand img { height: 44px; margin-bottom: 12px; }
+  .rf__brand p { font-size: 14px; }
+  .rf__group h3 { margin-bottom: 10px; }
+  .rf__group ul { gap: 8px; }
+  .rf__group a { font-size: 14px; }
+  .rf__group:first-of-type { grid-column: 1 / -1; }
+  .rf__group:first-of-type ul { flex-direction: row; flex-wrap: wrap; gap: 8px 18px; }
+  .rf__bar { flex-direction: column; gap: 6px; padding-top: 16px; }
 }

@@ -224,6 +224,11 @@ const ProductPage = () => {
         console.error('Error fetching product:', error);
       }
     };
+    // a different piece: clear the old one so the skeleton shows while the new one loads
+    setProduct(null);
+    setMoreFromSeller([]);
+    setRecommendations([]);
+    setMainImage("");
     if (productId) fetchProduct();
   }, [productId]);
 

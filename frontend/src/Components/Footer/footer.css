@@ -1,0 +1,38 @@
+/* Site footer: ink background, the logo, three link groups and a stitched divider. */
+
+.rf { background: var(--ink); color: var(--paper); font-family: var(--font-body); }
+.rf__in {
+  max-width: 1360px; margin: 0 auto; padding: clamp(48px, 6vw, 88px) var(--gutter) clamp(32px, 4vw, 56px);
+  display: grid; grid-template-columns: minmax(0, 1.6fr) repeat(3, minmax(0, 1fr)); gap: clamp(28px, 4vw, 64px);
+}
+.rf__brand img { height: 54px; width: auto; display: block; margin-bottom: 18px; }
+.rf__brand p { margin: 0; max-width: 24em; color: #bdb3a3; line-height: 1.6; font-size: 15px; }
+.rf__group h3 {
+  margin: 0 0 16px; font: 500 12px var(--font-mono); letter-spacing: 0.14em; text-transform: uppercase; color: #D9AFC6;
+}
+.rf__group ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.rf__group a {
+  color: var(--paper); text-decoration: none; font-size: 15px; opacity: 0.85;
+  background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+  transition: opacity 0.2s ease, background-size 0.3s ease;
+}
+.rf__group a:hover, .rf__group a:focus-visible { opacity: 1; background-size: 100% 1px; }
+.rf__group a:focus-visible { outline: 2px solid #D9AFC6; outline-offset: 3px; }
+
+.rf__bar {
+  max-width: 1360px; margin: 0 auto; padding: 22px var(--gutter) 28px;
+  border-top: 2px dashed rgba(217, 175, 198, 0.35);
+  display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  font: 12px var(--font-mono); letter-spacing: 0.06em; color: #9a8f80;
+}
+
+@media (max-width: 900px) {
+  .rf__in { grid-template-columns: 1fr 1fr; }
+  .rf__brand { grid-column: 1 / -1; }
+}
+@media (max-width: 480px) {
+  .rf__in { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rf__group a { transition: none; }
+}

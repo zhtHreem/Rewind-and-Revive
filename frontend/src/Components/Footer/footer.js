@@ -1,253 +1,65 @@
-import React, { useState } from 'react';
-import brandLogoDark from '../../assets/brand/logo-dark.svg';
-import {
-  Box,
-  Grid,
-  Typography,
-  TextField,
-  Button,
-  Link,
-  IconButton,
-  Divider,
-  InputAdornment,
-} from '@mui/material';
-import { Facebook, Twitter, Instagram, YouTube } from '@mui/icons-material';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import { Link as RouterLink } from 'react-router-dom';
+import React from 'react';
+import { Link } from 'react-router-dom';
+import logoDark from '../../assets/brand/logo-dark.svg';
+import './footer.css';
 
-// Shared design tokens — matches navbar / bid pages
-const COLORS = {
-  bg: '#1A1A1A',
-  surface: '#222222',
-  border: 'rgba(255,255,255,0.10)',
-  accent: '#C9A2B4',
-  accentDark: '#85586F',
-  accentSoft: 'rgba(201,162,180,0.12)',
-  textPrimary: '#FFFFFF',
-  textSecondary: 'rgba(255,255,255,0.62)',
-};
+const GROUPS = [
+  {
+    title: 'Shop',
+    links: [
+      { to: '/catalogue', label: 'All pieces' },
+      { to: '/catalogue?category=women', label: 'Women' },
+      { to: '/catalogue?category=men', label: 'Men' },
+      { to: '/catalogue?type=accessories', label: 'Jewellery & accessories' },
+      { to: '/bidProduct', label: 'Auctions' },
+    ],
+  },
+  {
+    title: 'Sell',
+    links: [
+      { to: '/createproduct', label: 'List an item' },
+      { to: '/create', label: 'Create an auction' },
+    ],
+  },
+  {
+    title: 'Company',
+    links: [
+      { to: '/AboutUs', label: 'About us' },
+      { to: '/contact', label: 'Contact' },
+      { to: '/privacy', label: 'Privacy & terms' },
+    ],
+  },
+];
 
-const SERIF = '"Playfair Display", "Fraunces", Georgia, serif';
+const Footer = () => (
+  <footer className="rf">
+    <div className="rf__in">
+      <div className="rf__brand">
+        <Link to="/" aria-label="Rewind & Revive home">
+          <img src={logoDark} alt="Rewind & Revive" />
+        </Link>
+        <p>One-of-a-kind pre-loved fashion. Buy it, bid on it, or pass it on.</p>
+      </div>
 
-const ColumnHeading = ({ children }) => (
-  <Typography
-    sx={{
-      fontSize: 11,
-      letterSpacing: 1.8,
-      textTransform: 'uppercase',
-      fontWeight: 700,
-      color: COLORS.accent,
-      mb: 2.5,
-    }}
-  >
-    {children}
-  </Typography>
+      {GROUPS.map((group) => (
+        <nav key={group.title} className="rf__group" aria-label={group.title}>
+          <h3>{group.title}</h3>
+          <ul>
+            {group.links.map((l) => (
+              <li key={l.to + l.label}>
+                <Link to={l.to}>{l.label}</Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      ))}
+    </div>
+
+    <div className="rf__bar">
+      <span>&copy; {new Date().getFullYear()} Rewind &amp; Revive</span>
+      <span>Every piece, one of a kind.</span>
+    </div>
+  </footer>
 );
-
-const FooterLink = ({ to, children }) => (
-  <Link
-    component={RouterLink}
-    to={to}
-    sx={{
-      color: COLORS.textSecondary,
-      fontSize: 14,
-      textDecoration: 'none',
-      transition: 'color 0.2s ease',
-      display: 'inline-block',
-      '&:hover': { color: COLORS.accent },
-    }}
-  >
-    {children}
-  </Link>
-);
-
-const Footer = () => {
-  const [email, setEmail] = useState('');
-
-  const handleSubscribe = (e) => {
-    e.preventDefault();
-    // hook this up to your newsletter endpoint when ready
-    setEmail('');
-  };
-
-  return (
-    <Box
-      component="footer"
-      sx={{
-        bgcolor: COLORS.bg,
-        color: COLORS.textPrimary,
-        pt: { xs: 6, md: 9 },
-        pb: 3,
-        px: { xs: 3, md: 6 },
-        borderTop: `1px solid ${COLORS.border}`,
-      }}
-    >
-      <Box sx={{ maxWidth: 1280, mx: 'auto' }}>
-        <Grid container spacing={{ xs: 5, md: 6 }}>
-          {/* Brand + about */}
-          <Grid item xs={12} md={4}>
-            <Box
-              component={RouterLink}
-              to="/"
-              aria-label="Rewind & Revive home"
-              sx={{ display: 'inline-block', mb: 2 }}
-            >
-              <Box component="img" src={brandLogoDark} alt="Rewind & Revive" sx={{ height: 52, display: 'block' }} />
-            </Box>
-            <Typography
-              sx={{
-                fontSize: 14,
-                color: COLORS.textSecondary,
-                lineHeight: 1.7,
-                mb: 3,
-                maxWidth: 340,
-              }}
-            >
-              Discover one-of-a-kind pre-loved pieces. Sustainable fashion,
-              auctions, and stories worth reviving.
-            </Typography>
-
-            <Box sx={{ display: 'flex', gap: 0.5 }}>
-              {[
-                { icon: <Facebook fontSize="small" />, label: 'Facebook' },
-                { icon: <Instagram fontSize="small" />, label: 'Instagram' },
-                { icon: <Twitter fontSize="small" />, label: 'Twitter' },
-                { icon: <YouTube fontSize="small" />, label: 'YouTube' },
-              ].map((s) => (
-                <IconButton
-                  key={s.label}
-                  href="#"
-                  aria-label={s.label}
-                  sx={{
-                    color: COLORS.textSecondary,
-                    border: `1px solid ${COLORS.border}`,
-                    borderRadius: 2,
-                    width: 38,
-                    height: 38,
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      color: COLORS.accent,
-                      borderColor: COLORS.accent,
-                      bgcolor: COLORS.accentSoft,
-                    },
-                  }}
-                >
-                  {s.icon}
-                </IconButton>
-              ))}
-            </Box>
-          </Grid>
-
-          {/* Browse */}
-          <Grid item xs={6} md={2}>
-            <ColumnHeading>Browse</ColumnHeading>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <FooterLink to="/">Home</FooterLink>
-              <FooterLink to="/catalogue">Shop</FooterLink>
-              <FooterLink to="/bidProduct">Auctions</FooterLink>
-            </Box>
-          </Grid>
-
-          {/* Company */}
-          <Grid item xs={6} md={2}>
-            <ColumnHeading>Company</ColumnHeading>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
-              <FooterLink to="/AboutUs">About us</FooterLink>
-              <FooterLink to="/contact">Contact</FooterLink>
-            </Box>
-          </Grid>
-
-          {/* Newsletter */}
-          <Grid item xs={12} md={4}>
-            <ColumnHeading>Stay in the loop</ColumnHeading>
-            <Typography
-              sx={{
-                fontSize: 14,
-                color: COLORS.textSecondary,
-                lineHeight: 1.6,
-                mb: 2.5,
-                maxWidth: 360,
-              }}
-            >
-              New arrivals, upcoming auctions and member-only drops — straight
-              to your inbox.
-            </Typography>
-            <Box
-              component="form"
-              onSubmit={handleSubscribe}
-              sx={{ display: 'flex', gap: 1, maxWidth: 380 }}
-            >
-              <TextField
-                fullWidth
-                size="small"
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Your email address"
-                InputProps={{
-                  sx: {
-                    bgcolor: COLORS.surface,
-                    color: COLORS.textPrimary,
-                    borderRadius: 2,
-                    fontSize: 14,
-                    '& fieldset': { borderColor: COLORS.border },
-                    '&:hover fieldset': { borderColor: COLORS.accent },
-                    '&.Mui-focused fieldset': { borderColor: COLORS.accent },
-                    '& input::placeholder': {
-                      color: COLORS.textSecondary,
-                      opacity: 1,
-                    },
-                  },
-                }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                sx={{
-                  bgcolor: COLORS.accentDark,
-                  color: '#fff',
-                  borderRadius: 2,
-                  textTransform: 'none',
-                  fontWeight: 600,
-                  fontSize: 14,
-                  px: 2.5,
-                  whiteSpace: 'nowrap',
-                  boxShadow: 'none',
-                  '&:hover': { bgcolor: COLORS.accent, boxShadow: 'none' },
-                }}
-                endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
-              >
-                Subscribe
-              </Button>
-            </Box>
-          </Grid>
-        </Grid>
-
-        <Divider sx={{ borderColor: COLORS.border, mt: { xs: 6, md: 8 }, mb: 3 }} />
-
-        {/* Bottom bar */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', sm: 'row' },
-            alignItems: { xs: 'flex-start', sm: 'center' },
-            justifyContent: 'space-between',
-            gap: 2,
-          }}
-        >
-          <Typography sx={{ fontSize: 13, color: COLORS.textSecondary }}>
-            © {new Date().getFullYear()} Rewind & Revive. All rights reserved.
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 3 }}>
-            <FooterLink to="#">Privacy</FooterLink>
-            <FooterLink to="#">Terms</FooterLink>
-            <FooterLink to="#">Cookies</FooterLink>
-          </Box>
-        </Box>
-      </Box>
-    </Box>
-  );
-};
 
 export default Footer;

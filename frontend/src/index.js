@@ -26,6 +26,7 @@ const Badges               = lazy(() => import('./Components/User/badges'));
 const Login                = lazy(() => import('./Components/Login/login'));
 const CollaboratorsSection = lazy(() => import('./Components/Collaborators/collaborators'));
 const ContactUs            = lazy(() => import('./Components/ContactUs/ContactUs'));
+const Privacy = lazy(() => import('./Components/Legal/Privacy'));
 const Cart                 = lazy(() => import('./Components/ShoppingCart/AddCart'));
 const Payment              = lazy(() => import('./Components/Payment/payment'));
 const Create               = lazy(() => import('./Components/BidProduct/createProduct'));
@@ -63,6 +64,7 @@ const router = createBrowserRouter([
   { path: "/login",               element: withSuspense(<Login />) },
   { path: "/collaborator",        element: withSuspense(<CollaboratorsSection />) },
   { path: "/contact",             element: withSuspense(<ContactUs />) },
+  { path: "/privacy",             element: withSuspense(<Privacy />) },
   { path: "/cart",                element: withSuspense(<Cart />) },
   { path: "/payment",             element: withSuspense(<Payment />) },
   { path: "/confirmation",        element: withSuspense(<ConfirmationWrapper />) },

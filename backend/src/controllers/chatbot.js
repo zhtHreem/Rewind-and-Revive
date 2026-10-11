@@ -129,7 +129,11 @@ const ask = async ({ system, input }) => {
   let lastErr;
   for (const model of models()) {
     try {
-      const interaction = await ai.interactions.create({ model, system_instruction: system, input, store: false });
+      // a slow model should not use up the whole request: give up on it after 15s and try the next
+      const interaction = await Promise.race([
+        ai.interactions.create({ model, system_instruction: system, input, store: false }),
+        new Promise((_, reject) => setTimeout(() => reject(Object.assign(new Error('model timed out, not found'), { status: 404 })), 15000)),
+      ]);
       const text = textOf(interaction).trim();
       if (text) return text;
       lastErr = new Error('Empty reply');

@@ -253,11 +253,25 @@
   .rr-spot__grid { position: relative; grid-template-columns: repeat(3, 1fr); grid-template-rows: none; grid-auto-rows: 38vw; }
   .rr-spot__text { position: relative; left: auto; bottom: auto; padding: 22px 20px 30px; }
 }
-/* Touch screens have no cursor, so keep everything lit. */
-@media (hover: none) {
-  .rr-spot__mask { display: none; }
-  .rr-spot__cap { opacity: 1; }
-}
 @media (prefers-reduced-motion: reduce) {
   .rr-kin__row, .rr-live { animation: none; }
+}
+
+/* ---- spotlight on phones and touch screens: same torch effect, driven by touch and a slow drift ---- */
+.rr-spot__hint-touch { display: none; }
+@media (hover: none) {
+  .rr-spot__hint-mouse { display: none; }
+  .rr-spot__hint-touch { display: inline; }
+}
+@media (max-width: 900px) {
+  .rr-spot { touch-action: pan-y; }
+  .rr-spot__mask { display: block; background: radial-gradient(circle 34vw at var(--x) var(--y), transparent 0, rgba(13, 11, 12, 0.9) 100%); }
+  .rr-spot__cap { opacity: 1; font-size: 12px; padding: 22px 8px 8px; }
+  .rr-spot__tile { border-radius: 4px; }
+}
+@media (max-width: 900px) {
+  .rr-spot--compact { height: auto; margin-bottom: 20px; }
+  .rr-spot--compact .rr-spot__grid { grid-auto-rows: 44vw; }
+  .rr-spot--compact .rr-spot__text { padding: 16px 18px 24px; }
+  .rr-spot--compact .rr-spot__text h2 { font-size: 2.3rem; }
 }

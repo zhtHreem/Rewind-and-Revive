@@ -56,7 +56,7 @@ export const getProductRecommendations = async (req, res) => {
         { color: product.color }
       ]
     }).select('-featureVector').limit(6).lean();
-    
+
     return res.status(200).json({
       success: true,
       recommendations

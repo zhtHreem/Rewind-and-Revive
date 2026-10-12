@@ -73,6 +73,12 @@ const ProductSchema = new mongoose.Schema({
 ProductSchema.index({ isSold: 1, createdAt: -1 }); // catalogue listing
 ProductSchema.index({ owner: 1 });                 // "my products"
 ProductSchema.index({ category: 1, type: 1 });     // similar-product lookups
+ProductSchema.index({ createdAt: -1 });            // trending (unfiltered, newest first)
+// Recommendation queries OR these together; every branch needs its own index or Mongo scans the collection.
+ProductSchema.index({ categories: 1 });
+ProductSchema.index({ materials: 1 });
+ProductSchema.index({ color: 1 });
+ProductSchema.index({ type: 1 });
 
 const Product= mongoose.model('Product', ProductSchema);
 

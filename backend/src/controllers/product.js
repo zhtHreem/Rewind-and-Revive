@@ -158,7 +158,7 @@ export const getProductCatalogueList = async (req, res) => {
     const baseQuery = Product.find()
       .sort({ isSold: 1, createdAt: -1 })
       // Only the fields the catalogue card actually uses — smaller payload, faster JSON.
-      .select('name price images type category isSold owner createdAt')
+      .select({ name: 1, price: 1, type: 1, category: 1, isSold: 1, owner: 1, createdAt: 1, images: { $slice: 2 } })
       .populate('owner', 'username')
       .lean(); // Skip Mongoose doc hydration — faster serialization.
 

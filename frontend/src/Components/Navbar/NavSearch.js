@@ -13,37 +13,24 @@ const QUICK = [
   { label: 'Live auctions', to: '/bidProduct' },
 ];
 
-// Data is fetched once per page visit and reused for every keystroke.
-let cache = null;
-const loadIndex = async () => {
-  if (cache) return cache;
+// The server does the matching (a few projected rows per query). Answers are kept per query,
+// so retyping or backspacing is instant.
+const answers = new Map();
+const fetchSuggestions = async (q, signal) => {
+  if (answers.has(q)) return answers.get(q);
   const base = process.env.REACT_APP_LOCAL_URL;
-  const [shop, lots] = await Promise.all([
-    axios.get(`${base}/api/product/catalogue?limit=60`).catch(() => ({ data: [] })),
-    axios.get(`${base}/api/biddingProduct/get`).catch(() => ({ data: [] })),
-  ]);
-  const products = (Array.isArray(shop.data) ? shop.data : shop.data.products || []).map((p) => ({
-    key: `p-${p._id}`,
-    kind: 'Shop',
-    name: p.name,
-    sub: [p.category, p.type].filter(Boolean).join(' · '),
-    price: formatMoney(p.price),
-    image: p.images && p.images[0],
-    to: `/product/${p._id}`,
-    haystack: [p.name, p.category, p.type, ...(p.categories || [])].join(' ').toLowerCase(),
+  const { data } = await axios.get(`${base}/api/product/suggest`, { params: { q }, signal });
+  const items = (Array.isArray(data) ? data : []).map((r) => ({
+    key: `${r.kind === 'Auction' ? 'a' : 'p'}-${r._id}`,
+    kind: r.kind,
+    name: r.name,
+    sub: r.sub,
+    price: formatMoney(r.price),
+    image: r.image,
+    to: r.kind === 'Auction' ? `/biddingProduct/${r._id}` : `/product/${r._id}`,
   }));
-  const auctions = (Array.isArray(lots.data) ? lots.data : []).map((l) => ({
-    key: `a-${l._id}`,
-    kind: 'Auction',
-    name: l.name,
-    sub: l.lotCollection || 'Auction lot',
-    price: formatMoney(l.startingPrice),
-    image: l.images && l.images[0],
-    to: `/biddingProduct/${l._id}`,
-    haystack: [l.name, l.lotCollection, l.description].join(' ').toLowerCase(),
-  }));
-  cache = [...products, ...auctions];
-  return cache;
+  answers.set(q, items);
+  return items;
 };
 
 // The search panel that slides over the header. A module-level component, so typing
@@ -52,15 +39,13 @@ export default function NavSearch({ open, onClose }) {
   const navigate = useNavigate();
   const inputRef = useRef(null);
   const [query, setQuery] = useState('');
-  const [index, setIndex] = useState([]);
+  const [answer, setAnswer] = useState({ q: '', items: [] });
   const [active, setActive] = useState(-1);
 
   useEffect(() => {
     if (!open) return undefined;
-    let cancelled = false;
-    loadIndex().then((items) => { if (!cancelled) setIndex(items); });
     const t = setTimeout(() => inputRef.current && inputRef.current.focus(), 30);
-    return () => { cancelled = true; clearTimeout(t); };
+    return () => clearTimeout(t);
   }, [open]);
 
   // reset when it closes
@@ -69,13 +54,20 @@ export default function NavSearch({ open, onClose }) {
   }, [open]);
 
   const terms = useMemo(() => query.toLowerCase().split(/\s+/).filter(Boolean), [query]);
-  const results = useMemo(() => {
-    if (!terms.length) return [];
-    return index
-      .filter((item) => terms.every((t) => item.haystack.includes(t)))
-      .sort((a, b) => Number(b.name.toLowerCase().startsWith(terms[0])) - Number(a.name.toLowerCase().startsWith(terms[0])))
-      .slice(0, 6);
-  }, [index, terms]);
+  const q = terms.join(' ');
+
+  const results = answer.items;
+  const settled = answer.q === q;
+
+  // Debounce keystrokes and cancel the request a newer keystroke makes stale.
+  useEffect(() => {
+    if (!q) { setAnswer({ q: '', items: [] }); return undefined; }
+    const ctrl = new AbortController();
+    const t = setTimeout(() => {
+      fetchSuggestions(q, ctrl.signal).then((items) => setAnswer({ q, items })).catch(() => {});
+    }, answers.has(q) ? 0 : 120);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [q]);
 
   useEffect(() => setActive(-1), [query]);
 
@@ -135,7 +127,7 @@ export default function NavSearch({ open, onClose }) {
             </div>
           )}
 
-          {terms.length > 0 && results.length === 0 && (
+          {terms.length > 0 && settled && results.length === 0 && (
             <p className="ns__empty">
               Nothing matches &ldquo;{query}&rdquo; yet. Try a simpler word like &ldquo;denim&rdquo; or &ldquo;pearl&rdquo;.
             </p>

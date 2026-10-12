@@ -72,6 +72,25 @@ export const trackUserActivity = async (req, res, next) => {
   }
 };
 
+// Only what a product card renders (two images for the hover swap). Descriptions, size
+// objects and the feature vector stay in the database.
+const CARD_FIELDS = { name: 1, price: 1, type: 1, category: 1, isSold: 1, owner: 1, createdAt: 1, images: { $slice: 2 } };
+
+// Trending is the same for everyone, so keep it for a minute per server instance.
+let trendingCache = { at: 0, items: null };
+const TRENDING_TTL_MS = 60 * 1000;
+const getTrending = async () => {
+  if (trendingCache.items && Date.now() - trendingCache.at < TRENDING_TTL_MS) return trendingCache.items;
+  const items = await Product.find()
+    .sort({ createdAt: -1 })
+    .select(CARD_FIELDS)
+    .populate('owner', 'username')
+    .limit(6)
+    .lean();
+  trendingCache = { at: Date.now(), items };
+  return items;
+};
+
 // 4. Update the generateRecommendations middleware to be more robust
 export const generateRecommendations = async (req, res, next) => {
   try {
@@ -131,7 +150,7 @@ export const generateRecommendations = async (req, res, next) => {
               },
               { $or: conditions }
             ]
-          }).select('-featureVector').populate('owner', 'username').limit(6).lean();
+          }).select(CARD_FIELDS).populate('owner', 'username').limit(6).lean();
           
           // console.log(`Found ${recommendations.length} recommendations based on product similarity`);
           req.recommendations = recommendations;
@@ -145,14 +164,7 @@ export const generateRecommendations = async (req, res, next) => {
     
     // If we still have no recommendations, show popular products
     if (!req.recommendations || req.recommendations.length === 0) {
-
-      req.recommendations = await Product.find()
-        .sort({ createdAt: -1 })
-        .select('-featureVector')
-        .populate('owner', 'username')
-        .limit(6)
-        .lean();
-    
+      req.recommendations = await getTrending();
     }
     
     next();

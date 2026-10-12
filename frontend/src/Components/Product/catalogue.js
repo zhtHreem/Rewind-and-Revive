@@ -316,18 +316,26 @@ const CataloguePage = () => {
   // ── Data fetch ────────────────────────────────────────────────────────────
   useEffect(() => {
     let cancelled = false;
+    const base = `${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`;
+    const normalise = (list) => list.map((product) => ({
+      ...product,
+      category: defaultCategories.includes(product.category?.toLowerCase())
+        ? product.category.toLowerCase()
+        : 'other',
+    }));
     (async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${process.env.REACT_APP_LOCAL_URL}/api/product/catalogue`);
+        // Paint the first page straight away, then fill in the full list (filters and
+        // facet counts work on all of it) without making the shopper wait for it.
+        const full = axios.get(base);
+        const first = await axios.get(base, { params: { page: 1, limit: 24 } });
         if (cancelled) return;
-        const processedProducts = response.data.map((product) => ({
-          ...product,
-          category: defaultCategories.includes(product.category?.toLowerCase())
-            ? product.category.toLowerCase()
-            : 'other',
-        }));
-        setProducts(processedProducts);
+        setProducts(normalise(first.data.products || []));
+        setLoading(false);
+        const response = await full;
+        if (cancelled) return;
+        setProducts(normalise(response.data));
       } catch (error) {
         console.error("There was an error fetching the products!", error);
       } finally {

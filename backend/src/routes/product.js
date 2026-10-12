@@ -7,6 +7,7 @@ import {
   getOwnedProducts,
   getProductsByOwner
 } from "../controllers/product.js";
+import { suggest } from "../controllers/search.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import { trackUserActivity } from "../middleware/recommendationMiddleware.js";
 import multer from 'multer';
@@ -19,6 +20,9 @@ router.post("/create", authMiddleware, upload.array('images', 5), createProduct)
 
 // Get catalogue
 router.get('/catalogue', getProductCatalogueList);
+
+// Navbar search suggestions (must come before "/:id")
+router.get('/suggest', suggest);
 
 // ✅ Get products owned by logged-in user
 router.get('/owned', authMiddleware, getOwnedProducts);
